@@ -1,6 +1,6 @@
 <div align="center">
   <a href="http://xmake.io">
-    <img width="200" heigth="200" src="https://github.com/tboox/xmake-vscode/blob/master/res/logo256.png">
+    <img width="200" heigth="200" src="https://github.com/tboox/xmake-vscode/raw/master/res/logo256.png">
   </a>  
 
   <h1>xmake-vscode</h1>
