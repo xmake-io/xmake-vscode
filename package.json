@@ -1,25 +1,41 @@
 {
     "name": "xmake-vscode",
-    "displayName": "xmake-vscode",
-    "description": "XMake integration in Visual Studio Code",
-    "version": "0.0.4",
+    "displayName": "XMake",
+    "description": "Extended XMake support in Visual Studio Code",
+    "version": "0.0.5",
     "publisher": "tboox",
+    "icon": "res/logo256.png",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/tboox/xmake-vscode"
+    },
+    "bugs": {
+        "url": "https://github.com/tboox/xmake-vscode/issues"
+    },
+    "homepage": "https://github.com/tboox/xmake-vscode",
+    "keywords": [
+        "xmake",
+        "build",
+        "c++",
+        "native",
+        "lua"
+    ],
     "engines": {
-        "vscode": "^1.16.0"
+        "vscode": "^1.12.0"
     },
     "categories": [
         "Other"
     ],
     "activationEvents": [
-        "onCommand:extension.sayHello"
+        "onCommand:xmake.build"
     ],
-    "icon": "res/logo256.png",
     "main": "./out/src/extension",
     "contributes": {
         "commands": [
             {
-                "command": "extension.sayHello",
-                "title": "Hello World"
+                "command": "xmake.build",
+                "title": "Build",
+                "category": "XMake"
             }
         ]
     },

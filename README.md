@@ -39,4 +39,4 @@
 
 ## Introduction 
 
-A XMake integration in Visual Studio Code
+[A XMake integration in Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=tboox.xmake-vscode#review-details)
