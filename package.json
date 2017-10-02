@@ -21,23 +21,46 @@
         "lua"
     ],
     "engines": {
-        "vscode": "^1.12.0"
+        "vscode": "^1.16.0"
     },
     "categories": [
         "Other"
     ],
     "activationEvents": [
-        "onCommand:xmake.build"
+        "onCommand:xmake.onBuild"
     ],
     "main": "./out/src/extension",
     "contributes": {
         "commands": [
             {
-                "command": "xmake.build",
+                "command": "xmake.onBuild",
                 "title": "Build",
                 "category": "XMake"
             }
-        ]
+        ],
+        "menus": {
+            "commandPalette": [
+                {
+                    "command": "xmake.onBuild"
+                }
+            ]
+        },
+        "configuration": {
+            "type": "object",
+            "title": "XMake configuration",
+            "properties": {
+                "xmake.logLevel": {
+                    "type": "string",
+                    "default": "normal",
+                    "description": "the log level: normal/verbose/minimal",
+                    "enum": [
+                        "verbose",
+                        "normal",
+                        "minimal"
+                    ]
+                }
+            }
+        }
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

@@ -2,12 +2,16 @@
 
 // imports
 import * as vscode from 'vscode';
+import {log} from './log';
 
 // the xmake plugin
 export class XMake implements vscode.Disposable {
-  
+   
     // the constructor
-    constructor(private _ctx: vscode.ExtensionContext) {
+    constructor(context: vscode.ExtensionContext) {
+
+        // init log
+        log.initialize(context);
     }
 
     // dispose all objects
@@ -17,17 +21,16 @@ export class XMake implements vscode.Disposable {
 
     // start xmake plugin
     async start(): Promise<void> {
-        console.log('xmake: start!');
+        log.info('start!');
     }
 
     // shutdown xmake plugin
     async shutdown() {
-        console.log('xmake: shutdown!');
+        log.info('shutdown!');
     }
 
-    // the interfaces
-    async build(target?: string) 
-    {
-        console.log('xmake: build!');
+    // on build project
+    async onBuild(target?: string) {
+        log.verbose('build!');
     }
 };
