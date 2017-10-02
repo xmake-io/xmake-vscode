@@ -37,3 +37,6 @@
 ## Introduction 
 
 [A XMake integration in Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=tboox.xmake-vscode#review-details)
+
+Note: This plugin is being developed and is temporarily out of use. Please wait some time ..
+ 
