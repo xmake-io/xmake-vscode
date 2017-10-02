@@ -21,16 +21,22 @@ export class XMake implements vscode.Disposable {
 
     // start xmake plugin
     async start(): Promise<void> {
-        log.info('start!');
+
+        // trace
+        log.verbose('start!');
     }
 
     // shutdown xmake plugin
     async shutdown() {
-        log.info('shutdown!');
+
+        // trace
+        log.verbose('shutdown!');
     }
 
     // on build project
     async onBuild(target?: string) {
+
+        // trace
         log.verbose('build!');
     }
 };

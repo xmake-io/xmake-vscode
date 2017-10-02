@@ -20,9 +20,6 @@ export class Log {
     // the log level
     private logLevel: LogLevel = LogLevel.Normal;
 
-    // the log tag
-    private static TAG: String = "xmake: ";
-
     // dispose
     private dispose() {
         this.logChannel.dispose();
@@ -52,23 +49,23 @@ export class Log {
 
     // show error info
     public error(message: string): void {
-        console.error(Log.TAG + message);
-        this.logChannel.appendLine(Log.TAG + message);
+        console.error(message);
+        this.logChannel.appendLine(message);
     }
 
     // show info
     public info(message: string): void {
-        console.info(Log.TAG + message);
+        console.info(message);
         if (this.logLevel !== LogLevel.Minimal) {
-            this.logChannel.appendLine(Log.TAG + message);
+            this.logChannel.appendLine(message);
         }
     }
 
     // show verbose info
     public verbose(message: string): void {
-        console.log(Log.TAG + message);
+        console.log(message);
         if (this.logLevel === LogLevel.Verbose) {
-            this.logChannel.appendLine(Log.TAG + message);
+            this.logChannel.appendLine(message);
         }
     }
 }
