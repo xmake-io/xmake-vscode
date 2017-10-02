@@ -6,14 +6,14 @@
   <h1>xmake-vscode</h1>
 
   <div>
-    <a href="https://github.com/tboox/xmake/releases">
+    <a href="https://github.com/tboox/xmake-vscode/releases">
       <img src="https://img.shields.io/github/release/tboox/xmake.svg?style=flat-square" alt="Github All Releases" />
-    </a>
-    <a href="https://aur.archlinux.org/packages/xmake">
-      <img src="https://img.shields.io/aur/votes/xmake.svg?style=flat-square" alt="AUR votes" />
     </a>
     <a href="https://github.com/tboox/xmake-vscode/blob/master/LICENSE">
       <img src="https://img.shields.io/github/license/tboox/xmake-vscode.svg?colorB=f48041&style=flat-square" alt="license" />
+    </a>
+    <a href="http://xmake.io/pages/donation.html#donate">
+      <img src="https://img.shields.io/badge/donate-us-orange.svg?style=flat-square" alt="Donate" />
     </a>
   </div>
   <div>
@@ -28,9 +28,6 @@
     </a>
     <a href="https://jq.qq.com/?_wv=1027&k=5hpwWFv">
       <img src="https://img.shields.io/badge/chat-on%20QQ-ff69b4.svg?style=flat-square" alt="QQ" />
-    </a>
-    <a href="http://xmake.io/pages/donation.html#donate">
-      <img src="https://img.shields.io/badge/donate-us-orange.svg?style=flat-square" alt="Donate" />
     </a>
   </div>
 
