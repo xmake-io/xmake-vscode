@@ -2,6 +2,7 @@
 
 // imports
 import * as vscode from 'vscode';
+import {config} from './config';
 
 // the log level
 export type LogLevel = 'verbose' | 'normal' | 'minimal';
@@ -42,7 +43,7 @@ export class Log {
 
     // fetch the configuration: xmake.logLevel
     private onConfigurationChanged(): void {
-        const newLevel = vscode.workspace.getConfiguration('xmake').get<LogLevel>('logLevel');
+        const newLevel = config.get<LogLevel>('logLevel');
         if (newLevel)
             this.logLevel = newLevel;
     }

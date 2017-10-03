@@ -27,7 +27,10 @@
         "Other"
     ],
     "activationEvents": [
-        "onCommand:xmake.onBuild"
+        "onCommand:xmake.onBuild",
+        "onCommand:xmake.onRebuild",
+        "onCommand:xmake.onClean",
+        "onCommand:xmake.onCleanAll"
     ],
     "main": "./out/src/extension",
     "contributes": {
@@ -36,12 +39,36 @@
                 "command": "xmake.onBuild",
                 "title": "Build",
                 "category": "XMake"
+            },
+            {
+                "command": "xmake.onRebuild",
+                "title": "Rebuild",
+                "category": "XMake"
+            },
+            {
+                "command": "xmake.onClean",
+                "title": "Clean",
+                "category": "XMake"
+            },
+            {
+                "command": "xmake.onCleanAll",
+                "title": "CleanAll",
+                "category": "XMake"
             }
         ],
         "menus": {
             "commandPalette": [
                 {
                     "command": "xmake.onBuild"
+                },
+                {
+                    "command": "xmake.onRebuild"
+                },
+                {
+                    "command": "xmake.onClean"
+                },
+                {
+                    "command": "xmake.onCleanAll"
                 }
             ]
         },
@@ -58,6 +85,11 @@
                         "normal",
                         "minimal"
                     ]
+                },
+                "xmake.workingDirectory": {
+                    "type": "string",
+                    "default": "${workspaceRoot}",
+                    "description": "the working directory with the root xmake.lua"
                 }
             }
         }

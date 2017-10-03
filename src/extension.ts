@@ -21,7 +21,10 @@ export async function activate(context: vscode.ExtensionContext) {
         return vscode.commands.registerCommand(name, _ => fn());
     }
     for (const key of [
-        'onBuild'
+        'onBuild',
+        'onRebuild',
+        'onClean',
+        'onCleanAll'
     ]) {
         context.subscriptions.push(register('xmake.' + key, xmake[key]));
     }
