@@ -109,7 +109,7 @@ export function execv(program: string, args: string[], env: {[key: string]: stri
 
         // show line data
         stream.on('line', (line: string) => {
-            log.verbose(`[${program} output]: ${line}`);
+            log.verbose(line);
             if (outputChannel) {
                 outputChannel.appendLine(line);
             }
