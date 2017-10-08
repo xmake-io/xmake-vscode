@@ -27,6 +27,7 @@
         "Other"
     ],
     "activationEvents": [
+        "onCommand:xmake.onConfigure",
         "onCommand:xmake.onBuild",
         "onCommand:xmake.onRebuild",
         "onCommand:xmake.onClean",
@@ -37,6 +38,11 @@
     "main": "./out/src/extension",
     "contributes": {
         "commands": [
+            {
+                "command": "xmake.onConfigure",
+                "title": "Configure",
+                "category": "XMake"
+            },
             {
                 "command": "xmake.onBuild",
                 "title": "Build",
@@ -70,6 +76,9 @@
         ],
         "menus": {
             "commandPalette": [
+                {
+                    "command": "xmake.onConfigure"
+                },
                 {
                     "command": "xmake.onBuild"
                 },

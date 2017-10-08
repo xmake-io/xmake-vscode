@@ -53,6 +53,16 @@ export class XMake implements vscode.Disposable {
         process.execv(program, args, {}, config.workingDirectory, this.channel);
     }
 
+    // on configure project
+    async onConfigure(target?: string) {
+        
+        // trace
+        log.verbose('configure!');
+
+        // configure it
+        this.execv("xmake", ["f", "-c"]);
+    }
+
     // on build project
     async onBuild(target?: string) {
 
