@@ -24,7 +24,9 @@ export async function activate(context: vscode.ExtensionContext) {
         'onBuild',
         'onRebuild',
         'onClean',
-        'onCleanAll'
+        'onCleanAll',
+        'onRun',
+        'onPackage'
     ]) {
         context.subscriptions.push(register('xmake.' + key, xmake[key]));
     }

@@ -48,6 +48,11 @@ export class XMake implements vscode.Disposable {
         log.verbose('shutdown!');
     }
 
+    // execute process
+    private execv(program: string, args: string[]) {
+        process.execv(program, args, {}, config.workingDirectory, this.channel);
+    }
+
     // on build project
     async onBuild(target?: string) {
 
@@ -55,7 +60,7 @@ export class XMake implements vscode.Disposable {
         log.verbose('build!');
 
         // build it
-        process.execv("xmake", [], {}, config.workingDirectory, this.channel);
+        this.execv("xmake", []);
     }
 
     // on rebuild project
@@ -65,26 +70,46 @@ export class XMake implements vscode.Disposable {
         log.verbose('rebuild!');
 
         // rebuild it
-        process.execv("xmake", ["-r"], {}, config.workingDirectory, this.channel);
+        this.execv("xmake", ["-r"]);
     }
 
-    // on clean project
+    // on clean target files
     async onClean(target?: string) {
         
         // trace
         log.verbose('clean!');
 
         // rebuild it
-        process.execv("xmake", ["c"], {}, config.workingDirectory, this.channel);
+        this.execv("xmake", ["c"]);
     }
 
-    // on clean all project
+    // on clean all target files
     async onCleanAll(target?: string) {
         
         // trace
         log.verbose('clean all!');
 
         // rebuild it
-        process.execv("xmake", ["c", "-a"], {}, config.workingDirectory, this.channel);
+        this.execv("xmake", ["c", "-a"]);
+    }
+
+    // on run target
+    async onRun(target?: string) {
+        
+        // trace
+        log.verbose('run!');
+
+        // rebuild it
+        this.execv("xmake", ["r"]);
+    }
+
+    // on package target
+    async onPackage(target?: string) {
+        
+        // trace
+        log.verbose('package!');
+
+        // rebuild it
+        this.execv("xmake", ["p"]);
     }
 };

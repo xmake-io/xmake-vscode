@@ -30,7 +30,9 @@
         "onCommand:xmake.onBuild",
         "onCommand:xmake.onRebuild",
         "onCommand:xmake.onClean",
-        "onCommand:xmake.onCleanAll"
+        "onCommand:xmake.onCleanAll",
+        "onCommand:xmake.onRun",
+        "onCommand:xmake.onPackage"
     ],
     "main": "./out/src/extension",
     "contributes": {
@@ -54,6 +56,16 @@
                 "command": "xmake.onCleanAll",
                 "title": "CleanAll",
                 "category": "XMake"
+            },
+            {
+                "command": "xmake.onRun",
+                "title": "Run",
+                "category": "XMake"
+            },
+            {
+                "command": "xmake.onPackage",
+                "title": "Package",
+                "category": "XMake"
             }
         ],
         "menus": {
@@ -69,6 +81,12 @@
                 },
                 {
                     "command": "xmake.onCleanAll"
+                },
+                {
+                    "command": "xmake.onRun"
+                },
+                {
+                    "command": "xmake.onPackage"
                 }
             ]
         },
