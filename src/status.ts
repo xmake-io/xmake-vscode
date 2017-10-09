@@ -32,7 +32,7 @@ export class Status implements vscode.Disposable {
 
         // init build button
         this._buildButton.command = 'xmake.onBuild';
-        this._buildButton.text = `$(gear) Build:`;
+        this._buildButton.text = `$(gear) Build`;
 
         // update visibility
         this.updateVisibility();
