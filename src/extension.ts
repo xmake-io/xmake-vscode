@@ -21,6 +21,7 @@ export async function activate(context: vscode.ExtensionContext) {
         return vscode.commands.registerCommand(name, _ => fn());
     }
     for (const key of [
+        'onQuickStart',
         'onConfigure',
         'onBuild',
         'onRebuild',

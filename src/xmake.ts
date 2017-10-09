@@ -34,8 +34,11 @@ export class XMake implements vscode.Disposable {
 
         // valid xmake project?
         if (!fs.existsSync(path.join(config.workingDirectory, "xmake.lua"))) {
-            vscode.window.showInformationMessage('xmake.lua not found!');
-            return
+            if (!!(await vscode.window.showErrorMessage('xmake.lua not found!',
+                'Quickstart a new XMake project'))) {
+                await this.onQuickStart();
+            }
+            else return;
         }
 
         // enable this plugin
@@ -47,6 +50,16 @@ export class XMake implements vscode.Disposable {
 
         // trace
         log.verbose('shutdown!');
+    }
+
+    // on quick start
+    async onQuickStart(target?: string) {
+
+        // trace
+        log.verbose('quick start!');
+
+        // auto-generate a new xmake.lua
+        terminal.execute("xmake f -y");
     }
 
     // on configure project

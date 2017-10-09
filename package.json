@@ -2,7 +2,7 @@
     "name": "xmake-vscode",
     "displayName": "XMake",
     "description": "Extended XMake support in Visual Studio Code",
-    "version": "0.0.9",
+    "version": "0.0.10",
     "publisher": "tboox",
     "icon": "res/logo256.png",
     "repository": {
@@ -27,6 +27,7 @@
         "Other"
     ],
     "activationEvents": [
+        "onCommand:xmake.onQuickStart",
         "onCommand:xmake.onConfigure",
         "onCommand:xmake.onBuild",
         "onCommand:xmake.onRebuild",
@@ -38,6 +39,11 @@
     "main": "./out/src/extension",
     "contributes": {
         "commands": [
+            {
+                "command": "xmake.onQuickStart",
+                "title": "QuickStart",
+                "category": "XMake"
+            },
             {
                 "command": "xmake.onConfigure",
                 "title": "Configure",
@@ -76,6 +82,9 @@
         ],
         "menus": {
             "commandPalette": [
+                {
+                    "command": "xmake.onQuickStart"
+                },
                 {
                     "command": "xmake.onConfigure"
                 },
