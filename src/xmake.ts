@@ -2,16 +2,18 @@
 
 // imports
 import * as vscode from 'vscode';
-import * as process from './process';
+import * as fs from 'fs';
+import * as path from 'path';
 import {log} from './log';
 import {config} from './config';
+import {terminal} from './terminal';
 
 // the xmake plugin
 export class XMake implements vscode.Disposable {
    
-    // the channel
-    private _channel?: vscode.OutputChannel;
-    
+    // enable plugin?
+    private _enabled: boolean = false;
+
     // the constructor
     constructor(context: vscode.ExtensionContext) {
 
@@ -22,16 +24,6 @@ export class XMake implements vscode.Disposable {
     // dispose all objects
     public async dispose() {
         await this.shutdown();
-        this.channel.dispose();
-    }
-     
-    // get the channel
-    private get channel(): vscode.OutputChannel {
-        if (!this._channel) {
-            this._channel = vscode.window.createOutputChannel("xmake");
-            this._channel.show();
-        }
-        return this._channel!;
     }
 
     // start xmake plugin
@@ -39,6 +31,15 @@ export class XMake implements vscode.Disposable {
 
         // trace
         log.verbose('start!');
+
+        // valid xmake project?
+        if (!fs.existsSync(path.join(config.workingDirectory, "xmake.lua"))) {
+            vscode.window.showInformationMessage('xmake.lua not found!');
+            return
+        }
+
+        // enable this plugin
+        this._enabled = true;
     }
 
     // shutdown xmake plugin
@@ -48,29 +49,34 @@ export class XMake implements vscode.Disposable {
         log.verbose('shutdown!');
     }
 
-    // execute process
-    private execv(program: string, args: string[]) {
-        process.execv(program, args, {}, config.workingDirectory, this.channel);
-    }
-
     // on configure project
     async onConfigure(target?: string) {
-        
+       
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+ 
         // trace
         log.verbose('configure!');
 
         // configure it
-        this.execv("xmake", ["f", "-c"]);
+        terminal.execute("xmake f -c");
     }
 
     // on build project
     async onBuild(target?: string) {
 
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+
         // trace
         log.verbose('build!');
 
         // build it
-        this.execv("xmake", []);
+        terminal.execute("xmake");
     }
 
     // on rebuild project
@@ -80,46 +86,66 @@ export class XMake implements vscode.Disposable {
         log.verbose('rebuild!');
 
         // rebuild it
-        this.execv("xmake", ["-r"]);
+        terminal.execute("xmake -r");
     }
 
     // on clean target files
     async onClean(target?: string) {
-        
+       
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+ 
         // trace
         log.verbose('clean!');
 
-        // rebuild it
-        this.execv("xmake", ["c"]);
+        // clean it
+        terminal.execute("xmake c");
     }
 
     // on clean all target files
     async onCleanAll(target?: string) {
-        
+       
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+ 
         // trace
         log.verbose('clean all!');
 
-        // rebuild it
-        this.execv("xmake", ["c", "-a"]);
+        // clean all
+        terminal.execute("xmake c -a");
     }
 
     // on run target
     async onRun(target?: string) {
-        
+       
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+ 
         // trace
         log.verbose('run!');
 
-        // rebuild it
-        this.execv("xmake", ["r"]);
+        // run it
+        terminal.execute("xmake r");
     }
 
     // on package target
     async onPackage(target?: string) {
-        
+       
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+ 
         // trace
         log.verbose('package!');
 
-        // rebuild it
-        this.execv("xmake", ["p"]);
+        // package it
+        terminal.execute("xmake p");
     }
 };
