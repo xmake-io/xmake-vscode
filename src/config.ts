@@ -5,7 +5,7 @@ import * as vscode from 'vscode';
 import * as os from 'os';
 import * as utils from './utils';
 
-// the onfig class
+// the config class
 export class Config {
 
     // get config value

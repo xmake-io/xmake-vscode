@@ -28,7 +28,12 @@ export async function activate(context: vscode.ExtensionContext) {
         'onClean',
         'onCleanAll',
         'onRun',
-        'onPackage'
+        'onPackage',
+        'onDebug',
+        'setTargetPlat',
+        'setTargetArch',
+        'setBuildMode',
+        'setDefaultTarget'
     ]) {
         context.subscriptions.push(register('xmake.' + key, xmake[key]));
     }

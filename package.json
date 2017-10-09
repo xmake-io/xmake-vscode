@@ -35,7 +35,12 @@
         "onCommand:xmake.onClean",
         "onCommand:xmake.onCleanAll",
         "onCommand:xmake.onRun",
-        "onCommand:xmake.onPackage"
+        "onCommand:xmake.onPackage",
+        "onCommand:xmake.onDebug",
+        "onCommand:xmake.setTargetPlat",
+        "onCommand:xmake.setTargetArch",
+        "onCommand:xmake.setBuildMode",
+        "onCommand:xmake.setDefaultTarget"
     ],
     "main": "./out/src/extension",
     "contributes": {
@@ -79,6 +84,31 @@
                 "command": "xmake.onPackage",
                 "title": "Package",
                 "category": "XMake"
+            },
+            {
+                "command": "xmake.onDebug",
+                "title": "Debug",
+                "category": "XMake"
+            },
+            {
+                "command": "xmake.setTargetPlat",
+                "title": "Set Target Platform",
+                "category": "XMake"
+            },
+            {
+                "command": "xmake.setTargetArch",
+                "title": "Set Target Architecture",
+                "category": "XMake"
+            },
+            {
+                "command": "xmake.setBuildMode",
+                "title": "Set Build Mode",
+                "category": "XMake"
+            },
+            {
+                "command": "xmake.setDefaultTarget",
+                "title": "Set Default Target",
+                "category": "XMake"
             }
         ],
         "menus": {
@@ -106,6 +136,21 @@
                 },
                 {
                     "command": "xmake.onPackage"
+                },
+                {
+                    "command": "xmake.onDebug"
+                },
+                {
+                    "command": "xmake.setTargetPlat"
+                },
+                {
+                    "command": "xmake.setTargetArch"
+                },
+                {
+                    "command": "xmake.setBuildMode"
+                },
+                {
+                    "command": "xmake.setDefaultTarget"
                 }
             ]
         },
