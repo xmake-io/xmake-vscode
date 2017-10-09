@@ -2,13 +2,11 @@
 
 // imports
 import * as vscode from 'vscode';
-import * as proc from 'child_process';
-import * as fs from 'fs';
 import {log} from './log';
 import {config} from './config';
 
 // the terminal class
-class Terminal {
+export class Terminal implements vscode.Disposable {
 
     // the terminal
     private _terminal: vscode.Terminal;
@@ -26,12 +24,14 @@ class Terminal {
         }
     }
 
+    // dispose all objects
+    public dispose() {
+        this._terminal.dispose();
+    }
+
     // execute command string
     public execute(command: string) {
         this._terminal.sendText(command);
         this._terminal.show(true);
     }
 }
-
-// the global terminal
-export const terminal: Terminal = new Terminal();

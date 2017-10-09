@@ -6,13 +6,20 @@ import * as fs from 'fs';
 import * as path from 'path';
 import {log} from './log';
 import {config} from './config';
-import {terminal} from './terminal';
+import {Terminal} from './terminal';
+import {Status} from './status';
 
 // the xmake plugin
 export class XMake implements vscode.Disposable {
    
     // enable plugin?
     private _enabled: boolean = false;
+
+    // the terminal
+    private _terminal: Terminal;
+
+    // the status
+    private _status: Status;
 
     // the constructor
     constructor(context: vscode.ExtensionContext) {
@@ -24,6 +31,8 @@ export class XMake implements vscode.Disposable {
     // dispose all objects
     public async dispose() {
         await this.shutdown();
+        this._terminal.dispose();
+        this._status.dispose();
     }
 
     // start xmake plugin
@@ -41,6 +50,12 @@ export class XMake implements vscode.Disposable {
             else return;
         }
 
+        // init terminal
+        this._terminal = new Terminal();
+
+        // init status
+        this._status = new Status();
+
         // enable this plugin
         this._enabled = true;
     }
@@ -50,6 +65,9 @@ export class XMake implements vscode.Disposable {
 
         // trace
         log.verbose('shutdown!');
+
+        // disable this plugin
+        this._enabled = false;
     }
 
     // on quick start
@@ -59,7 +77,7 @@ export class XMake implements vscode.Disposable {
         log.verbose('quick start!');
 
         // auto-generate a new xmake.lua
-        terminal.execute("xmake f -y");
+        this._terminal.execute("xmake f -y");
     }
 
     // on configure project
@@ -74,7 +92,7 @@ export class XMake implements vscode.Disposable {
         log.verbose('configure!');
 
         // configure it
-        terminal.execute("xmake f -c");
+        this._terminal.execute("xmake f -c");
     }
 
     // on build project
@@ -89,17 +107,22 @@ export class XMake implements vscode.Disposable {
         log.verbose('build!');
 
         // build it
-        terminal.execute("xmake");
+        this._terminal.execute("xmake");
     }
 
     // on rebuild project
     async onRebuild(target?: string) {
-        
+       
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        } 
+
         // trace
         log.verbose('rebuild!');
 
         // rebuild it
-        terminal.execute("xmake -r");
+        this._terminal.execute("xmake -r");
     }
 
     // on clean target files
@@ -114,7 +137,7 @@ export class XMake implements vscode.Disposable {
         log.verbose('clean!');
 
         // clean it
-        terminal.execute("xmake c");
+        this._terminal.execute("xmake c");
     }
 
     // on clean all target files
@@ -129,7 +152,7 @@ export class XMake implements vscode.Disposable {
         log.verbose('clean all!');
 
         // clean all
-        terminal.execute("xmake c -a");
+        this._terminal.execute("xmake c -a");
     }
 
     // on run target
@@ -144,7 +167,7 @@ export class XMake implements vscode.Disposable {
         log.verbose('run!');
 
         // run it
-        terminal.execute("xmake r");
+        this._terminal.execute("xmake r");
     }
 
     // on package target
@@ -159,6 +182,6 @@ export class XMake implements vscode.Disposable {
         log.verbose('package!');
 
         // package it
-        terminal.execute("xmake p");
+        this._terminal.execute("xmake p");
     }
 };

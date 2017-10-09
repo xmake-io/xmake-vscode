@@ -13,7 +13,7 @@ export const LogLevel = {
 };
 
 // the log class
-export class Log {
+class Log implements vscode.Disposable {
 
     // the log channel
     private _logChannel?: vscode.OutputChannel;
@@ -22,7 +22,7 @@ export class Log {
     private logLevel: LogLevel = LogLevel.Normal;
 
     // dispose
-    private dispose() {
+    public dispose() {
         this.logChannel.dispose();
     }
 
