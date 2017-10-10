@@ -9,25 +9,25 @@ import {config} from './config';
 export class Status implements vscode.Disposable {
 
     // the platform button
-    private readonly _platButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.5);
+    private readonly _platButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.5);
 
     // the architecture button
-    private readonly _archButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.4);
+    private readonly _archButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.4);
     
     // the mode button
-    private readonly _modeButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.3);
+    private readonly _modeButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.3);
     
     // the build button
-    private readonly _buildButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.2);
+    private readonly _buildButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.2);
     
     // the target button
-    private readonly _targetButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.1);
+    private readonly _targetButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.1);
 
     // the run button
-    private readonly _runButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.0);
+    private readonly _runButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.0);
     
     // the debug button
-    private readonly _debugButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 2.9);
+    private readonly _debugButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.9);
     
     // is visible?
     private _visible: boolean = true;
