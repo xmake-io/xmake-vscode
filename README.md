@@ -42,7 +42,9 @@
 
 ## Introduction 
 
-[A XMake integration in Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=tboox.xmake-vscode#overview)
+A XMake integration in Visual Studio Code
 
-Note: This plugin is being developed and is temporarily out of use. Please wait some time ..
+## StatusBar
+
+![statusbar](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/statusbar.png)
  
