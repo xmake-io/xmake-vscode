@@ -22,6 +22,9 @@ export class XMake implements vscode.Disposable {
     // enable plugin?
     private _enabled: boolean = false;
 
+    // option changed?
+    private _optionChanged: boolean = true;
+
     // the terminal
     private _terminal: Terminal;
 
@@ -118,17 +121,24 @@ export class XMake implements vscode.Disposable {
             return
         }
 
-        // get the target platform
-        let plat = this._option.get<string>("plat");
+        // option changed?
+        if (this._optionChanged) {
 
-        // get the target architecture
-        let arch = this._option.get<string>("arch");
-        
-        // get the build mode
-        let mode = this._option.get<string>("mode");
+            // get the target platform
+            let plat = this._option.get<string>("plat");
 
-        // configure it
-        this._terminal.execute(`xmake f -p ${plat} -a ${arch} -m ${mode} -c`);
+            // get the target architecture
+            let arch = this._option.get<string>("arch");
+            
+            // get the build mode
+            let mode = this._option.get<string>("mode");
+
+            // configure it
+            this._terminal.execute(`xmake f -p ${plat} -a ${arch} -m ${mode}`);
+
+            // mark as not changed
+            this._optionChanged = false;
+        }
     }
 
     // on build project
@@ -138,6 +148,9 @@ export class XMake implements vscode.Disposable {
         if (!this._enabled) {
             return
         }
+
+        // configure it first
+        this.onConfigure(target);
 
         // build it
         this._terminal.execute("xmake");
@@ -151,6 +164,9 @@ export class XMake implements vscode.Disposable {
             return
         } 
 
+        // configure it first
+        this.onConfigure(target);
+        
         // rebuild it
         this._terminal.execute("xmake -r");
     }
@@ -163,6 +179,9 @@ export class XMake implements vscode.Disposable {
             return
         }
  
+        // configure it first
+        this.onConfigure(target);
+        
         // clean it
         this._terminal.execute("xmake c");
     }
@@ -175,6 +194,9 @@ export class XMake implements vscode.Disposable {
             return
         }
  
+        // configure it first
+        this.onConfigure(target);
+        
         // clean all
         this._terminal.execute("xmake c -a");
     }
@@ -186,7 +208,10 @@ export class XMake implements vscode.Disposable {
         if (!this._enabled) {
             return
         }
- 
+
+        // configure it first
+        this.onConfigure(target);
+        
         // run it
         this._terminal.execute("xmake r");
     }
@@ -199,6 +224,9 @@ export class XMake implements vscode.Disposable {
             return
         }
  
+        // configure it first
+        this.onConfigure(target);
+        
         // package it
         this._terminal.execute("xmake p");
     }
@@ -211,6 +239,9 @@ export class XMake implements vscode.Disposable {
             return
         }
  
+        // configure it first
+        this.onConfigure(target);
+        
         // debug it
         this._terminal.execute("xmake r -d");
     }
@@ -234,9 +265,10 @@ export class XMake implements vscode.Disposable {
         items.push({ label: "mingw", description: "The MingW Platform"});
         items.push({ label: "cross", description: "The Cross Platform"});
         const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
-        if (chosen) {
+        if (chosen && chosen.label !== this._option.get<string>("plat")) {
             this._option.set("plat", chosen.label);
             this._status.plat = chosen.label;
+            this._optionChanged = true;
         }
     }
 
@@ -278,7 +310,7 @@ export class XMake implements vscode.Disposable {
             items.push({ label: "arm64-v8a", description: "The arm64-v8a Architecture"});
         }
         const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
-        if (chosen) {
+        if (chosen && chosen.label !== this._option.get<string>("arch")) {
             this._option.set("arch", chosen.label);
             this._status.arch = chosen.label;
         }
@@ -297,7 +329,7 @@ export class XMake implements vscode.Disposable {
         items.push({ label: "debug", description: "The Debug Mode"});
         items.push({ label: "release", description: "The Release Mode"});
         const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
-        if (chosen) {
+        if (chosen && chosen.label !== this._option.get<string>("mode")) {
             this._option.set("mode", chosen.label);
             this._status.mode = chosen.label;
         }
