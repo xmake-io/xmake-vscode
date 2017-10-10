@@ -130,4 +130,9 @@ export class Status implements vscode.Disposable {
     public set mode(value: string) {
         this._modeButton.text = value;
     }
+
+    // set the default target   
+    public set target(value: string) {
+        this._targetButton.text = value;
+    }
 }

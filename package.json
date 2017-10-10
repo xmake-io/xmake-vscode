@@ -30,6 +30,7 @@
         "workspaceContains:xmake.lua",
         "onCommand:xmake.onQuickStart",
         "onCommand:xmake.onConfigure",
+        "onCommand:xmake.onCleanConfigure",
         "onCommand:xmake.onBuild",
         "onCommand:xmake.onRebuild",
         "onCommand:xmake.onClean",
@@ -53,6 +54,11 @@
             {
                 "command": "xmake.onConfigure",
                 "title": "Configure",
+                "category": "XMake"
+            },
+            {
+                "command": "xmake.onCleanConfigure",
+                "title": "Clean Configure",
                 "category": "XMake"
             },
             {
@@ -120,6 +126,9 @@
                     "command": "xmake.onConfigure"
                 },
                 {
+                    "command": "xmake.onCleanConfigure"
+                },
+                {
                     "command": "xmake.onBuild"
                 },
                 {
@@ -161,17 +170,33 @@
                 "xmake.logLevel": {
                     "type": "string",
                     "default": "normal",
-                    "description": "the log level: normal/verbose/minimal",
+                    "description": "The Log Level: normal/verbose/minimal",
                     "enum": [
                         "verbose",
                         "normal",
                         "minimal"
                     ]
                 },
+                "xmake.buildLevel": {
+                    "type": "string",
+                    "default": "normal",
+                    "description": "The Build Output Level: normal/verbose/warning/debug",
+                    "enum": [
+                        "verbose",
+                        "normal",
+                        "warning",
+                        "debug"
+                    ]
+                },
                 "xmake.workingDirectory": {
                     "type": "string",
                     "default": "${workspaceRoot}",
-                    "description": "the working directory with the root xmake.lua"
+                    "description": "The Project Working Directory with the root xmake.lua"
+                },
+                "xmake.androidNDKDirectory": {
+                    "type": "string",
+                    "default": "",
+                    "description": "The Android NDK Directory"
                 }
             }
         }

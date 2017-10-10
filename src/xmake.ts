@@ -10,6 +10,7 @@ import {config} from './config';
 import {Terminal} from './terminal';
 import {Status} from './status';
 import {Option} from './option';
+import * as process from './process';
 
 // the option arguments
 export interface OptionArguments extends vscode.QuickPickItem {
@@ -49,6 +50,33 @@ export class XMake implements vscode.Disposable {
         this._option.dispose();
     }
 
+    // load cache
+    async loadCache() {
+       
+        // load cached configure
+        let cacheJson = (await process.iorunv("xmake", ["l", "-c", 'import("core.project.config"); config.load(); print("{\\\"plat\\\":\\\"$(plat)\\\", \\\"arch\\\":\\\"$(arch)\\\", \\\"mode\\\":\\\"$(mode)\\\"}")'], {}, config.workingDirectory)).stdout;
+        if (cacheJson) cacheJson = JSON.parse(cacheJson);
+
+        // init platform
+        const plat = cacheJson["plat"]? cacheJson["plat"] : {win32: 'windows', darwin: 'macosx', linux: 'linux'}[os.platform()];
+        if (plat) {
+            this._option.set("plat", plat);
+            this._status.plat = plat;
+        }
+
+        // init architecture
+        const arch = cacheJson["arch"]? cacheJson["arch"] : (plat == "windows"? os.arch() : {x64: 'x86_64', x86: 'i386'}[os.arch()]);
+        if (arch) {
+            this._option.set("arch", arch);
+            this._status.arch = arch;
+        }
+        
+        // init build mode
+        const mode = cacheJson["mode"]? cacheJson["mode"] : "release";
+        this._option.set("mode", mode);
+        this._status.mode = mode;
+    }
+
     // start xmake plugin
     async start(): Promise<void> {
 
@@ -73,24 +101,8 @@ export class XMake implements vscode.Disposable {
         // init option
         this._option = new Option();
 
-        // TODO if no cache?
-        // init platform
-        const plat = {win32: 'windows', darwin: 'macosx', linux: 'linux'}[os.platform()];
-        if (plat) {
-            this._option.set("plat", plat);
-            this._status.plat = plat;
-        }
-
-        // init architecture
-        const arch = plat == "windows"? os.arch() : {x64: 'x86_64', x86: 'i386'}[os.arch()];
-        if (arch) {
-            this._option.set("arch", arch);
-            this._status.arch = arch;
-        }
-        
-        // init build mode
-        this._option.set("mode", "release");
-        this._status.mode = "release";
+        // load cached configure
+        this.loadCache();
 
         // enable this plugin
         this._enabled = true;
@@ -133,12 +145,36 @@ export class XMake implements vscode.Disposable {
             // get the build mode
             let mode = this._option.get<string>("mode");
 
+            // make command
+            let command = `xmake f -p ${plat} -a ${arch} -m ${mode}`;
+            if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
+                command += ` --ndk=\"${config.androidNDKDirectory}\"`;
+            }
+
             // configure it
-            this._terminal.execute(`xmake f -p ${plat} -a ${arch} -m ${mode}`);
+            this._terminal.execute(command);
 
             // mark as not changed
             this._optionChanged = false;
         }
+    }
+
+    // on clean configure project
+    async onCleanConfigure(target?: string) {
+        
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+ 
+        // configure it
+        this._terminal.execute("xmake f -c");
+
+        // reload cache
+        this.loadCache();
+
+        // mark as not changed
+        this._optionChanged = false;
     }
 
     // on build project
@@ -152,8 +188,25 @@ export class XMake implements vscode.Disposable {
         // configure it first
         this.onConfigure(target);
 
+        // add build level to command      
+        const buildLevel = config.get<string>("buildLevel");
+        let command = "xmake"  
+        if (buildLevel == "verbose") 
+            command += " -v";
+        else if (buildLevel == "warning") 
+            command += " -w";
+        else if (buildLevel == "debug") 
+            command += " -v --backtrace";
+
+        // add build target to command
+        const targetname = this._option.get<string>("target");
+        if (targetname && targetname != "default")
+            command += ` build ${targetname}`;
+        else if (targetname == "all")
+            command += " -a";
+
         // build it
-        this._terminal.execute("xmake");
+        this._terminal.execute(command); 
     }
 
     // on rebuild project
@@ -167,8 +220,25 @@ export class XMake implements vscode.Disposable {
         // configure it first
         this.onConfigure(target);
         
-        // rebuild it
-        this._terminal.execute("xmake -r");
+        // add build level to command      
+        const buildLevel = config.get<string>("buildLevel");
+        let command = "xmake -r"  
+        if (buildLevel == "verbose") 
+            command += " -v";
+        else if (buildLevel == "warning") 
+            command += " -w";
+        else if (buildLevel == "debug") 
+            command += " -v --backtrace";
+
+        // add build target to command
+        const targetname = this._option.get<string>("target");
+        if (targetname && targetname != "default")
+            command += ` ${targetname}`;
+        else if (targetname == "all")
+            command += " -a";
+
+        // build it
+        this._terminal.execute(command); 
     }
 
     // on clean target files
@@ -181,9 +251,14 @@ export class XMake implements vscode.Disposable {
  
         // configure it first
         this.onConfigure(target);
+       
+        // get target name 
+        const targetname = this._option.get<string>("target");
         
         // clean it
-        this._terminal.execute("xmake c");
+        if (targetname && targetname != "default")
+            this._terminal.execute(`xmake c ${targetname}`);
+        else this._terminal.execute("xmake c"); 
     }
 
     // on clean all target files
@@ -197,8 +272,13 @@ export class XMake implements vscode.Disposable {
         // configure it first
         this.onConfigure(target);
         
+        // get target name 
+        const targetname = this._option.get<string>("target");
+        
         // clean all
-        this._terminal.execute("xmake c -a");
+        if (targetname && targetname != "default")
+            this._terminal.execute(`xmake c -a ${targetname}`);
+        else this._terminal.execute("xmake c -a "); 
     }
 
     // on run target
@@ -212,8 +292,15 @@ export class XMake implements vscode.Disposable {
         // configure it first
         this.onConfigure(target);
         
+        // get target name 
+        const targetname = this._option.get<string>("target");
+        
         // run it
-        this._terminal.execute("xmake r");
+        if (targetname && targetname != "default")
+            this._terminal.execute(`xmake r ${targetname}`);
+        else if (targetname == "all")
+            this._terminal.execute("xmake r -a");
+        else this._terminal.execute("xmake a");   
     }
 
     // on package target
@@ -227,8 +314,15 @@ export class XMake implements vscode.Disposable {
         // configure it first
         this.onConfigure(target);
         
+        // get target name 
+        const targetname = this._option.get<string>("target");
+        
         // package it
-        this._terminal.execute("xmake p");
+        if (targetname && targetname != "default")
+            this._terminal.execute(`xmake p ${targetname}`);
+        else if (targetname == "all")
+            this._terminal.execute("xmake p -a");
+        else this._terminal.execute("xmake p");   
     }
 
     // on debug target
@@ -242,28 +336,34 @@ export class XMake implements vscode.Disposable {
         // configure it first
         this.onConfigure(target);
         
+        // get target name 
+        const targetname = this._option.get<string>("target");
+        
         // debug it
-        this._terminal.execute("xmake r -d");
+        if (targetname && targetname != "default")
+            this._terminal.execute(`xmake r -d ${targetname}`);
+        else
+            this._terminal.execute("xmake r -d");
     }
 
     // set target platform
     async setTargetPlat(target?: string) {
         
-         // this plugin enabled?
-         if (!this._enabled) {
-             return
-         }
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
 
         // select platform
         let items: vscode.QuickPickItem[] = [];
-        items.push({ label: "linux", description: "The Linux Platform"});
-        items.push({ label: "macosx", description: "The MacOS Platform"});
-        items.push({ label: "windows", description: "The Windows Platform"});
-        items.push({ label: "android", description: "The Android Platform"});
-        items.push({ label: "iphoneos", description: "The iPhoneOS Platform"});
-        items.push({ label: "watchos", description: "The WatchOS Platform"});
-        items.push({ label: "mingw", description: "The MingW Platform"});
-        items.push({ label: "cross", description: "The Cross Platform"});
+        items.push({label: "linux", description: "The Linux Platform"});
+        items.push({label: "macosx", description: "The MacOS Platform"});
+        items.push({label: "windows", description: "The Windows Platform"});
+        items.push({label: "android", description: "The Android Platform"});
+        items.push({label: "iphoneos", description: "The iPhoneOS Platform"});
+        items.push({label: "watchos", description: "The WatchOS Platform"});
+        items.push({label: "mingw", description: "The MingW Platform"});
+        items.push({label: "cross", description: "The Cross Platform"});
         const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
         if (chosen && chosen.label !== this._option.get<string>("plat")) {
             this._option.set("plat", chosen.label);
@@ -284,35 +384,36 @@ export class XMake implements vscode.Disposable {
         let items: vscode.QuickPickItem[] = [];
         let plat = this._option.get<string>("plat");
         if (plat == "windows") {
-            items.push({ label: "x86", description: "The x86 Architecture"});
-            items.push({ label: "x64", description: "The x64 Architecture"});
+            items.push({label: "x86", description: "The x86 Architecture"});
+            items.push({label: "x64", description: "The x64 Architecture"});
         }
         else if (plat == "macosx" || plat == "linux" || plat == "mingw") {
-            items.push({ label: "i386", description: "The i386 Architecture"});
-            items.push({ label: "x86_64", description: "The x86_64 Architecture"});
+            items.push({label: "i386", description: "The i386 Architecture"});
+            items.push({label: "x86_64", description: "The x86_64 Architecture"});
         }
         else if (plat == "iphoneos") {
-            items.push({ label: "armv7", description: "The armv7 Architecture"});
-            items.push({ label: "armv7s", description: "The armv7s Architecture"});
-            items.push({ label: "arm64", description: "The arm64 Architecture"});
-            items.push({ label: "i386", description: "The i386 Architecture"});
-            items.push({ label: "x86_64", description: "The x86_64 Architecture"});
+            items.push({label: "armv7", description: "The armv7 Architecture"});
+            items.push({label: "armv7s", description: "The armv7s Architecture"});
+            items.push({label: "arm64", description: "The arm64 Architecture"});
+            items.push({label: "i386", description: "The i386 Architecture"});
+            items.push({label: "x86_64", description: "The x86_64 Architecture"});
         }
         else if (plat == "watchos") {
-            items.push({ label: "armv7s", description: "The armv7s Architecture"});
-            items.push({ label: "i386", description: "The i386 Architecture"});
+            items.push({label: "armv7s", description: "The armv7s Architecture"});
+            items.push({label: "i386", description: "The i386 Architecture"});
         }
         else if (plat == "android") {
-            items.push({ label: "armv5te", description: "The armv5te Architecture"});
-            items.push({ label: "armv6", description: "The armv6 Architecture"});
-            items.push({ label: "armv7-a", description: "The armv7-a Architecture"});
-            items.push({ label: "armv8-a", description: "The armv8-a Architecture"});
-            items.push({ label: "arm64-v8a", description: "The arm64-v8a Architecture"});
+            items.push({label: "armv5te", description: "The armv5te Architecture"});
+            items.push({label: "armv6", description: "The armv6 Architecture"});
+            items.push({label: "armv7-a", description: "The armv7-a Architecture"});
+            items.push({label: "armv8-a", description: "The armv8-a Architecture"});
+            items.push({label: "arm64-v8a", description: "The arm64-v8a Architecture"});
         }
         const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
         if (chosen && chosen.label !== this._option.get<string>("arch")) {
             this._option.set("arch", chosen.label);
             this._status.arch = chosen.label;
+            this._optionChanged = true;
         }
     }
 
@@ -326,21 +427,41 @@ export class XMake implements vscode.Disposable {
 
         // select mode
         let items: vscode.QuickPickItem[] = [];
-        items.push({ label: "debug", description: "The Debug Mode"});
-        items.push({ label: "release", description: "The Release Mode"});
+        items.push({label: "debug", description: "The Debug Mode"});
+        items.push({label: "release", description: "The Release Mode"});
         const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
         if (chosen && chosen.label !== this._option.get<string>("mode")) {
             this._option.set("mode", chosen.label);
             this._status.mode = chosen.label;
+            this._optionChanged = true;
         }
     }
 
     // set default target
     async setDefaultTarget(target?: string) {
         
-         // this plugin enabled?
-         if (!this._enabled) {
-             return
-         }
-     }
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+
+        // get target names
+        let targets = (await process.iorunv("xmake", ["l", "-c", 'import("core.project.config"); import("core.project.project"); config.load(); for name, _ in pairs((project.targets())) do print(name) end'], {}, config.workingDirectory)).stdout;
+
+        // select target
+        let items: vscode.QuickPickItem[] = [];
+        items.push({label: "default", description: "All Default Targets"});
+        items.push({label: "all", description: "All Targets"});
+        if (targets) {
+            targets.split('\n').forEach(element => {
+                if (element.length > 0)
+                    items.push({label: element, description: "The Project Target: " + element}); 
+            });
+        }
+        const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+        if (chosen && chosen.label !== this._option.get<string>("target")) {
+            this._option.set("target", chosen.label);
+            this._status.target = chosen.label;
+        }
+    }
 };

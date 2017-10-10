@@ -26,6 +26,11 @@ export class Config {
     get workingDirectory(): string {
         return utils.replaceVars(this.get<string>("workingDirectory"));
     }
+
+    // the android ndk directory
+    get androidNDKDirectory(): string {
+        return utils.replaceVars(this.get<string>("androidNDKDirectory"));
+    }
 }
 
 // init the global config

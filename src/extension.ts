@@ -23,6 +23,7 @@ export async function activate(context: vscode.ExtensionContext) {
     for (const key of [
         'onQuickStart',
         'onConfigure',
+        'onCleanConfigure',
         'onBuild',
         'onRebuild',
         'onClean',
