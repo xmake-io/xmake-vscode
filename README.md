@@ -42,7 +42,7 @@
 
 ## Introduction 
 
-A XMake integration in Visual Studio Code
+A XMake integration in Visual Studio Code. [Github](https://github.com/tboox/xmake-vscode)
 
 ## StatusBar
 
