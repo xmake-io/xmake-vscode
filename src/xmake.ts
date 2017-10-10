@@ -366,9 +366,26 @@ export class XMake implements vscode.Disposable {
         items.push({label: "cross", description: "The Cross Platform"});
         const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
         if (chosen && chosen.label !== this._option.get<string>("plat")) {
+
+            // update platform
             this._option.set("plat", chosen.label);
             this._status.plat = chosen.label;
             this._optionChanged = true;
+
+            // update architecture  
+            let plat = chosen.label;
+            let arch = "";
+            const host = {win32: 'windows', darwin: 'macosx', linux: 'linux'}[os.platform()];
+            if (plat == host) {
+                arch = (plat == "windows"? os.arch() : {x64: 'x86_64', x86: 'i386'}[os.arch()]);
+            }
+            else {
+                arch = {windows: "x86", macosx: "x86_64", linux: "x86_64", mingw: "x86_64", iphoneos: "arm64", watchos: "armv7s", android: "armv7-a"}[plat];
+            }
+            if (arch && arch != "") {
+                this._option.set("arch", arch);
+                this._status.arch = arch;
+            }
         }
     }
 
