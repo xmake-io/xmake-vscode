@@ -2,18 +2,24 @@
 
 // imports
 import * as vscode from 'vscode';
+import {log} from './log';
 
 // get lua keyword list
 function getLuaKeywordList(): Promise<string> {
     return new Promise(function (resolve, reject) {
-        resolve("if\nfunction\nfor");
+        resolve(["if", "function", "for", "local", "else", "elseif", "then", "end", "nil", "do"].join('\n'));
     });
 }
 
 // get xmake command list
 function getXMakeCommandList(): Promise<string> {
     return new Promise(function (resolve, reject) {
-        resolve("set_kind\nadd_files\nadd_defines");
+
+        // the default xmake command list
+        const defaultCmds = "add_arflags|add_asflags|add_bindings|add_cflags|add_cfunc|add_cfuncs|add_cincludes|add_csnippet|add_ctypes|add_cxflags|add_cxxflags|add_cxxfunc|add_cxxfuncs|add_cxxincludes|add_cxxsnippet|add_cxxtypes|add_dcflags|add_defines|add_defines_h|add_deps|add_files|add_frameworkdirs|add_frameworks|add_gcflags|add_headers|add_includedirs|add_languages|add_ldflags|add_linkdirs|add_links|add_mflags|add_moduledirs|add_mxflags|add_mxxflags|add_options|add_packagedirs|add_packages|add_plugindirs|add_rbindings|add_rcflags|add_rpathdirs|add_scflags|add_shflags|add_subdirs|add_subfiles|add_undefines|add_undefines_h|add_vectorexts|after_build|after_check|after_clean|after_install|after_package|after_run|after_uninstall|before_build|before_check|before_clean|before_install|before_package|before_run|before_uninstall|catch|cprint|cprintf|finally|format|ifelse|import|includes|inherit|ipairs|is_arch|is_host|is_kind|is_mode|is_option|is_os |is_plat|on_build|on_check|on_clean|on_install|on_load|on_package|on_run|on_uninstall|option|option_end|pairs|print|printf|raise|set_basename|set_category|set_config_h|set_config_h_prefix|set_config_header|set_default|set_description|set_headerdir|set_kind|set_languages|set_menu|set_modes|set_objectdir|set_optimize|set_options|set_pcheader|set_pcxxheader|set_project|set_showmenu|set_strip|set_symbols|set_targetdir|set_version|set_warnings|set_xmakever|target|target_end|task|task_end|try|val|vformat".split('|').join('\n');
+
+        // TODO: get commands from `xmake man --commands-list`
+        resolve(defaultCmds);
     });
 }
 
