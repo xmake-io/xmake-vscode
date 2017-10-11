@@ -58,7 +58,7 @@ Please see [xmake-github](https://github.com/tboox/xmake) and [website](http://x
 
 ## Colorization and Completion Lists
 
-![completion](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/completion.gif)
+<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/completion.gif" width="60%" />
 
 ## StatusBar
 
@@ -66,17 +66,17 @@ Please see [xmake-github](https://github.com/tboox/xmake) and [website](http://x
  
 ## Commands
 
-![commands](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/commands.png)
+<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/commands.png" width="60%" />
  
 ## Configuration
 
-![configuration](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/configure.gif)
+<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/configure.gif" width="60%" />
  
 ## Build
 
-![build](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/build.gif)
+<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/build.gif" width="60%" />
   
 ## Debug
 
-![debug](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/debug.gif)
+<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/debug.gif" width="60%" />
  
