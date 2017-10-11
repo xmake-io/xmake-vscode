@@ -47,6 +47,25 @@
     ],
     "main": "./out/src/extension",
     "contributes": {
+        "languages": [
+			{
+				"id": "xmake",
+				"filenames": [
+					"xmake.lua"
+				],
+				"aliases": [
+					"XMake"
+                ],
+                "configuration": "./languages/xmake-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "xmake",
+				"scopeName": "source.xmake",
+				"path": "./languages/xmake-grammars.json"
+            }
+        ],
         "commands": [
             {
                 "command": "xmake.onQuickStart",

@@ -10,6 +10,7 @@ import {config} from './config';
 import {Terminal} from './terminal';
 import {Status} from './status';
 import {Option} from './option';
+import {Completion} from './completion';
 import * as process from './process';
 
 // the option arguments
@@ -91,6 +92,9 @@ export class XMake implements vscode.Disposable {
             }
             else return;
         }
+
+        // init languages
+        vscode.languages.registerCompletionItemProvider("xmake", new Completion());
 
         // init terminal
         this._terminal = new Terminal();
