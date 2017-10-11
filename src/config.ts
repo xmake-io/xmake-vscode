@@ -22,6 +22,21 @@ export class Config {
         }
     }
 
+    // the build directory
+    get buildDirectory(): string {
+        return utils.replaceVars(this.get<string>("buildDirectory"));
+    }
+
+    // the install directory
+    get installDirectory(): string {
+        return utils.replaceVars(this.get<string>("installDirectory"));
+    }
+
+    // the package directory
+    get packageDirectory(): string {
+        return utils.replaceVars(this.get<string>("packageDirectory"));
+    }
+
     // the working directory
     get workingDirectory(): string {
         return utils.replaceVars(this.get<string>("workingDirectory"));

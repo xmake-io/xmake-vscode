@@ -150,6 +150,9 @@ export class XMake implements vscode.Disposable {
             if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
                 command += ` --ndk=\"${config.androidNDKDirectory}\"`;
             }
+            if (config.buildDirectory != "" && config.buildDirectory != path.join(vscode.workspace.rootPath, "build")) {
+                command += ` -o ${config.buildDirectory}`
+            }
 
             // configure it
             this._terminal.execute(command);
@@ -166,9 +169,15 @@ export class XMake implements vscode.Disposable {
         if (!this._enabled) {
             return
         }
+
+        // make command
+        let command = `xmake f -c`;
+        if (config.buildDirectory != "" && config.buildDirectory != path.join(vscode.workspace.rootPath, "build")) {
+            command += ` -o ${config.buildDirectory}`
+        }
  
         // configure it
-        this._terminal.execute("xmake f -c");
+        this._terminal.execute(command);
 
         // reload cache
         this.loadCache();
@@ -317,12 +326,67 @@ export class XMake implements vscode.Disposable {
         // get target name 
         const targetname = this._option.get<string>("target");
         
-        // package it
+        // make command
+        let command = "xmake p"
         if (targetname && targetname != "default")
-            this._terminal.execute(`xmake p ${targetname}`);
+            command += ` ${targetname}`;
         else if (targetname == "all")
-            this._terminal.execute("xmake p -a");
-        else this._terminal.execute("xmake p");   
+            command += " -a";
+
+        // package it
+        this._terminal.execute(command);
+    }
+
+    // on install target
+    async onInstall(target?: string) {
+        
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+  
+        // configure it first
+        this.onConfigure(target);
+         
+        // get target name 
+        const targetname = this._option.get<string>("target");
+         
+        // make command
+        let command = "xmake install"
+        if (targetname && targetname != "default")
+            command += ` ${targetname}`;
+        else if (targetname == "all")
+            command += " -a";
+        if (config.installDirectory != "")
+            command += ` -o ${config.installDirectory}`;
+
+        // install it
+        this._terminal.execute(command);
+    }
+
+    // on uninstall target
+    async onUninstall(target?: string) {
+        
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+  
+        // configure it first
+        this.onConfigure(target);
+         
+        // get target name 
+        const targetname = this._option.get<string>("target");
+         
+        // make command
+        let command = "xmake uninstall"
+        if (targetname && targetname != "default")
+            command += ` ${targetname}`;
+        if (config.installDirectory != "")
+            command += ` --installdir=${config.installDirectory}`;
+
+        // uninstall it
+        this._terminal.execute(command);  
     }
 
     // on debug target
