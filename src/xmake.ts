@@ -313,7 +313,7 @@ export class XMake implements vscode.Disposable {
             this._terminal.execute(`xmake r ${targetname}`);
         else if (targetname == "all")
             this._terminal.execute("xmake r -a");
-        else this._terminal.execute("xmake a");   
+        else this._terminal.execute("xmake r");   
     }
 
     // on package target

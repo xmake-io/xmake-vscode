@@ -2,7 +2,7 @@
     "name": "xmake-vscode",
     "displayName": "XMake",
     "description": "Extended XMake support in Visual Studio Code",
-    "version": "0.0.15",
+    "version": "0.0.16",
     "publisher": "tboox",
     "icon": "res/logo256.png",
     "repository": {
@@ -38,7 +38,7 @@
         "onCommand:xmake.onRun",
         "onCommand:xmake.onPackage",
         "onCommand:xmake.onInstall",
-        "onCommand:xmake.onUninstall",        
+        "onCommand:xmake.onUninstall",
         "onCommand:xmake.onDebug",
         "onCommand:xmake.setTargetPlat",
         "onCommand:xmake.setTargetArch",
@@ -48,22 +48,22 @@
     "main": "./out/src/extension",
     "contributes": {
         "languages": [
-			{
-				"id": "xmake",
-				"filenames": [
-					"xmake.lua"
-				],
-				"aliases": [
-					"XMake"
+            {
+                "id": "xmake",
+                "filenames": [
+                    "xmake.lua"
+                ],
+                "aliases": [
+                    "XMake"
                 ],
                 "configuration": "./languages/xmake-configuration.json"
-			}
-		],
-		"grammars": [
-			{
-				"language": "xmake",
-				"scopeName": "source.xmake",
-				"path": "./languages/xmake-grammars.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "xmake",
+                "scopeName": "source.xmake",
+                "path": "./languages/xmake-grammars.json"
             }
         ],
         "commands": [

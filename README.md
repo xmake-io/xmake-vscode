@@ -42,9 +42,41 @@
 
 ## Introduction 
 
-A XMake integration in Visual Studio Code. [Github](https://github.com/tboox/xmake-vscode)
+A XMake integration in Visual Studio Code. 
+
+Please see [xmake-github](https://github.com/tboox/xmake) and [website](http://xmake.io) if you want to known more about xmake.
+
+## Features
+
+* Colorization
+* Completion Lists
+* StatusBar
+* Commands
+* Configuration
+* Build
+* Debug
+
+## Colorization and Completion Lists
+
+![completion](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/completion.gif)
 
 ## StatusBar
 
 ![statusbar](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/statusbar.png)
+ 
+## Commands
+
+![commands](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/commands.png)
+ 
+## Configuration
+
+![configuration](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/configure.gif)
+ 
+## Build
+
+![build](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/build.gif)
+  
+## Debug
+
+![debug](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/debug.gif)
  
