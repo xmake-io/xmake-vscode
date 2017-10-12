@@ -79,4 +79,61 @@ Please see [xmake-github](https://github.com/tboox/xmake) and [website](http://x
 ## Debug
 
 <img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/debug.gif" width="60%" />
+
+## Global Configuration
+
+```js
+"configuration": {
+    "type": "object",
+    "title": "XMake configuration",
+    "properties": {
+        "xmake.logLevel": {
+            "type": "string",
+            "default": "normal",
+            "description": "The Log Level: normal/verbose/minimal",
+            "enum": [
+                "verbose",
+                "normal",
+                "minimal"
+            ]
+        },
+        "xmake.buildLevel": {
+            "type": "string",
+            "default": "normal",
+            "description": "The Build Output Level: normal/verbose/warning/debug",
+            "enum": [
+                "verbose",
+                "normal",
+                "warning",
+                "debug"
+            ]
+        },
+        "xmake.buildDirectory": {
+            "type": "string",
+            "default": "${workspaceRoot}/build",
+            "description": "The Build Output Directory"
+        },
+        "xmake.installDirectory": {
+            "type": "string",
+            "default": "",
+            "description": "The Install Output Directory"
+        },
+        "xmake.packageDirectory": {
+            "type": "string",
+            "default": "",
+            "description": "The Package Output Directory"
+        },
+        "xmake.workingDirectory": {
+            "type": "string",
+            "default": "${workspaceRoot}",
+            "description": "The Project Working Directory with the root xmake.lua"
+        },
+        "xmake.androidNDKDirectory": {
+            "type": "string",
+            "default": "",
+            "description": "The Android NDK Directory"
+        }
+    }
+}
+```
  
