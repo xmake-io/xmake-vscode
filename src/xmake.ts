@@ -45,7 +45,7 @@ export class XMake implements vscode.Disposable {
 
     // dispose all objects
     public async dispose() {
-        await this.shutdown();
+        await this.stop();
         this._terminal.dispose();
         this._status.dispose();
         this._option.dispose();
@@ -113,10 +113,10 @@ export class XMake implements vscode.Disposable {
     }
 
     // shutdown xmake plugin
-    async shutdown() {
+    async stop(): Promise<void> {
 
         // trace
-        log.verbose('shutdown!');
+        log.verbose('stop!');
 
         // disable this plugin
         this._enabled = false;
@@ -412,6 +412,60 @@ export class XMake implements vscode.Disposable {
             this._terminal.execute(`xmake r -d ${targetname}`);
         else
             this._terminal.execute("xmake r -d");
+    }
+
+    // on macro begin
+    async onMacroBegin(target?: string) {
+        
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+
+        // begin marco
+        this._terminal.execute("xmake m -b");
+
+        // update status: start to record
+        this._status.startRecord();
+    }
+
+    // on macro end
+    async onMacroEnd(target?: string) {
+        
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+
+        // end marco
+        this._terminal.execute("xmake m -e");
+
+        // update status: stop to record
+        this._status.stopRecord();
+    }
+
+    // on macro run
+    async onMacroRun(target?: string) {
+        
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+
+        // end marco
+        this._terminal.execute("xmake m .");
+    }
+
+    // on run last command
+    async onRunLastCommand(target?: string) {
+        
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+
+        // end marco
+        this._terminal.execute("xmake m ..");
     }
 
     // set target platform

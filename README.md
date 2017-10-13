@@ -44,6 +44,8 @@
 
 A XMake integration in Visual Studio Code. 
 
+You need install [xmake](https://github.com/tboox/xmake) first and a project with `xmake.lua`.
+
 Please see [xmake-github](https://github.com/tboox/xmake) and [website](http://xmake.io) if you want to known more about xmake.
 
 ## Features
@@ -54,7 +56,8 @@ Please see [xmake-github](https://github.com/tboox/xmake) and [website](http://x
 * Commands
 * Configuration
 * Build
-* Debug
+* Run and Debug
+* Record and Playback
 
 ## Colorization and Completion Lists
 
@@ -76,9 +79,13 @@ Please see [xmake-github](https://github.com/tboox/xmake) and [website](http://x
 
 <img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/build.gif" width="60%" />
   
-## Debug
+## Run and Debug
 
 <img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/debug.gif" width="60%" />
+ 
+## Record and Playback
+
+<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/record.gif" width="60%" />
 
 ## Global Configuration
 

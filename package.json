@@ -39,7 +39,11 @@
         "onCommand:xmake.onPackage",
         "onCommand:xmake.onInstall",
         "onCommand:xmake.onUninstall",
-        "onCommand:xmake.onDebug",
+        "onCommand:xmake.onDebug",        
+        "onCommand:xmake.onMacroBegin",
+        "onCommand:xmake.onMacroEnd",
+        "onCommand:xmake.onMacroRun",
+        "onCommand:xmake.onRunLastCommand",
         "onCommand:xmake.setTargetPlat",
         "onCommand:xmake.setTargetArch",
         "onCommand:xmake.setBuildMode",
@@ -128,6 +132,26 @@
                 "category": "XMake"
             },
             {
+                "command": "xmake.onMacroBegin",
+                "title": "BeginMacro",
+                "category": "XMake"
+            },
+            {
+                "command": "xmake.onMacroEnd",
+                "title": "EndMacro",
+                "category": "XMake"
+            },
+            {
+                "command": "xmake.onMacroRun",
+                "title": "RunMacro",
+                "category": "XMake"
+            },
+            {
+                "command": "xmake.onRunLastCommand",
+                "title": "RunLastCommand",
+                "category": "XMake"
+            },
+            {
                 "command": "xmake.setTargetPlat",
                 "title": "Set Target Platform",
                 "category": "XMake"
@@ -185,6 +209,18 @@
                 },
                 {
                     "command": "xmake.onUninstall"
+                },
+                {
+                    "command": "xmake.onMacroBegin"
+                },
+                {
+                    "command": "xmake.onMacroEnd"
+                },
+                {
+                    "command": "xmake.onMacroRun"
+                },
+                {
+                    "command": "xmake.onRunLastCommand"
                 },
                 {
                     "command": "xmake.setTargetPlat"

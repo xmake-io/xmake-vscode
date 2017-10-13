@@ -29,6 +29,12 @@ export class Status implements vscode.Disposable {
     // the debug button
     private readonly _debugButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.9);
     
+    // the macro record button
+    private readonly _macroRecordButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.8);
+
+    // the macro playback button
+    private readonly _macroPlaybackButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.7);
+    
     // is visible?
     private _visible: boolean = true;
 
@@ -70,6 +76,16 @@ export class Status implements vscode.Disposable {
         this._debugButton.text = `$(bug)`;
         this._debugButton.tooltip = "Debug the given target";
 
+        // init macro record button
+        this._macroRecordButton.command = 'xmake.onMacroBegin';
+        this._macroRecordButton.text = `$(primitive-square)`;
+        this._macroRecordButton.tooltip = "Record a anonymous macro";
+
+        // init macro playback button
+        this._macroPlaybackButton.command = 'xmake.onMacroRun';
+        this._macroPlaybackButton.text = `$(history)`;
+        this._macroPlaybackButton.tooltip = "Playback the last anonymous macro";
+
         // update visibility
         this.updateVisibility();
     }
@@ -83,7 +99,9 @@ export class Status implements vscode.Disposable {
                             this._buildButton, 
                             this._targetButton,
                             this._runButton,
-                            this._debugButton]) {
+                            this._debugButton,
+                            this._macroRecordButton,
+                            this._macroPlaybackButton]) {
             item.dispose();
         }
     }
@@ -96,7 +114,9 @@ export class Status implements vscode.Disposable {
                             this._buildButton, 
                             this._targetButton,
                             this._runButton,
-                            this._debugButton]) {
+                            this._debugButton,
+                            this._macroRecordButton,
+                            this._macroPlaybackButton]) {
             if (this.visible && !!item.text) {
                 item.show();
             } else {
@@ -134,5 +154,17 @@ export class Status implements vscode.Disposable {
     // set the default target   
     public set target(value: string) {
         this._targetButton.text = value;
+    }
+
+    // start to record  
+    public startRecord() {
+        this._macroRecordButton.command = 'xmake.onMacroEnd';
+        this._macroRecordButton.text = `$(primitive-dot)`;
+    }
+
+    // stop to record  
+    public stopRecord() {
+        this._macroRecordButton.command = 'xmake.onMacroBegin';
+        this._macroRecordButton.text = `$(primitive-square)`;
     }
 }
