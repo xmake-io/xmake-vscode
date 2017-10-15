@@ -2,7 +2,7 @@
     "name": "xmake-vscode",
     "displayName": "XMake",
     "description": "Extended XMake support in Visual Studio Code",
-    "version": "0.0.17",
+    "version": "0.0.18",
     "publisher": "tboox",
     "icon": "res/logo256.png",
     "repository": {
@@ -39,7 +39,7 @@
         "onCommand:xmake.onPackage",
         "onCommand:xmake.onInstall",
         "onCommand:xmake.onUninstall",
-        "onCommand:xmake.onDebug",        
+        "onCommand:xmake.onDebug",
         "onCommand:xmake.onMacroBegin",
         "onCommand:xmake.onMacroEnd",
         "onCommand:xmake.onMacroRun",
@@ -287,7 +287,29 @@
                     "description": "The Android NDK Directory"
                 }
             }
-        }
+        },
+        "taskDefinitions": [
+            {
+                "type": "xmake"
+            }
+        ],
+        "problemMatchers": [
+            {       
+                "name": "$xmake-gcc",
+                "owner": "cpp", 
+                "fileLocation":"relative",
+                "pattern":[
+                    {
+                        "regexp": "^(error: )?(.*):([0-9]*):([0-9]*): (.*): (.*)$",
+                        "file": 2,
+                        "line": 3,
+                        "column": 4,
+                        "severity": 5,
+                        "message": 6
+                    }
+                ]
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run compile",

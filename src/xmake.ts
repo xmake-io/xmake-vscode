@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as os from 'os';
 import {log} from './log';
 import {config} from './config';
+import {Tasks} from './task';
 import {Terminal} from './terminal';
 import {Status} from './status';
 import {Option} from './option';
@@ -26,6 +27,9 @@ export class XMake implements vscode.Disposable {
 
     // option changed?
     private _optionChanged: boolean = true;
+
+    // the tasks
+    private _tasks: Tasks;
 
     // the terminal
     private _terminal: Terminal;
@@ -49,6 +53,7 @@ export class XMake implements vscode.Disposable {
         this._terminal.dispose();
         this._status.dispose();
         this._option.dispose();
+        this._tasks.dispose();
     }
 
     // load cache
@@ -95,6 +100,9 @@ export class XMake implements vscode.Disposable {
 
         // init languages
         vscode.languages.registerCompletionItemProvider("xmake", new Completion());
+
+        // init tasks
+        this._tasks = new Tasks();
 
         // init terminal
         this._terminal = new Terminal();
