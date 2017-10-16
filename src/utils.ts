@@ -23,3 +23,6 @@ export function replaceVars(str: string): string {
     // replace all variables
     return replacements.reduce((accdir, [needle, what]) => replaceAll(accdir, needle, what), str);
 }
+
+// sleep some times
+export const sleep = ms => new Promise(res => setTimeout(res, ms));

@@ -7,12 +7,13 @@ import * as path from 'path';
 import * as os from 'os';
 import {log} from './log';
 import {config} from './config';
-import {Tasks} from './task';
 import {Terminal} from './terminal';
 import {Status} from './status';
 import {Option} from './option';
+import {ProblemList} from './problem';
 import {Completion} from './completion';
 import * as process from './process';
+import * as utils from './utils';
 
 // the option arguments
 export interface OptionArguments extends vscode.QuickPickItem {
@@ -21,6 +22,9 @@ export interface OptionArguments extends vscode.QuickPickItem {
 
 // the xmake plugin
 export class XMake implements vscode.Disposable {
+
+    // the extension context
+    private _context: vscode.ExtensionContext;
    
     // enable plugin?
     private _enabled: boolean = false;
@@ -28,8 +32,8 @@ export class XMake implements vscode.Disposable {
     // option changed?
     private _optionChanged: boolean = true;
 
-    // the tasks
-    private _tasks: Tasks;
+    // the problems
+    private _problems: ProblemList;
 
     // the terminal
     private _terminal: Terminal;
@@ -40,8 +44,14 @@ export class XMake implements vscode.Disposable {
     // the status
     private _status: Status;
 
+    // the cache file watcher
+    private _fileSystemWatcher: vscode.FileSystemWatcher;
+    
     // the constructor
     constructor(context: vscode.ExtensionContext) {
+        
+        // save context
+        this._context = context;
 
         // init log
         log.initialize(context);
@@ -53,7 +63,8 @@ export class XMake implements vscode.Disposable {
         this._terminal.dispose();
         this._status.dispose();
         this._option.dispose();
-        this._tasks.dispose();
+        this._problems.dispose();
+        this._fileSystemWatcher.dispose();
     }
 
     // load cache
@@ -83,6 +94,73 @@ export class XMake implements vscode.Disposable {
         this._status.mode = mode;
     }
 
+    // init watcher
+    async initWatcher() {
+
+        // init file system watcher
+        this._fileSystemWatcher = vscode.workspace.createFileSystemWatcher(path.join(config.workingDirectory, ".xmake", "*"));
+		this._fileSystemWatcher.onDidCreate(this.onFileCreate.bind(this));
+        this._fileSystemWatcher.onDidChange(this.onFileChange.bind(this));
+        this._fileSystemWatcher.onDidDelete(this.onFileDelete.bind(this));
+    }
+
+    // on File Create
+    async onFileCreate(affectedPath: vscode.Uri) {
+
+        // trace
+        log.verbose("onFileCreate: " + affectedPath.fsPath);
+
+        // wait some times
+        await utils.sleep(2000);
+        
+        // update configure cache
+        let filePath = affectedPath.fsPath;
+        if (filePath.includes("xmake.conf")) {
+            this.loadCache();
+        // update problems
+        } else if (filePath.includes("vscode-build.log")) {
+            this._problems.diagnose(filePath);
+        }
+    }
+
+    // on File Change
+    async onFileChange(affectedPath: vscode.Uri) {
+
+        // trace
+        log.verbose("onFileChange: " + affectedPath.fsPath);   
+        
+        // wait some times
+        await utils.sleep(2000);
+
+        // update configure cache
+        let filePath = affectedPath.fsPath;
+        if (filePath.includes("xmake.conf")) {  
+            this.loadCache();
+        // update problems
+        } else if (filePath.includes("vscode-build.log")) {
+            this._problems.diagnose(filePath);
+        } 
+    }
+
+    // on File Delete
+    async onFileDelete(affectedPath: vscode.Uri) {
+
+        // trace
+        log.verbose("onFileDelete: " + affectedPath.fsPath);  
+    
+        // wait some times
+        await utils.sleep(2000);
+        
+        // update configure cache
+        let filePath = affectedPath.fsPath;
+        if (filePath.includes("xmake.conf")) {
+            this.loadCache();
+        // clear problems
+        } else if (filePath.includes("vscode-build.log")) {
+            this._problems.clear();
+        }
+    }
+
     // start xmake plugin
     async start(): Promise<void> {
 
@@ -101,12 +179,12 @@ export class XMake implements vscode.Disposable {
         // init languages
         vscode.languages.registerCompletionItemProvider("xmake", new Completion());
 
-        // init tasks
-        this._tasks = new Tasks();
-
         // init terminal
         this._terminal = new Terminal();
 
+        // init problems
+        this._problems = new ProblemList();
+        
         // init status
         this._status = new Status();
  
@@ -115,6 +193,9 @@ export class XMake implements vscode.Disposable {
 
         // load cached configure
         this.loadCache();
+
+        // init watcher
+        this.initWatcher();
 
         // enable this plugin
         this._enabled = true;
@@ -190,9 +271,6 @@ export class XMake implements vscode.Disposable {
  
         // configure it
         this._terminal.execute(command);
-
-        // reload cache
-        this.loadCache();
 
         // mark as not changed
         this._optionChanged = false;

@@ -29,7 +29,7 @@ export class Terminal implements vscode.Disposable {
         }
 
         // enable logfile
-        this._logfile = path.join(os.tmpdir(), ".xmake-vscode-build.log");
+        this._logfile = path.join(config.workingDirectory, ".xmake", "vscode-build.log");
         if (os.platform() == "win32") {
             this._terminal.sendText(`set XMAKE_LOGFILE="${this._logfile}"`);
         } else {
@@ -40,6 +40,11 @@ export class Terminal implements vscode.Disposable {
     // dispose all objects
     public dispose() {
         this._terminal.dispose();
+    }
+
+    // get the log file
+    public get logfile() {
+        return this._logfile;
     }
 
     // execute command string

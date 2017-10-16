@@ -30,7 +30,6 @@ class Log implements vscode.Disposable {
     private get logChannel(): vscode.OutputChannel {
         if (!this._logChannel) {
             this._logChannel = vscode.window.createOutputChannel("xmake/log");
-            this._logChannel.hide();
         }
         return this._logChannel;
     }
@@ -39,6 +38,7 @@ class Log implements vscode.Disposable {
     public initialize(context: vscode.ExtensionContext) {
         vscode.workspace.onDidChangeConfiguration(this.onConfigurationChanged, this, context.subscriptions);
         this.onConfigurationChanged();
+        this.logChannel.show();
     }
 
     // fetch the configuration: xmake.logLevel
@@ -52,7 +52,6 @@ class Log implements vscode.Disposable {
     public error(message: string): void {
         console.error(message);
         this.logChannel.appendLine(message); 
-        this.logChannel.show(false);
     }
 
     // show info
@@ -60,7 +59,6 @@ class Log implements vscode.Disposable {
         console.info(message);
         if (this.logLevel !== LogLevel.Minimal) {
             this.logChannel.appendLine(message);
-            this.logChannel.show(false);            
         }
     }
 
@@ -69,7 +67,6 @@ class Log implements vscode.Disposable {
         console.log(message);
         if (this.logLevel === LogLevel.Verbose) {
             this.logChannel.appendLine(message);
-            this.logChannel.show(false);            
         }
     }
 }
