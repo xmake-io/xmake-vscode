@@ -58,6 +58,7 @@ Please see [xmake-github](https://github.com/tboox/xmake) and [website](http://x
 * Build
 * Run and Debug
 * Record and Playback
+* Problem
 
 ## Colorization and Completion Lists
 
@@ -86,6 +87,10 @@ Please see [xmake-github](https://github.com/tboox/xmake) and [website](http://x
 ## Record and Playback
 
 <img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/record.gif" width="60%" />
+
+## Problem
+
+<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/problem.gif" width="60%" />
 
 ## Global Configuration
 
