@@ -96,7 +96,7 @@ export class XMake implements vscode.Disposable {
 
     // init watcher
     async initWatcher() {
-
+        
         // init file system watcher
         this._fileSystemWatcher = vscode.workspace.createFileSystemWatcher(path.join(config.workingDirectory, ".xmake", "*"));
 		this._fileSystemWatcher.onDidCreate(this.onFileCreate.bind(this));

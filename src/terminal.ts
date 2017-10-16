@@ -31,7 +31,7 @@ export class Terminal implements vscode.Disposable {
         // enable logfile
         this._logfile = path.join(config.workingDirectory, ".xmake", "vscode-build.log");
         if (os.platform() == "win32") {
-            this._terminal.sendText(`set XMAKE_LOGFILE="${this._logfile}"`);
+            this._terminal.sendText(`$env:XMAKE_LOGFILE="${this._logfile}"`);
         } else {
             this._terminal.sendText(`export XMAKE_LOGFILE="${this._logfile}"`);
         }

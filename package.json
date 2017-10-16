@@ -2,7 +2,7 @@
     "name": "xmake-vscode",
     "displayName": "XMake",
     "description": "Extended XMake support in Visual Studio Code",
-    "version": "0.0.18",
+    "version": "0.0.19",
     "publisher": "tboox",
     "icon": "res/logo256.png",
     "repository": {
@@ -295,6 +295,9 @@
         "watch": "tsc -watch -p ./",
         "postinstall": "node ./node_modules/vscode/bin/install",
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "dependencies": {
+        "encoding": "*"
     },
     "devDependencies": {
         "typescript": "^2.5.2",

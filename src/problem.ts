@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
+import * as encoding from 'encoding';
 import {log} from './log';
 import {config} from './config';
 
@@ -50,6 +51,8 @@ export class ProblemList implements vscode.Disposable {
                     // init regex of gcc/clang output
                     const rOutputGcc: RegExp = new RegExp("^(error: )?(.*?):([0-9]*):([0-9]*): (.*?): (.*)$");
                     
+                    // init regex of msvc output
+                    const rOutputMsvc: RegExp = new RegExp("(.*?)\\(([0-9]*)\\): (.*?) .*?: (.*)");                    
                     // init diagnostics map
                     let diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
     
@@ -58,15 +61,30 @@ export class ProblemList implements vscode.Disposable {
                         if (textLine) {
 
                             // parse warning and error from the given text line
-                            let matches: RegExpExecArray = rOutputGcc.exec(textLine);
+                            let matches: RegExpExecArray = os.platform() == "win32"? rOutputMsvc.exec(textLine) : rOutputGcc.exec(textLine);
                             if (matches) { 
 
                                 // get warning and error info
-                                let file = matches[2].trim();
-                                let line = matches[3].trim();
-                                let column = matches[4].trim();
-                                let kind = matches[5].toLocaleLowerCase().trim();
-                                let message = matches[6].trim();
+                                let file = "";
+                                let line = "0";
+                                let column = "0";
+                                let kind = "error";
+                                let message = "";
+                                if (os.platform() == "win32") {
+
+                                    file = matches[1].trim();
+                                    line = matches[2].trim();
+                                    kind = matches[3].toLocaleLowerCase().trim();
+                                    message = matches[4].trim();
+
+                                } else {
+
+                                    file = matches[2].trim();
+                                    line = matches[3].trim();
+                                    column = matches[4].trim();
+                                    kind = matches[5].toLocaleLowerCase().trim();
+                                    message = matches[6].trim();
+                                }
 
                                 // get uri of file
                                 let uri: vscode.Uri = vscode.Uri.file(path.isAbsolute(file)? file : path.join(config.workingDirectory, file));
