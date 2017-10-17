@@ -2,7 +2,7 @@
     "name": "xmake-vscode",
     "displayName": "XMake",
     "description": "Extended XMake support in Visual Studio Code",
-    "version": "0.0.19",
+    "version": "1.0.1",
     "publisher": "tboox",
     "icon": "res/logo256.png",
     "repository": {
@@ -12,6 +12,7 @@
     "bugs": {
         "url": "https://github.com/tboox/xmake-vscode/issues"
     },
+    "license": "Apache-2.0",
     "homepage": "https://github.com/tboox/xmake-vscode",
     "keywords": [
         "xmake",
@@ -297,7 +298,7 @@
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
     },
     "dependencies": {
-        "encoding": "*"
+        "encoding": "^0.1.12"
     },
     "devDependencies": {
         "typescript": "^2.5.2",
