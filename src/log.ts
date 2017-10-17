@@ -29,7 +29,7 @@ class Log implements vscode.Disposable {
     // get the log channel
     private get logChannel(): vscode.OutputChannel {
         if (!this._logChannel) {
-            this._logChannel = vscode.window.createOutputChannel("xmake/log");
+            this._logChannel = vscode.window.createOutputChannel("xmake");
         }
         return this._logChannel;
     }

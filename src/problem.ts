@@ -43,11 +43,20 @@ export class ProblemList implements vscode.Disposable {
         // exists logfile?
         if (logfile) {
 
-            // read the log file
-            fs.readFile(logfile, "utf8", (err, content) => {
+            // on windows?
+            const isWin = os.platform() == "win32";
 
+            // read the log file
+            fs.readFile(logfile, isWin? null : "utf8", (err, content) => {
+                    
                 if (!err && content) {
                     
+                    // convert gbk to utf8
+                    let text = content;
+                    if (isWin) {
+                        text = encoding.convert(content, "utf8", "gbk").toString();
+                    }
+
                     // init regex of gcc/clang output
                     const rOutputGcc: RegExp = new RegExp("^(error: )?(.*?):([0-9]*):([0-9]*): (.*?): (.*)$");
                     
@@ -57,11 +66,11 @@ export class ProblemList implements vscode.Disposable {
                     let diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
     
                     // parse errors and warnings
-                    content.split("\n").forEach(textLine => {
+                    text.split("\n").forEach(textLine => {
                         if (textLine) {
 
                             // parse warning and error from the given text line
-                            let matches: RegExpExecArray = os.platform() == "win32"? rOutputMsvc.exec(textLine) : rOutputGcc.exec(textLine);
+                            let matches: RegExpExecArray = isWin? rOutputMsvc.exec(textLine) : rOutputGcc.exec(textLine);
                             if (matches) { 
 
                                 // get warning and error info
@@ -70,7 +79,7 @@ export class ProblemList implements vscode.Disposable {
                                 let column = "0";
                                 let kind = "error";
                                 let message = "";
-                                if (os.platform() == "win32") {
+                                if (isWin) {
 
                                     file = matches[1].trim();
                                     line = matches[2].trim();
