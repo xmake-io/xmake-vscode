@@ -294,9 +294,12 @@ export class XMake implements vscode.Disposable {
         // configure it first
         this.onConfigure(target);
 
-        // add build level to command      
+        // add build level to command     
+        const targetname = this._option.get<string>("target");        
         const buildLevel = config.get<string>("buildLevel");
         let command = "xmake"  
+        if (targetname && targetname != "default")
+            command += " build";
         if (buildLevel == "verbose") 
             command += " -v";
         else if (buildLevel == "warning") 
@@ -305,9 +308,8 @@ export class XMake implements vscode.Disposable {
             command += " -v --backtrace";
 
         // add build target to command
-        const targetname = this._option.get<string>("target");
         if (targetname && targetname != "default")
-            command += ` build ${targetname}`;
+            command += ` ${targetname}`;
         else if (targetname == "all")
             command += " -a";
 
