@@ -180,7 +180,9 @@ export class XMake implements vscode.Disposable {
         vscode.languages.registerCompletionItemProvider("xmake", new Completion());
 
         // init terminal
-        this._terminal = new Terminal();
+        if (!this._terminal) {
+            this._terminal = new Terminal();
+        }
 
         // init problems
         this._problems = new ProblemList();
@@ -214,6 +216,11 @@ export class XMake implements vscode.Disposable {
     // on quick start
     async onQuickStart(target?: string) {
 
+        // init terminal
+        if (!this._terminal) {
+            this._terminal = new Terminal();
+        }
+        
         // auto-generate a new xmake.lua
         this._terminal.execute("xmake f -y");
     }

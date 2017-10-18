@@ -50,6 +50,7 @@ Please see [xmake-github](https://github.com/tboox/xmake) and [website](http://x
 
 ## Features
 
+* Quickstart
 * Colorization
 * Completion Lists
 * StatusBar
@@ -59,6 +60,10 @@ Please see [xmake-github](https://github.com/tboox/xmake) and [website](http://x
 * Run and Debug
 * Record and Playback
 * Problem
+
+## Quickstart
+
+<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/quickstart.gif" width="60%" />
 
 ## Colorization and Completion Lists
 
