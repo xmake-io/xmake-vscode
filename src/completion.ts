@@ -7,7 +7,7 @@ import {log} from './log';
 // get lua keyword list
 function getLuaKeywordList(): Promise<string> {
     return new Promise(function (resolve, reject) {
-        resolve(["if", "function", "for", "local", "else", "elseif", "then", "end", "nil", "do"].join('\n'));
+        resolve(["if", "function", "for", "local", "else", "elseif", "then", "end", "nil", "do", "while"].join('\n'));
     });
 }
 
@@ -34,7 +34,7 @@ function insertLuaKeywordText(word: string) {
                         for: word + ' ${1} in ${2} do\n\t\nend',
                         while: word + ' ${1} do\n\t\nend',
                         function: word + ' ${1}(${2}) \n\t\nend'};
-    return snippets[word];
+    return snippets[word]? snippets[word] : word + ' ${1}';
 }
 
 // insert xmake command text
