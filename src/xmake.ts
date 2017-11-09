@@ -597,7 +597,7 @@ export class XMake implements vscode.Disposable {
                 arch = (plat == "windows"? os.arch() : {x64: 'x86_64', x86: 'i386'}[os.arch()]);
             }
             else {
-                arch = {windows: "x86", macosx: "x86_64", linux: "x86_64", mingw: "x86_64", iphoneos: "arm64", watchos: "armv7s", android: "armv7-a"}[plat];
+                arch = {windows: "x86", macosx: "x86_64", linux: "x86_64", mingw: "x86_64", iphoneos: "arm64", watchos: "armv7k", android: "armv7-a"}[plat];
             }
             if (arch && arch != "") {
                 this._option.set("arch", arch);
@@ -633,7 +633,7 @@ export class XMake implements vscode.Disposable {
             items.push({label: "x86_64", description: "The x86_64 Architecture"});
         }
         else if (plat == "watchos") {
-            items.push({label: "armv7s", description: "The armv7s Architecture"});
+            items.push({label: "armv7k", description: "The armv7s Architecture"});
             items.push({label: "i386", description: "The i386 Architecture"});
         }
         else if (plat == "android") {

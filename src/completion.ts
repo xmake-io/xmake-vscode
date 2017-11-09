@@ -7,7 +7,7 @@ import {log} from './log';
 // get lua keyword list
 function getLuaKeywordList(): Promise<string> {
     return new Promise(function (resolve, reject) {
-        resolve(["if", "function", "for", "local", "else", "elseif", "then", "end", "nil", "do", "while"].join('\n'));
+        resolve(["if", "function", "for", "local", "else", "elseif", "then", "end", "nil", "true", "false", "do", "while"].join('\n'));
     });
 }
 
