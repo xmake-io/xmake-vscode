@@ -167,6 +167,15 @@ export class XMake implements vscode.Disposable {
         // trace
         log.verbose('start!');
 
+        // check xmake
+        /*
+        if (0 != (await process.runv("xmake", ["--version"], {}, config.workingDirectory)).retval) {
+            if (!!(await vscode.window.showErrorMessage('xmake not found!',
+                'Access http://xmake.io to download and install xmake first!'))) {
+            }
+            return;
+        }*/
+
         // valid xmake project?
         if (!fs.existsSync(path.join(config.workingDirectory, "xmake.lua"))) {
             if (!!(await vscode.window.showErrorMessage('xmake.lua not found!',
@@ -253,6 +262,9 @@ export class XMake implements vscode.Disposable {
             if (config.buildDirectory != "" && config.buildDirectory != path.join(vscode.workspace.rootPath, "build")) {
                 command += ` -o ${config.buildDirectory}`
             }
+            if (config.additionalConfigArguments) {
+                command += ` ${config.additionalConfigArguments}`
+            }
 
             // configure it
             this._terminal.execute(command);
@@ -274,6 +286,9 @@ export class XMake implements vscode.Disposable {
         let command = `xmake f -c`;
         if (config.buildDirectory != "" && config.buildDirectory != path.join(vscode.workspace.rootPath, "build")) {
             command += ` -o ${config.buildDirectory}`
+        }
+        if (config.additionalConfigArguments) {
+            command += ` ${config.additionalConfigArguments}`
         }
  
         // configure it

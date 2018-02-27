@@ -2,7 +2,7 @@
     "name": "xmake-vscode",
     "displayName": "XMake",
     "description": "Extended XMake support in Visual Studio Code",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "publisher": "tboox",
     "icon": "res/logo256.png",
     "repository": {
@@ -286,6 +286,11 @@
                     "type": "string",
                     "default": "",
                     "description": "The Android NDK Directory"
+                },
+                "xmake.additionalConfigArguments": {
+                    "type": "string",
+                    "default": "",
+                    "description": "The Additional Config Arguments, .e.g --cc=gcc --cxflags=\"-DDEBUG\""
                 }
             }
         }

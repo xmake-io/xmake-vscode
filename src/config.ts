@@ -46,6 +46,11 @@ export class Config {
     get androidNDKDirectory(): string {
         return utils.replaceVars(this.get<string>("androidNDKDirectory"));
     }
+       
+    // the additional config arguments
+    get additionalConfigArguments(): string {
+        return utils.replaceVars(this.get<string>("additionalConfigArguments"));
+    }
 }
 
 // init the global config
