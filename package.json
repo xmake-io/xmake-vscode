@@ -2,7 +2,7 @@
     "name": "xmake-vscode",
     "displayName": "XMake",
     "description": "Extended XMake support in Visual Studio Code",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "publisher": "tboox",
     "icon": "res/logo256.png",
     "repository": {
@@ -286,6 +286,16 @@
                     "type": "string",
                     "default": "",
                     "description": "The Android NDK Directory"
+                },
+                "xmake.QtDirectory": {
+                    "type": "string",
+                    "default": "",
+                    "description": "The Qt Directory"
+                },
+                "xmake.WDKDirectory": {
+                    "type": "string",
+                    "default": "",
+                    "description": "The WDK Directory"
                 },
                 "xmake.additionalConfigArguments": {
                     "type": "string",

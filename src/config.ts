@@ -47,6 +47,16 @@ export class Config {
         return utils.replaceVars(this.get<string>("androidNDKDirectory"));
     }
        
+    // the qt directory
+    get QtDirectory(): string {
+        return utils.replaceVars(this.get<string>("QtDirectory"));
+    }
+         
+    // the wdk directory
+    get WDKDirectory(): string {
+        return utils.replaceVars(this.get<string>("WDKDirectory"));
+    }
+
     // the additional config arguments
     get additionalConfigArguments(): string {
         return utils.replaceVars(this.get<string>("additionalConfigArguments"));

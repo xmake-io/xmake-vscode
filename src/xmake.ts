@@ -82,7 +82,7 @@ export class XMake implements vscode.Disposable {
         }
 
         // init architecture
-        const arch = cacheJson["arch"]? cacheJson["arch"] : (plat == "windows"? os.arch() : {x64: 'x86_64', x86: 'i386'}[os.arch()]);
+        const arch = cacheJson["arch"]? cacheJson["arch"] : (plat == "windows"? "x86" : {x64: 'x86_64', x86: 'i386'}[os.arch()]);
         if (arch) {
             this._option.set("arch", arch);
             this._status.arch = arch;
@@ -259,8 +259,14 @@ export class XMake implements vscode.Disposable {
             if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
                 command += ` --ndk=\"${config.androidNDKDirectory}\"`;
             }
+            if (config.QtDirectory != "") {
+                command += ` --qt=\"${config.QtDirectory}\"`;
+            }
+            if (config.WDKDirectory != "") {
+                command += ` --wdk=\"${config.WDKDirectory}\"`;
+            }
             if (config.buildDirectory != "" && config.buildDirectory != path.join(vscode.workspace.rootPath, "build")) {
-                command += ` -o ${config.buildDirectory}`
+                command += ` -o \"${config.buildDirectory}\"`
             }
             if (config.additionalConfigArguments) {
                 command += ` ${config.additionalConfigArguments}`
@@ -268,6 +274,16 @@ export class XMake implements vscode.Disposable {
 
             // configure it
             this._terminal.execute(command);
+
+            /* patch some empty characters to fix twice commands bug 
+             *
+             * terminal.execute("xmake f ..")
+             * terminal.execute("xmake")
+             * 
+             * $ xmake f ..
+             * $ ake
+             */
+            this._terminal.execute("        "); 
 
             // mark as not changed
             this._optionChanged = false;
@@ -285,7 +301,7 @@ export class XMake implements vscode.Disposable {
         // make command
         let command = `xmake f -c`;
         if (config.buildDirectory != "" && config.buildDirectory != path.join(vscode.workspace.rootPath, "build")) {
-            command += ` -o ${config.buildDirectory}`
+            command += ` -o \"${config.buildDirectory}\"`
         }
         if (config.additionalConfigArguments) {
             command += ` ${config.additionalConfigArguments}`
@@ -328,7 +344,7 @@ export class XMake implements vscode.Disposable {
         else if (targetname == "all")
             command += " -a";
 
-        // build it
+        // build it 
         this._terminal.execute(command); 
     }
 
@@ -472,7 +488,7 @@ export class XMake implements vscode.Disposable {
         else if (targetname == "all")
             command += " -a";
         if (config.installDirectory != "")
-            command += ` -o ${config.installDirectory}`;
+            command += ` -o \"${config.installDirectory}\"`;
 
         // install it
         this._terminal.execute(command);
@@ -497,7 +513,7 @@ export class XMake implements vscode.Disposable {
         if (targetname && targetname != "default")
             command += ` ${targetname}`;
         if (config.installDirectory != "")
-            command += ` --installdir=${config.installDirectory}`;
+            command += ` --installdir=\"${config.installDirectory}\"`;
 
         // uninstall it
         this._terminal.execute(command);  
@@ -609,7 +625,7 @@ export class XMake implements vscode.Disposable {
             let arch = "";
             const host = {win32: 'windows', darwin: 'macosx', linux: 'linux'}[os.platform()];
             if (plat == host) {
-                arch = (plat == "windows"? os.arch() : {x64: 'x86_64', x86: 'i386'}[os.arch()]);
+                arch = (plat == "windows"? "x86" : {x64: 'x86_64', x86: 'i386'}[os.arch()]);
             }
             else {
                 arch = {windows: "x86", macosx: "x86_64", linux: "x86_64", mingw: "x86_64", iphoneos: "arm64", watchos: "armv7k", android: "armv7-a"}[plat];
