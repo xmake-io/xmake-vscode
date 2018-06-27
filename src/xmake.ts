@@ -11,6 +11,7 @@ import {Terminal} from './terminal';
 import {Status} from './status';
 import {Option} from './option';
 import {ProblemList} from './problem';
+import {Debugger} from './debugger';
 import {Completion} from './completion';
 import * as process from './process';
 import * as utils from './utils';
@@ -34,6 +35,9 @@ export class XMake implements vscode.Disposable {
 
     // the problems
     private _problems: ProblemList;
+
+    // the debugger
+    private _debugger: Debugger;
 
     // the terminal
     private _terminal: Terminal;
@@ -64,6 +68,7 @@ export class XMake implements vscode.Disposable {
         this._status.dispose();
         this._option.dispose();
         this._problems.dispose();
+        this._debugger.dispose();
         this._fileSystemWatcher.dispose();
     }
 
@@ -195,6 +200,9 @@ export class XMake implements vscode.Disposable {
 
         // init problems
         this._problems = new ProblemList();
+
+        // init debugger
+        this._debugger = new Debugger();
         
         // init status
         this._status = new Status();
@@ -524,20 +532,59 @@ export class XMake implements vscode.Disposable {
        
         // this plugin enabled?
         if (!this._enabled) {
-            return
+            return ;
+        }
+
+        /* cpptools externsions not found?
+         *
+         * see https://github.com/Microsoft/vscode-cpptools
+         */
+        let extension = vscode.extensions.getExtension("ms-vscode.cpptools"); 
+        if (!extension) { 
+
+            // configure it first
+            this.onConfigure(target);
+            
+            // get target name 
+            const targetname = this._option.get<string>("target");
+            
+            // debug it
+            if (targetname && targetname != "default")
+                this._terminal.execute(`xmake r -d ${targetname}`);
+            else
+                this._terminal.execute("xmake r -d");
+
+            return ;
+        }
+
+        // active cpptools externsions
+        if (!extension.isActive) {
+            extension.activate();
+        }
+
+        // option changed?
+        if (this._optionChanged) {
+            await vscode.window.showErrorMessage('Configuration have been changed, please rebuild program first!');
+            return ;
         }
  
-        // configure it first
-        this.onConfigure(target);
-        
         // get target name 
-        const targetname = this._option.get<string>("target");
-        
-        // debug it
-        if (targetname && targetname != "default")
-            this._terminal.execute(`xmake r -d ${targetname}`);
-        else
-            this._terminal.execute("xmake r -d");
+        var targetName = this._option.get<string>("target");
+        if (!targetName) targetName = "default";
+
+        // get target program 
+        var targetProgram = null;
+        let getTargetPathScript = path.join(__dirname, `../../assets/targetpath.lua`);
+        if (fs.existsSync(getTargetPathScript)) {
+            targetProgram = (await process.iorunv("xmake", ["l", getTargetPathScript, targetName], {}, config.workingDirectory)).stdout.trim();
+        }
+
+        // start debugging
+        if (targetProgram && fs.existsSync(targetProgram)) {
+            this._debugger.startDebugging(targetName, targetProgram);
+        } else {
+            await vscode.window.showErrorMessage('The target program not found!');
+        }
     }
 
     // on macro begin
