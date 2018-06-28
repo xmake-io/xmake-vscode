@@ -4,6 +4,7 @@
 import * as vscode from 'vscode';
 import * as os from 'os';
 import * as path from 'path';
+import * as utils from './utils';
 import {log} from './log';
 import {config} from './config';
 
@@ -23,8 +24,15 @@ export class Terminal implements vscode.Disposable {
         this._terminal = vscode.window.createTerminal({name: "xmake"});
         this._terminal.hide();
 
+        // enter the project root directory
+        this.enterProjectRoot(false);
+    }
+
+    // enter the project root directory
+    public enterProjectRoot(force: boolean) {
+    
         // enter the working directory
-        if (vscode.workspace.rootPath !== config.workingDirectory) {
+        if (force || utils.getProjectRoot() !== config.workingDirectory) {
             this._terminal.sendText(`cd ${config.workingDirectory}`);
         }
 

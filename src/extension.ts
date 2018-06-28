@@ -37,6 +37,7 @@ export async function activate(context: vscode.ExtensionContext) {
         'onMacroEnd',
         'onMacroRun',
         'onRunLastCommand',
+        'setProjectRoot',
         'setTargetPlat',
         'setTargetArch',
         'setBuildMode',

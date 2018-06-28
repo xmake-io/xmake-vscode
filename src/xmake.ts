@@ -169,8 +169,13 @@ export class XMake implements vscode.Disposable {
     // start xmake plugin
     async start(): Promise<void> {
 
+        // check project 
+        if (!utils.getProjectRoot()) {
+            return ;
+        }
+
         // trace
-        log.verbose('start!');
+        log.verbose(`start in ${config.workingDirectory}`);
 
         // check xmake
         /*
@@ -215,6 +220,11 @@ export class XMake implements vscode.Disposable {
 
         // init watcher
         this.initWatcher();
+
+        // init project name
+        let projectName = path.basename(utils.getProjectRoot());
+        this._option.set("project", projectName);
+        this._status.project = projectName;
 
         // enable this plugin
         this._enabled = true;
@@ -273,7 +283,7 @@ export class XMake implements vscode.Disposable {
             if (config.WDKDirectory != "") {
                 command += ` --wdk=\"${config.WDKDirectory}\"`;
             }
-            if (config.buildDirectory != "" && config.buildDirectory != path.join(vscode.workspace.rootPath, "build")) {
+            if (config.buildDirectory != "" && config.buildDirectory != path.join(utils.getProjectRoot(), "build")) {
                 command += ` -o \"${config.buildDirectory}\"`
             }
             if (config.additionalConfigArguments) {
@@ -308,7 +318,7 @@ export class XMake implements vscode.Disposable {
 
         // make command
         let command = `xmake f -c`;
-        if (config.buildDirectory != "" && config.buildDirectory != path.join(vscode.workspace.rootPath, "build")) {
+        if (config.buildDirectory != "" && config.buildDirectory != path.join(utils.getProjectRoot(), "build")) {
             command += ` -o \"${config.buildDirectory}\"`
         }
         if (config.additionalConfigArguments) {
@@ -639,6 +649,41 @@ export class XMake implements vscode.Disposable {
 
         // end marco
         this._terminal.execute("xmake m ..");
+    }
+
+    // set project root directory
+    async setProjectRoot(target?: string) {
+        
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+
+        // no projects?
+        if (!vscode.workspace.workspaceFolders || !vscode.workspace.workspaceFolders.length) {
+            return;
+        }
+    
+        // select projects
+        let items: vscode.QuickPickItem[] = [];
+        vscode.workspace.workspaceFolders.forEach(workspaceFolder => {
+            items.push({label: workspaceFolder.name, description: workspaceFolder.uri.fsPath});
+        });      
+        const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+        if (chosen && chosen.label !== this._option.get<string>("project")) {
+
+            // update project
+            this._option.set("project", chosen.label);
+            utils.setProjectRoot(chosen.description);
+            this._status.project = chosen.label;
+            this._optionChanged = true;
+
+            // reload cache in new project root
+            this.loadCache();
+
+            // enter the new project root directory in terminal
+            this._terminal.enterProjectRoot(true);
+        }
     }
 
     // set target platform

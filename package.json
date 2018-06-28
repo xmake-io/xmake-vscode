@@ -45,6 +45,7 @@
         "onCommand:xmake.onMacroEnd",
         "onCommand:xmake.onMacroRun",
         "onCommand:xmake.onRunLastCommand",
+        "onCommand:xmake.setProjectRoot",
         "onCommand:xmake.setTargetPlat",
         "onCommand:xmake.setTargetArch",
         "onCommand:xmake.setBuildMode",

@@ -8,6 +8,9 @@ import {config} from './config';
 // the status class
 export class Status implements vscode.Disposable {
 
+    // the project button
+    private readonly _projectButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.6);
+
     // the platform button
     private readonly _platButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.5);
 
@@ -41,9 +44,14 @@ export class Status implements vscode.Disposable {
     // the constructor
     constructor() {
 
+        // init project button
+        this._projectButton.command = 'xmake.setProjectRoot';
+        this._projectButton.text = `XMake:`;
+        this._projectButton.tooltip = "Set the project root directory";
+
         // init platform button
         this._platButton.command = 'xmake.setTargetPlat';
-        this._platButton.text = `XMake: macosx`;
+        this._platButton.text = `macosx`;
         this._platButton.tooltip = "Set the target platform";
 
         // init architecture button
@@ -93,7 +101,8 @@ export class Status implements vscode.Disposable {
     // dispose all objects
     public dispose() {
 
-        for (const item of [this._platButton, 
+        for (const item of [this._projectButton,
+                            this._platButton, 
                             this._archButton,
                             this._modeButton,
                             this._buildButton, 
@@ -108,7 +117,8 @@ export class Status implements vscode.Disposable {
 
     // update visibility
     private updateVisibility() {
-        for (const item of [this._platButton, 
+        for (const item of [this._projectButton,
+                            this._platButton, 
                             this._archButton,
                             this._modeButton,
                             this._buildButton, 
@@ -136,9 +146,14 @@ export class Status implements vscode.Disposable {
         this.updateVisibility();
     }
     
+    // set the project root  
+    public set project(value: string) {
+        this._projectButton.text = `XMake: ${value}`;
+    }
+
     // set the target platform  
     public set plat(value: string) {
-        this._platButton.text = `XMake: ${value}`;
+        this._platButton.text = `${value}`;
     }
 
     // set the target architecture  
