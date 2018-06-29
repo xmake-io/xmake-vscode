@@ -33,7 +33,7 @@ export class Terminal implements vscode.Disposable {
     
         // enter the working directory
         if (force || utils.getProjectRoot() !== config.workingDirectory) {
-            this._terminal.sendText(`cd "${config.workingDirectory}"`);
+            this.execute(`cd "${config.workingDirectory}"`);
         }
 
         // enable logfile
@@ -41,17 +41,17 @@ export class Terminal implements vscode.Disposable {
         if (os.platform() == "win32") {
             switch (this.shellKind) {
                 case "powershell":
-                    this._terminal.sendText(`$env:XMAKE_LOGFILE="${this._logfile}"`);
+                    this.execute(`$env:XMAKE_LOGFILE="${this._logfile}"`);
                     break;
                 case "cmd":
-                    this._terminal.sendText(`set XMAKE_LOGFILE="${this._logfile}"`);
+                    this.execute(`set XMAKE_LOGFILE="${this._logfile}"`);
                     break;
                 case "bash":
-                    this._terminal.sendText(`export XMAKE_LOGFILE="${this._logfile}"`);
+                    this.execute(`export XMAKE_LOGFILE="${this._logfile}"`);
                     break;
             }
         } else {
-            this._terminal.sendText(`export XMAKE_LOGFILE="${this._logfile}"`);
+            this.execute(`export XMAKE_LOGFILE="${this._logfile}"`);
         }
     }
 
@@ -67,7 +67,17 @@ export class Terminal implements vscode.Disposable {
 
     // execute command string
     public execute(command: string) {
-        this._terminal.sendText(command); 
+
+        /* patch some empty characters to fix twice commands bug 
+            *
+            * terminal.execute("xmake f ..")
+            * terminal.execute("xmake")
+            * 
+            * $ xmake f ..
+            * $ ake
+            */
+        this._terminal.sendText(command);
+        this._terminal.sendText("        "); 
         this._terminal.show(true);
     }
 

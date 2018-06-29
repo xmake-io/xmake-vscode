@@ -293,16 +293,6 @@ export class XMake implements vscode.Disposable {
             // configure it
             this._terminal.execute(command);
 
-            /* patch some empty characters to fix twice commands bug 
-             *
-             * terminal.execute("xmake f ..")
-             * terminal.execute("xmake")
-             * 
-             * $ xmake f ..
-             * $ ake
-             */
-            this._terminal.execute("        "); 
-
             // mark as not changed
             this._optionChanged = false;
         }
