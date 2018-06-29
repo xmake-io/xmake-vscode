@@ -33,7 +33,7 @@ export class Terminal implements vscode.Disposable {
     
         // enter the working directory
         if (force || utils.getProjectRoot() !== config.workingDirectory) {
-            this._terminal.sendText(`cd ${config.workingDirectory}`);
+            this._terminal.sendText(`cd "${config.workingDirectory}"`);
         }
 
         // enable logfile
