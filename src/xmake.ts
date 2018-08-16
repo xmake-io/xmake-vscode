@@ -74,27 +74,35 @@ export class XMake implements vscode.Disposable {
 
     // load cache
     async loadCache() {
-       
-        // load cached configure
-        let cacheJson = (await process.iorunv("xmake", ["l", "-c", 'import("core.project.config"); config.load(); print("{\\\"plat\\\":\\\"$(plat)\\\", \\\"arch\\\":\\\"$(arch)\\\", \\\"mode\\\":\\\"$(mode)\\\"}")'], {}, config.workingDirectory)).stdout;
-        if (cacheJson) cacheJson = JSON.parse(cacheJson);
+
+        // load config cache
+        let cacheJson = {}
+        let getConfigPathScript = path.join(__dirname, `../../assets/config.lua`);
+        if (fs.existsSync(getConfigPathScript)) {
+            let configs = (await process.iorunv("xmake", ["l", getConfigPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            if (configs) {
+                configs = configs.split('__end__')[0].trim();
+                log.verbose(configs);
+                cacheJson = JSON.parse(configs);
+            }
+        }
 
         // init platform
-        const plat = cacheJson["plat"]? cacheJson["plat"] : {win32: 'windows', darwin: 'macosx', linux: 'linux'}[os.platform()];
+        const plat = ("plat" in cacheJson && cacheJson["plat"] != "")? cacheJson["plat"] : {win32: 'windows', darwin: 'macosx', linux: 'linux'}[os.platform()];
         if (plat) {
             this._option.set("plat", plat);
             this._status.plat = plat;
         }
 
         // init architecture
-        const arch = cacheJson["arch"]? cacheJson["arch"] : (plat == "windows"? "x86" : {x64: 'x86_64', x86: 'i386'}[os.arch()]);
+        const arch = ("arch" in cacheJson && cacheJson["arch"] != "")? cacheJson["arch"] : (plat == "windows"? "x86" : {x64: 'x86_64', x86: 'i386'}[os.arch()]);
         if (arch) {
             this._option.set("arch", arch);
             this._status.arch = arch;
         }
         
         // init build mode
-        const mode = cacheJson["mode"]? cacheJson["mode"] : "release";
+        const mode = ("mode" in cacheJson && cacheJson["mode"] != "")? cacheJson["mode"] : "release";
         this._option.set("mode", mode);
         this._status.mode = mode;
     }
@@ -181,7 +189,7 @@ export class XMake implements vscode.Disposable {
         /*
         if (0 != (await process.runv("xmake", ["--version"], {}, config.workingDirectory)).retval) {
             if (!!(await vscode.window.showErrorMessage('xmake not found!',
-                'Access http://xmake.io to download and install xmake first!'))) {
+                'Access https://xmake.io to download and install xmake first!'))) {
             }
             return;
         }*/
@@ -576,7 +584,10 @@ export class XMake implements vscode.Disposable {
         var targetProgram = null;
         let getTargetPathScript = path.join(__dirname, `../../assets/targetpath.lua`);
         if (fs.existsSync(getTargetPathScript)) {
-            targetProgram = (await process.iorunv("xmake", ["l", getTargetPathScript, targetName], {}, config.workingDirectory)).stdout.trim();
+            targetProgram = (await process.iorunv("xmake", ["l", getTargetPathScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            if (targetProgram) {
+                targetProgram = targetProgram.split('\n')[0].trim();
+            }
         }
 
         // start debugging
@@ -793,7 +804,14 @@ export class XMake implements vscode.Disposable {
         }
 
         // get target names
-        let targets = (await process.iorunv("xmake", ["l", "-c", 'import("core.project.config"); import("core.project.project"); config.load(); for name, _ in pairs((project.targets())) do print(name) end'], {}, config.workingDirectory)).stdout;
+        let targets = "";
+        let getTargetsPathScript = path.join(__dirname, `../../assets/targets.lua`);
+        if (fs.existsSync(getTargetsPathScript)) {
+            targets = (await process.iorunv("xmake", ["l", getTargetsPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            if (targets) {
+                targets = targets.split("__end__")[0].trim();
+            }
+        }
 
         // select target
         let items: vscode.QuickPickItem[] = [];
