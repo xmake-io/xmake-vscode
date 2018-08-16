@@ -62,9 +62,14 @@ export class Config {
         return utils.replaceVars(this.get<string>("additionalConfigArguments"));
     }
 
-    // the additional debugger target arguments
-    get additionalDebuggerTargetArguments(): string[] {
-        return this.get<string[]>("additionalDebuggerTargetArguments");
+    // the running targets arguments
+    get runningTargetsArguments(): {} {
+        return this.get<{}>("runningTargetsArguments");
+    }
+
+    // the debugging targets arguments
+    get debuggingTargetsArguments(): {} {
+        return this.get<{}>("debuggingTargetsArguments");
     }
 }
 

@@ -82,7 +82,6 @@ export class XMake implements vscode.Disposable {
             let configs = (await process.iorunv("xmake", ["l", getConfigPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
             if (configs) {
                 configs = configs.split('__end__')[0].trim();
-                log.verbose(configs);
                 cacheJson = JSON.parse(configs);
             }
         }
@@ -342,10 +341,10 @@ export class XMake implements vscode.Disposable {
         this.onConfigure(target);
 
         // add build level to command     
-        const targetname = this._option.get<string>("target");        
+        const targetName = this._option.get<string>("target");        
         const buildLevel = config.get<string>("buildLevel");
         let command = "xmake"  
-        if (targetname && targetname != "default")
+        if (targetName && targetName != "default")
             command += " build";
         if (buildLevel == "verbose") 
             command += " -v";
@@ -355,9 +354,9 @@ export class XMake implements vscode.Disposable {
             command += " -v --backtrace";
 
         // add build target to command
-        if (targetname && targetname != "default")
-            command += ` ${targetname}`;
-        else if (targetname == "all")
+        if (targetName && targetName != "default")
+            command += ` ${targetName}`;
+        else if (targetName == "all")
             command += " -a";
 
         // build it 
@@ -386,10 +385,10 @@ export class XMake implements vscode.Disposable {
             command += " -v --backtrace";
 
         // add build target to command
-        const targetname = this._option.get<string>("target");
-        if (targetname && targetname != "default")
-            command += ` ${targetname}`;
-        else if (targetname == "all")
+        const targetName = this._option.get<string>("target");
+        if (targetName && targetName != "default")
+            command += ` ${targetName}`;
+        else if (targetName == "all")
             command += " -a";
 
         // build it
@@ -408,11 +407,11 @@ export class XMake implements vscode.Disposable {
         this.onConfigure(target);
        
         // get target name 
-        const targetname = this._option.get<string>("target");
+        const targetName = this._option.get<string>("target");
         
         // clean it
-        if (targetname && targetname != "default")
-            this._terminal.execute(`xmake c ${targetname}`);
+        if (targetName && targetName != "default")
+            this._terminal.execute(`xmake c ${targetName}`);
         else this._terminal.execute("xmake c"); 
     }
 
@@ -428,11 +427,11 @@ export class XMake implements vscode.Disposable {
         this.onConfigure(target);
         
         // get target name 
-        const targetname = this._option.get<string>("target");
+        const targetName = this._option.get<string>("target");
         
         // clean all
-        if (targetname && targetname != "default")
-            this._terminal.execute(`xmake c -a ${targetname}`);
+        if (targetName && targetName != "default")
+            this._terminal.execute(`xmake c -a ${targetName}`);
         else this._terminal.execute("xmake c -a "); 
     }
 
@@ -448,14 +447,36 @@ export class XMake implements vscode.Disposable {
         this.onConfigure(target);
         
         // get target name 
-        const targetname = this._option.get<string>("target");
+        let targetName = this._option.get<string>("target");
+        if (!targetName) {
+            let getDefaultTargetPathScript = path.join(__dirname, `../../assets/default_target.lua`);
+            if (fs.existsSync(getDefaultTargetPathScript)) {
+                let result = (await process.iorunv("xmake", ["l", getDefaultTargetPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+                if (result) {
+                    targetName = result.split('__end__')[0].trim();
+                }
+            }    
+        }
+        
+        // get target arguments
+        let args = [];
+        if (targetName && targetName in config.debuggingTargetsArguments)
+            args = config.debuggingTargetsArguments[targetName];
+        else if ("default" in config.debuggingTargetsArguments)
+            args = config.debuggingTargetsArguments["default"];
+
+        // make command line arguments string
+        let argstr = "";
+        if (args.length > 0) {
+            argstr = '"' + args.join('" "') + '"';
+        }
         
         // run it
-        if (targetname && targetname != "default")
-            this._terminal.execute(`xmake r ${targetname}`);
-        else if (targetname == "all")
+        if (targetName && targetName != "default")
+            this._terminal.execute(`xmake r ${targetName} ${argstr}`);
+        else if (targetName == "all")
             this._terminal.execute("xmake r -a");
-        else this._terminal.execute("xmake r");   
+        else this._terminal.execute(`xmake r ${argstr}`);   
     }
 
     // on package target
@@ -470,13 +491,13 @@ export class XMake implements vscode.Disposable {
         this.onConfigure(target);
         
         // get target name 
-        const targetname = this._option.get<string>("target");
+        const targetName = this._option.get<string>("target");
         
         // make command
         let command = "xmake p"
-        if (targetname && targetname != "default")
-            command += ` ${targetname}`;
-        else if (targetname == "all")
+        if (targetName && targetName != "default")
+            command += ` ${targetName}`;
+        else if (targetName == "all")
             command += " -a";
 
         // package it
@@ -495,13 +516,13 @@ export class XMake implements vscode.Disposable {
         this.onConfigure(target);
          
         // get target name 
-        const targetname = this._option.get<string>("target");
+        const targetName = this._option.get<string>("target");
          
         // make command
         let command = "xmake install"
-        if (targetname && targetname != "default")
-            command += ` ${targetname}`;
-        else if (targetname == "all")
+        if (targetName && targetName != "default")
+            command += ` ${targetName}`;
+        else if (targetName == "all")
             command += " -a";
         if (config.installDirectory != "")
             command += ` -o \"${config.installDirectory}\"`;
@@ -522,12 +543,12 @@ export class XMake implements vscode.Disposable {
         this.onConfigure(target);
          
         // get target name 
-        const targetname = this._option.get<string>("target");
+        const targetName = this._option.get<string>("target");
          
         // make command
         let command = "xmake uninstall"
-        if (targetname && targetname != "default")
-            command += ` ${targetname}`;
+        if (targetName && targetName != "default")
+            command += ` ${targetName}`;
         if (config.installDirectory != "")
             command += ` --installdir=\"${config.installDirectory}\"`;
 
@@ -554,11 +575,11 @@ export class XMake implements vscode.Disposable {
             this.onConfigure(target);
             
             // get target name 
-            const targetname = this._option.get<string>("target");
+            const targetName = this._option.get<string>("target");
             
             // debug it
-            if (targetname && targetname != "default")
-                this._terminal.execute(`xmake r -d ${targetname}`);
+            if (targetName && targetName != "default")
+                this._terminal.execute(`xmake r -d ${targetName}`);
             else
                 this._terminal.execute("xmake r -d");
 

@@ -35,6 +35,13 @@ export class Debugger implements vscode.Disposable {
         if (!targetName) {
             targetName = path.basename(targetProgram);
         }
+
+        // get target arguments
+        let args = [];
+        if (targetName in config.debuggingTargetsArguments)
+            args = config.debuggingTargetsArguments[targetName];
+        else if ("default" in config.debuggingTargetsArguments)
+            args = config.debuggingTargetsArguments["default"];
         
         // init debug configuration
         var debugConfig: vscode.DebugConfiguration = null
@@ -44,7 +51,7 @@ export class Debugger implements vscode.Disposable {
                 type: 'cppdbg',
                 request: 'launch',
                 program: targetProgram,
-                args: config.additionalDebuggerTargetArguments,
+                args: args,
                 stopAtEntry: true,
                 cwd: path.dirname(targetProgram),
                 environment: [],
@@ -58,7 +65,7 @@ export class Debugger implements vscode.Disposable {
                 type: 'cppdbg',
                 request: 'launch',
                 program: targetProgram,
-                args: config.additionalDebuggerTargetArguments,
+                args: args,
                 stopAtEntry: true,
                 cwd: path.dirname(targetProgram),
                 environment: [],

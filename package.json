@@ -303,10 +303,15 @@
                     "default": "",
                     "description": "The Additional Config Arguments, .e.g --cc=gcc --cxflags=\"-DDEBUG\""
                 },
-                "xmake.additionalDebuggerTargetArguments": {
-                    "type": "array",
-                    "default": [],
-                    "description": "The Additional Debugger Target Arguments"
+                "xmake.runningTargetsArguments": {
+                    "type": "dictionary",
+                    "default": {"default":[]},
+                    "description": "The Running Targets Arguments, .e.g {\"targetName\": [\"args\", \"...\"]}"
+                },
+                "xmake.debuggingTargetsArguments": {
+                    "type": "dictionary",
+                    "default": {"default":[]},
+                    "description": "The Debugging Targets Arguments, .e.g {\"targetName\": [\"args\", \"...\"]}"
                 }
             }
         }
