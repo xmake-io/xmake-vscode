@@ -61,6 +61,11 @@ export class Config {
     get additionalConfigArguments(): string {
         return utils.replaceVars(this.get<string>("additionalConfigArguments"));
     }
+
+    // the additional debugger target arguments
+    get additionalDebuggerTargetArguments(): string[] {
+        return this.get<string[]>("additionalDebuggerTargetArguments");
+    }
 }
 
 // init the global config
