@@ -185,13 +185,12 @@ export class XMake implements vscode.Disposable {
         log.verbose(`start in ${config.workingDirectory}`);
 
         // check xmake
-        /*
-        if (0 != (await process.runv("xmake", ["--version"], {}, config.workingDirectory)).retval) {
+        if (0 != (await process.runv("xmake", ["--version"], {"COLORTERM": "nocolor"}, config.workingDirectory)).retval) {
             if (!!(await vscode.window.showErrorMessage('xmake not found!',
                 'Access https://xmake.io to download and install xmake first!'))) {
             }
             return;
-        }*/
+        }
 
         // valid xmake project?
         if (!fs.existsSync(path.join(config.workingDirectory, "xmake.lua"))) {
@@ -235,6 +234,7 @@ export class XMake implements vscode.Disposable {
 
         // enable this plugin
         this._enabled = true;
+    
     }
 
     // shutdown xmake plugin
