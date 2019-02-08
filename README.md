@@ -1,6 +1,6 @@
 <div align="center">
   <a href="http://xmake.io">
-    <img width="200" heigth="200" src="https://github.com/tboox/xmake-vscode/raw/master/res/logo256.png">
+    <img width="200" heigth="200" src="https://github.com/xmake-io/xmake-vscode/raw/master/res/logo256.png">
   </a>  
 
   <h1>xmake-vscode</h1>
@@ -17,7 +17,7 @@
     </a>
   </div>
   <div>
-    <a href="https://github.com/tboox/xmake-vscode/blob/master/LICENSE.md">
+    <a href="https://github.com/xmake-io/xmake-vscode/blob/master/LICENSE.md">
       <img src="https://img.shields.io/github/license/tboox/xmake-vscode.svg?colorB=f48041&style=flat-square" alt="license" />
     </a>
     <a href="https://www.reddit.com/r/tboox/">
@@ -44,9 +44,9 @@
 
 A XMake integration in Visual Studio Code. 
 
-You need install [xmake](https://github.com/tboox/xmake) first and a project with `xmake.lua`.
+You need install [xmake](https://github.com/xmake-io/xmake) first and a project with `xmake.lua`.
 
-Please see [xmake-github](https://github.com/tboox/xmake) and [website](http://xmake.io) if you want to known more about xmake.
+Please see [xmake-github](https://github.com/xmake-io/xmake) and [website](http://xmake.io) if you want to known more about xmake.
 
 ## Features
 
