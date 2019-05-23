@@ -783,10 +783,10 @@ export class XMake implements vscode.Disposable {
         }
         else if (plat == "android") {
             items.push({label: "armv5te", description: "The armv5te Architecture"});
-            items.push({label: "armv6", description: "The armv6 Architecture"});
             items.push({label: "armv7-a", description: "The armv7-a Architecture"});
-            items.push({label: "armv8-a", description: "The armv8-a Architecture"});
             items.push({label: "arm64-v8a", description: "The arm64-v8a Architecture"});
+            items.push({label: "i386", description: "The i386 Architecture"});
+            items.push({label: "x86_64", description: "The x86_64 Architecture"});
         }
         const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
         if (chosen && chosen.label !== this._option.get<string>("arch")) {
