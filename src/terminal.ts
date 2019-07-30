@@ -46,8 +46,12 @@ export class Terminal implements vscode.Disposable {
                 case "cmd":
                     this.execute(`set XMAKE_LOGFILE="${this._logfile}"`);
                     break;
-                case "bash":
-                    this.execute(`export XMAKE_LOGFILE="${this._logfile}"`);
+                case "bash": 
+                    var p = this._logfile;
+                    if (p.length > 1 && p[1] == ':') {
+                        p = "/mnt/" + p[0].toLowerCase() + "/" + p.split(path.win32.sep).splice(1).join('/');
+                    }
+                    this.execute(`export XMAKE_LOGFILE="${p}"`);
                     break;
             }
         } else {
