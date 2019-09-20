@@ -15,6 +15,7 @@ import {Debugger} from './debugger';
 import {Completion} from './completion';
 import * as process from './process';
 import * as utils from './utils';
+import { create } from 'domain';
 
 // the option arguments
 export interface OptionArguments extends vscode.QuickPickItem {
@@ -116,6 +117,16 @@ export class XMake implements vscode.Disposable {
         this._fileSystemWatcher.onDidDelete(this.onFileDelete.bind(this));
     }
 
+    // refresh folder
+    async refreshFolder() {
+
+        // wait some times
+        await utils.sleep(2000);       
+        
+        // refresh it
+        vscode.commands.executeCommand('workbench.files.action.refreshFilesExplorer');
+    }
+
     // on File Create
     async onFileCreate(affectedPath: vscode.Uri) {
 
@@ -173,32 +184,12 @@ export class XMake implements vscode.Disposable {
         }
     }
 
-    // start xmake plugin
-    async start(): Promise<void> {
+    // start plugin
+    async startPlugin() {
 
-        // check project 
-        if (!utils.getProjectRoot()) {
+        // has been enabled?
+        if (this._enabled) {
             return ;
-        }
-
-        // trace
-        log.verbose(`start in ${config.workingDirectory}`);
-
-        // check xmake
-        if (0 != (await process.runv("xmake", ["--version"], {"COLORTERM": "nocolor"}, config.workingDirectory)).retval) {
-            if (!!(await vscode.window.showErrorMessage('xmake not found!',
-                'Access https://xmake.io to download and install xmake first!'))) {
-            }
-            return;
-        }
-
-        // valid xmake project?
-        if (!fs.existsSync(path.join(config.workingDirectory, "xmake.lua"))) {
-            if (!!(await vscode.window.showErrorMessage('xmake.lua not found!',
-                'Quickstart a new XMake project'))) {
-                await this.onQuickStart();
-            }
-            else return;
         }
 
         // init languages
@@ -234,7 +225,86 @@ export class XMake implements vscode.Disposable {
 
         // enable this plugin
         this._enabled = true;
-    
+    }
+
+    // create project
+    async createProject() {
+
+        // select language
+        let getLanguagesScript = path.join(__dirname, `../../assets/languages.lua`);
+        let gettemplatesScript = path.join(__dirname, `../../assets/templates.lua`);
+        if (fs.existsSync(getLanguagesScript) && fs.existsSync(gettemplatesScript)) {
+            let result = (await process.iorunv("xmake", ["l", getLanguagesScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            if (result) {
+                let items: vscode.QuickPickItem[] = [];
+                result.split("\n").forEach(element => {
+                    items.push({label: element, description: ""});
+                }); 
+                const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+                if (chosen) {
+
+                    // select template
+                    let result2 = (await process.iorunv("xmake", ["l", gettemplatesScript, chosen.label], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+                    if (result2) {
+                        let items2: vscode.QuickPickItem[] = [];
+                        result2.split("\n").forEach(element => {
+                            items2.push({label: element, description: ""});
+                        }); 
+                        const chosen2: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items2);
+                        if (chosen2) {
+
+                            // create project
+                            if (!this._terminal) {
+                                this._terminal = new Terminal();
+                            }
+                            this._terminal.execute(`xmake create -t ${chosen2.label} -l ${chosen.label} -P ${config.workingDirectory}`);
+
+                            // start plugin
+                            this.startPlugin();
+
+                            // refresh folder
+                            await this.refreshFolder();
+                        }
+                    }        
+                }
+            }
+        }    
+    }
+
+    // start xmake plugin
+    async start(): Promise<void> {
+
+        // open project directory first!
+        if (!utils.getProjectRoot()) {
+            if (!!(await vscode.window.showErrorMessage('no opened folder!',
+            'Open a xmake project directory first!'))) {
+                vscode.commands.executeCommand('vscode.openFolder');
+            }
+            return;
+        }
+
+        // trace
+        log.verbose(`start in ${config.workingDirectory}`);
+
+        // check xmake
+        if (0 != (await process.runv("xmake", ["--version"], {"COLORTERM": "nocolor"}, config.workingDirectory)).retval) {
+            if (!!(await vscode.window.showErrorMessage('xmake not found!',
+                'Access https://xmake.io to download and install xmake first!'))) {
+            }
+            return;
+        }
+
+        // valid xmake project?
+        if (!fs.existsSync(path.join(config.workingDirectory, "xmake.lua"))) {
+            if (!!(await vscode.window.showErrorMessage('xmake.lua not found!',
+                'Create a new xmake project'))) {
+                await this.createProject();
+            }
+            return;
+        }
+
+        // start plugin
+        this.startPlugin();
     }
 
     // shutdown xmake plugin
@@ -247,16 +317,15 @@ export class XMake implements vscode.Disposable {
         this._enabled = false;
     }
 
-    // on quick start
-    async onQuickStart(target?: string) {
-
-        // init terminal
-        if (!this._terminal) {
-            this._terminal = new Terminal();
+    // on create project
+    async onCreateProject(target?: string) {
+        if (this._enabled) {
+            this.createProject();
         }
-        
-        // auto-generate a new xmake.lua
-        this._terminal.execute("xmake f -y");
+    }
+
+    // on new files
+    async onNewFiles(target?: string) {
     }
 
     // on configure project

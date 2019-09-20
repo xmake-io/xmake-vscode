@@ -29,7 +29,8 @@
     ],
     "activationEvents": [
         "workspaceContains:xmake.lua",
-        "onCommand:xmake.onQuickStart",
+        "onCommand:xmake.onCreateProject",
+        "onCommand:xmake.onNewFiles",
         "onCommand:xmake.onConfigure",
         "onCommand:xmake.onCleanConfigure",
         "onCommand:xmake.onBuild",
@@ -74,8 +75,13 @@
         ],
         "commands": [
             {
-                "command": "xmake.onQuickStart",
-                "title": "QuickStart",
+                "command": "xmake.onCreateProject",
+                "title": "CreateProject",
+                "category": "XMake"
+            },
+            {
+                "command": "xmake.onNewFiles",
+                "title": "NewFiles",
                 "category": "XMake"
             },
             {
@@ -177,7 +183,10 @@
         "menus": {
             "commandPalette": [
                 {
-                    "command": "xmake.onQuickStart"
+                    "command": "xmake.onCreateProject"
+                },
+                {
+                    "command": "xmake.onNewFiles"
                 },
                 {
                     "command": "xmake.onConfigure"
