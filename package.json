@@ -340,10 +340,10 @@
         "encoding": "^0.1.12"
     },
     "devDependencies": {
-        "typescript": "^2.5.2",
-        "vscode": "^1.1.5",
-        "mocha": "^3.5.0",
+        "@types/mocha": "^2.2.42",
         "@types/node": "^7.0.43",
-        "@types/mocha": "^2.2.42"
+        "mocha": "^6.2.0",
+        "typescript": "^2.5.2",
+        "vscode": "^1.1.36"
     }
 }
