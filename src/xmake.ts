@@ -237,7 +237,7 @@ export class XMake implements vscode.Disposable {
             if (result) {
                 let items: vscode.QuickPickItem[] = [];
                 result.split("\n").forEach(element => {
-                    items.push({label: element, description: ""});
+                    items.push({label: element.trim(), description: ""});
                 }); 
                 const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
                 if (chosen) {
@@ -247,7 +247,7 @@ export class XMake implements vscode.Disposable {
                     if (result2) {
                         let items2: vscode.QuickPickItem[] = [];
                         result2.split("\n").forEach(element => {
-                            items2.push({label: element, description: ""});
+                            items2.push({label: element.trim(), description: ""});
                         }); 
                         const chosen2: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items2);
                         if (chosen2) {
@@ -337,7 +337,7 @@ export class XMake implements vscode.Disposable {
             if (result) {
                 let items: vscode.QuickPickItem[] = [];
                 result.split("\n").forEach(element => {
-                    items.push({label: element, description: ""});
+                    items.push({label: element.trim(), description: ""});
                 }); 
                 const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
                 if (chosen) {
