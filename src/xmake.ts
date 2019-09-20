@@ -15,7 +15,6 @@ import {Debugger} from './debugger';
 import {Completion} from './completion';
 import * as process from './process';
 import * as utils from './utils';
-import { create } from 'domain';
 
 // the option arguments
 export interface OptionArguments extends vscode.QuickPickItem {
@@ -326,6 +325,34 @@ export class XMake implements vscode.Disposable {
 
     // on new files
     async onNewFiles(target?: string) {
+
+        if (!this._enabled) {
+            return ;
+        }
+
+        // select files
+        let getFilesListScript = path.join(__dirname, `../../assets/newfiles.lua`);
+        if (fs.existsSync(getFilesListScript) && fs.existsSync(getFilesListScript)) {
+            let result = (await process.iorunv("xmake", ["l", getFilesListScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            if (result) {
+                let items: vscode.QuickPickItem[] = [];
+                result.split("\n").forEach(element => {
+                    items.push({label: element, description: ""});
+                }); 
+                const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+                if (chosen) {
+                    let filesdir = path.join(__dirname, "..", "..", "assets", "newfiles", chosen.label);
+                    if (fs.existsSync(filesdir)) {
+
+                        // copy files
+                        await process.runv("xmake", ["l", "os.cp", path.join(filesdir, "*"), config.workingDirectory], {"COLORTERM": "nocolor"}, config.workingDirectory);
+
+                        // refresh folder
+                        await this.refreshFolder();
+                    }
+                }
+            }
+        }
     }
 
     // on configure project
