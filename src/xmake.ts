@@ -936,6 +936,7 @@ export class XMake implements vscode.Disposable {
         items.push({label: "all", description: "All Targets"});
         if (targets) {
             targets.split('\n').forEach(element => {
+                element = element.trim();
                 if (element.length > 0)
                     items.push({label: element, description: "The Project Target: " + element}); 
             });
