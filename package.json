@@ -2,7 +2,7 @@
     "name": "xmake-vscode",
     "displayName": "XMake",
     "description": "Extended XMake support in Visual Studio Code",
-    "version": "1.2.3",
+    "version": "1.2.4",
     "publisher": "tboox",
     "icon": "res/logo256.png",
     "repository": {
@@ -325,6 +325,23 @@
                         "default": []
                     },
                     "description": "The Debugging Targets Arguments, .e.g {\"targetName\": [\"args\", \"...\"]}"
+                },
+                "xmake.debugConfigType": {
+                    "type": "string",
+                    "default": "default",
+                    "enum": [
+                        "default",
+                        "codelldb",
+                        "custom"
+                    ],
+                    "description": "The Debugging Configuration Type, .e.g default|codelldb|custom"
+                },
+                "xmake.customDebugConfig": {
+                    "type": "object",
+                    "default": {
+                        "type": "cppdbg"
+                    },
+                    "description": "The Custom Debugging Configurations when xmake.debugConfigType is custom"
                 }
             }
         }

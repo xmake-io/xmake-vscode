@@ -6,8 +6,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as encoding from 'encoding';
-import {log} from './log';
-import {config} from './config';
+import { log } from './log';
+import { config } from './config';
 
 // the debugger class
 export class Debugger implements vscode.Disposable {
@@ -28,7 +28,7 @@ export class Debugger implements vscode.Disposable {
 
         // no target program?
         if (!targetProgram) {
-            return ;
+            return;
         }
 
         // no target name? get it from target program
@@ -42,57 +42,78 @@ export class Debugger implements vscode.Disposable {
             args = config.debuggingTargetsArguments[targetName];
         else if ("default" in config.debuggingTargetsArguments)
             args = config.debuggingTargetsArguments["default"];
-        
+
         // init debug configuration
         var debugConfig: vscode.DebugConfiguration = null
-        if (os.platform() == "darwin") {
+        if (config.debugConfigType == "codelldb") {
             debugConfig = {
                 name: `launch: ${targetName}`,
-                type: 'cppdbg',
+                type: 'lldb',
                 request: 'launch',
                 program: targetProgram,
                 args: args,
                 stopAtEntry: true,
                 cwd: path.dirname(targetProgram),
                 environment: [],
-                externalConsole: true,
-                MIMode: "lldb",
-                miDebuggerPath: ""
+                externalConsole: false,
             };
-        } else if (os.platform() == "linux") {
-            debugConfig = {
-                name: `launch: ${targetName}`,
-                type: 'cppdbg',
-                request: 'launch',
-                program: targetProgram,
-                args: args,
-                stopAtEntry: true,
-                cwd: path.dirname(targetProgram),
-                environment: [],
-                externalConsole: true,
-                MIMode: "gdb",
-                miDebuggerPath: "",
-                description: "Enable pretty-printing for gdb",
-                text: "-enable-pretty-printing",
-                ignoreFailures: true
-            };
-        } else if (os.platform() == "win32") {
-            debugConfig = {
-                name: `launch: ${targetName}`,
-                type: 'cppvsdbg',
-                request: 'launch',
-                program: targetProgram,
-                args: [],
-                stopAtEntry: true,
-                cwd: path.dirname(targetProgram),
-                environment: [],
-                externalConsole: true,
-                MIMode: "gdb",
-                miDebuggerPath: "",
-                description: "Enable pretty-printing for gdb",
-                text: "-enable-pretty-printing",
-                ignoreFailures: true
-            };
+        } else {
+            if (os.platform() == "darwin") {
+                debugConfig = {
+                    name: `launch: ${targetName}`,
+                    type: 'cppdbg',
+                    request: 'launch',
+                    program: targetProgram,
+                    args: args,
+                    stopAtEntry: true,
+                    cwd: path.dirname(targetProgram),
+                    environment: [],
+                    externalConsole: true,
+                    MIMode: "lldb",
+                    miDebuggerPath: ""
+                };
+            } else if (os.platform() == "linux") {
+                debugConfig = {
+                    name: `launch: ${targetName}`,
+                    type: 'cppdbg',
+                    request: 'launch',
+                    program: targetProgram,
+                    args: args,
+                    stopAtEntry: true,
+                    cwd: path.dirname(targetProgram),
+                    environment: [],
+                    externalConsole: true,
+                    MIMode: "gdb",
+                    miDebuggerPath: "",
+                    description: "Enable pretty-printing for gdb",
+                    text: "-enable-pretty-printing",
+                    ignoreFailures: true
+                };
+            } else if (os.platform() == "win32") {
+                debugConfig = {
+                    name: `launch: ${targetName}`,
+                    type: 'cppvsdbg',
+                    request: 'launch',
+                    program: targetProgram,
+                    args: [],
+                    stopAtEntry: true,
+                    cwd: path.dirname(targetProgram),
+                    environment: [],
+                    externalConsole: true,
+                    MIMode: "gdb",
+                    miDebuggerPath: "",
+                    description: "Enable pretty-printing for gdb",
+                    text: "-enable-pretty-printing",
+                    ignoreFailures: true
+                };
+            }
+
+            if (config.debugConfigType == "custom") {
+                var customcfg = config.customDebugConfig;
+                for (let key in customcfg) {
+                    debugConfig[key] = customcfg[key];
+                }
+            }
         }
 
         // start debugging

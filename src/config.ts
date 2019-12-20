@@ -71,6 +71,14 @@ export class Config {
     get debuggingTargetsArguments(): {} {
         return this.get<{}>("debuggingTargetsArguments");
     }
+
+    get debugConfigType(): string {
+        return utils.replaceVars(this.get<string>("debugConfigType"));
+    }
+
+    get customDebugConfig(): {} {
+        return this.get<{}>("customDebugConfig");
+    }
 }
 
 // init the global config
