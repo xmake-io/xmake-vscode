@@ -5,63 +5,44 @@ import * as vscode from 'vscode';
 import * as os from 'os';
 import * as path from 'path';
 import * as utils from './utils';
-import {log} from './log';
+import {log, LogLevel} from './log';
 import {config} from './config';
 
 // the terminal class
 export class Terminal implements vscode.Disposable {
 
-    // the terminal
-    private _terminal: vscode.Terminal;
-
     // the logfile
     private _logfile: string;
+
+    // the tasks
+    private _tasks: vscode.Task[] = new Array();
 
     // the constructor
     constructor() {
 
-        // init terminal
-        this._terminal = vscode.window.createTerminal({name: "xmake"});
-        this._terminal.hide();
-
-        // enter the project root directory
-        this.enterProjectRoot(false);
-    }
-
-    // enter the project root directory
-    public enterProjectRoot(force: boolean) {
-    
-        // enter the working directory
-        if (force || utils.getProjectRoot() !== config.workingDirectory) {
-            this.execute(`cd "${config.workingDirectory}"`);
-        }
-
-        // enable logfile
+        // init logfile
         this._logfile = path.join(config.workingDirectory, ".xmake", "vscode-build.log");
-        if (os.platform() == "win32") {
-            switch (this.shellKind) {
-                case "powershell":
-                    this.execute(`$env:XMAKE_LOGFILE="${this._logfile}"`);
-                    break;
-                case "cmd":
-                    this.execute(`set XMAKE_LOGFILE="${this._logfile}"`);
-                    break;
-                case "bash": 
-                    var p = this._logfile;
-                    if (p.length > 1 && p[1] == ':') {
-                        p = "/mnt/" + p[0].toLowerCase() + "/" + p.split(path.win32.sep).splice(1).join('/');
-                    }
-                    this.execute(`export XMAKE_LOGFILE="${p}"`);
-                    break;
+
+        // init the task callback
+        vscode.tasks.onDidEndTask(async (e) => {
+            
+            // remove the finished task
+            if (this._tasks.length > 0 && e.execution.task == this._tasks[0]) {
+                this._tasks.shift();
             }
-        } else {
-            this.execute(`export XMAKE_LOGFILE="${this._logfile}"`);
-        }
+
+            // execute the next task
+            if (this._tasks.length > 0) {
+                let task = this._tasks[0];
+                vscode.tasks.executeTask(task).then(function (execution) { 
+                }, function (reason) {
+                });
+            }
+        });
     }
 
     // dispose all objects
     public dispose() {
-        this._terminal.dispose();
     }
 
     // get the log file
@@ -69,56 +50,33 @@ export class Terminal implements vscode.Disposable {
         return this._logfile;
     }
 
-    // execute command string
-    public execute(command: string) {
+    /* execute command string
+     * @see https://code.visualstudio.com/api/extension-guides/task-provider
+     */
+    public async execute(name: string, command: string) {
 
-        /* patch some empty characters to fix twice commands bug 
-            *
-            * terminal.execute("xmake f ..")
-            * terminal.execute("xmake")
-            * 
-            * $ xmake f ..
-            * $ ake
-            */
-        this._terminal.sendText(command);
-        this._terminal.sendText("        "); 
-        this._terminal.show(true);
-    }
+        const options = {
+            "cwd": config.workingDirectory,
+            "env": {
+                "XMAKE_LOGFILE": this.logfile
+            }
+        };
+        const kind: vscode.TaskDefinition = {
+            type: "xmake",
+            script: "",
+            path: "",
+        };
 
-    // get shell kind
-    get shellKind(): string {
-    
-        // only get shell kind on windows
-        if (os.platform() !== 'win32') {
-            return "";
+        log.info(this.logfile);
+        const execution = new vscode.ShellExecution(command, options);
+        const task = new vscode.Task(kind, vscode.TaskScope.Workspace, "xmake: " + name, "xmake", execution, undefined);
+        this._tasks.push(task);
+
+        // only one task? execute it directly
+        if (this._tasks.length == 1) {
+            vscode.tasks.executeTask(task).then(function (execution) { 
+            }, function (reason) {
+            });
         }
-
-        // get terminal settings
-        let terminalSettings = vscode.workspace.getConfiguration('terminal')
-
-        // get windows shell path
-        var windowsShellPath = terminalSettings.integrated.shell.windows;
-        if (!windowsShellPath) {
-            return "";
-        }
-
-        // is powershell?
-        windowsShellPath = windowsShellPath.toLowerCase()
-        if (windowsShellPath.indexOf("powershell.exe") != -1) {
-            return "powershell";
-        }
-
-        // is cmd?
-        if (windowsShellPath.indexOf("cmd.exe") != -1) {
-            return "cmd";
-        }
-
-        // is bash?
-        if (windowsShellPath.indexOf("bash.exe") != -1) {
-            return "bash";
-        }
-
-        // not found!
-        return ""
     }
 }

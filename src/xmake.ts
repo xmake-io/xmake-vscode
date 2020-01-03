@@ -256,7 +256,7 @@ export class XMake implements vscode.Disposable {
                             if (!this._terminal) {
                                 this._terminal = new Terminal();
                             }
-                            this._terminal.execute(`xmake create -t ${chosen2.label} -l ${chosen.label} -P ${config.workingDirectory}`);
+                            await this._terminal.execute("create", `xmake create -t ${chosen2.label} -l ${chosen.label} -P ${config.workingDirectory}`);
 
                             // start plugin
                             this.startPlugin();
@@ -356,11 +356,11 @@ export class XMake implements vscode.Disposable {
     }
 
     // on configure project
-    async onConfigure(target?: string) {
-       
+    async onConfigure(target?: string): Promise<boolean> {
+
         // this plugin enabled?
         if (!this._enabled) {
-            return
+            return false;
         }
 
         // option changed?
@@ -394,11 +394,13 @@ export class XMake implements vscode.Disposable {
             }
 
             // configure it
-            this._terminal.execute(command);
+            await this._terminal.execute("config", command);
 
             // mark as not changed
             this._optionChanged = false;
+            return true;
         }
+        return false;
     }
 
     // on clean configure project
@@ -419,7 +421,7 @@ export class XMake implements vscode.Disposable {
         }
  
         // configure it
-        this._terminal.execute(command);
+        await this._terminal.execute("clean config", command);
 
         // mark as not changed
         this._optionChanged = false;
@@ -432,9 +434,6 @@ export class XMake implements vscode.Disposable {
         if (!this._enabled) {
             return
         }
-
-        // configure it first
-        this.onConfigure(target);
 
         // add build level to command     
         const targetName = this._option.get<string>("target");        
@@ -455,8 +454,9 @@ export class XMake implements vscode.Disposable {
         else if (targetName == "all")
             command += " -a";
 
-        // build it 
-        this._terminal.execute(command); 
+        // configure and build it
+        await this.onConfigure(target);
+        await this._terminal.execute("build", command); 
     }
 
     // on rebuild project
@@ -467,9 +467,6 @@ export class XMake implements vscode.Disposable {
             return
         } 
 
-        // configure it first
-        this.onConfigure(target);
-        
         // add build level to command      
         const buildLevel = config.get<string>("buildLevel");
         let command = "xmake -r"  
@@ -487,8 +484,9 @@ export class XMake implements vscode.Disposable {
         else if (targetName == "all")
             command += " -a";
 
-        // build it
-        this._terminal.execute(command); 
+        // configure and rebuild it
+        await this.onConfigure(target);
+        await this._terminal.execute("rebuild", command); 
     }
 
     // on clean target files
@@ -499,16 +497,17 @@ export class XMake implements vscode.Disposable {
             return
         }
  
-        // configure it first
-        this.onConfigure(target);
-       
         // get target name 
         const targetName = this._option.get<string>("target");
         
-        // clean it
+        // make command
+        let command = "xmake c";
         if (targetName && targetName != "default")
-            this._terminal.execute(`xmake c ${targetName}`);
-        else this._terminal.execute("xmake c"); 
+            command += ` ${targetName}`;
+
+        // configure and clean it
+        await this.onConfigure(target);
+        await this._terminal.execute("clean", command); 
     }
 
     // on clean all target files
@@ -519,16 +518,17 @@ export class XMake implements vscode.Disposable {
             return
         }
  
-        // configure it first
-        this.onConfigure(target);
-        
         // get target name 
         const targetName = this._option.get<string>("target");
         
-        // clean all
+        // make command
+        let command = "xmake c -a";
         if (targetName && targetName != "default")
-            this._terminal.execute(`xmake c -a ${targetName}`);
-        else this._terminal.execute("xmake c -a "); 
+            command += ` ${targetName}`;
+
+        // configure and clean all
+        await this.onConfigure(target);
+        await this._terminal.execute("clean all", command);
     }
 
     // on run target
@@ -539,9 +539,6 @@ export class XMake implements vscode.Disposable {
             return
         }
 
-        // configure it first
-        this.onConfigure(target);
-        
         // get target name 
         let targetName = this._option.get<string>("target");
         if (!targetName) {
@@ -567,12 +564,17 @@ export class XMake implements vscode.Disposable {
             argstr = '"' + args.join('" "') + '"';
         }
         
-        // run it
+        // make command
+        let command = "xmake r"
         if (targetName && targetName != "default")
-            this._terminal.execute(`xmake r ${targetName} ${argstr}`);
+            command += ` ${targetName} ${argstr}`;
         else if (targetName == "all")
-            this._terminal.execute("xmake r -a");
-        else this._terminal.execute(`xmake r ${argstr}`);   
+            command += " -a";
+        else command += ` ${argstr}`; 
+        
+        // configure and run it
+        await this.onConfigure(target);
+        await this._terminal.execute("run", command);
     }
 
     // on package target
@@ -583,9 +585,6 @@ export class XMake implements vscode.Disposable {
             return
         }
  
-        // configure it first
-        this.onConfigure(target);
-        
         // get target name 
         const targetName = this._option.get<string>("target");
         
@@ -596,8 +595,9 @@ export class XMake implements vscode.Disposable {
         else if (targetName == "all")
             command += " -a";
 
-        // package it
-        this._terminal.execute(command);
+        // configure and package it
+        await this.onConfigure(target);
+        await this._terminal.execute("package", command); 
     }
 
     // on install target
@@ -608,9 +608,6 @@ export class XMake implements vscode.Disposable {
             return
         }
   
-        // configure it first
-        this.onConfigure(target);
-         
         // get target name 
         const targetName = this._option.get<string>("target");
          
@@ -623,8 +620,9 @@ export class XMake implements vscode.Disposable {
         if (config.installDirectory != "")
             command += ` -o \"${config.installDirectory}\"`;
 
-        // install it
-        this._terminal.execute(command);
+        // configure and install it
+        await this.onConfigure(target);
+        await this._terminal.execute("install", command); 
     }
 
     // on uninstall target
@@ -635,9 +633,6 @@ export class XMake implements vscode.Disposable {
             return
         }
   
-        // configure it first
-        this.onConfigure(target);
-         
         // get target name 
         const targetName = this._option.get<string>("target");
          
@@ -648,8 +643,9 @@ export class XMake implements vscode.Disposable {
         if (config.installDirectory != "")
             command += ` --installdir=\"${config.installDirectory}\"`;
 
-        // uninstall it
-        this._terminal.execute(command);  
+        // configure and uninstall it
+        await this.onConfigure(target);
+        await this._terminal.execute("uninstall", command); 
     }
 
     // on debug target
@@ -667,18 +663,17 @@ export class XMake implements vscode.Disposable {
         let extension = vscode.extensions.getExtension("ms-vscode.cpptools"); 
         if (!extension) { 
 
-            // configure it first
-            this.onConfigure(target);
-            
             // get target name 
             const targetName = this._option.get<string>("target");
             
-            // debug it
+            // make command
+            let command = "xmake r -d";
             if (targetName && targetName != "default")
-                this._terminal.execute(`xmake r -d ${targetName}`);
-            else
-                this._terminal.execute("xmake r -d");
+                command += ` ${targetName}`;
 
+            // configure and debug it
+            await this.onConfigure(target);
+            await this._terminal.execute("debug", command); 
             return ;
         }
 
@@ -724,7 +719,7 @@ export class XMake implements vscode.Disposable {
         }
 
         // begin marco
-        this._terminal.execute("xmake m -b");
+        await this._terminal.execute("macro begin", "xmake m -b");
 
         // update status: start to record
         this._status.startRecord();
@@ -739,7 +734,7 @@ export class XMake implements vscode.Disposable {
         }
 
         // end marco
-        this._terminal.execute("xmake m -e");
+        await this._terminal.execute("macro end", "xmake m -e");
 
         // update status: stop to record
         this._status.stopRecord();
@@ -754,7 +749,7 @@ export class XMake implements vscode.Disposable {
         }
 
         // end marco
-        this._terminal.execute("xmake m .");
+        await this._terminal.execute("macro run", "xmake m .");
     }
 
     // on run last command
@@ -766,7 +761,7 @@ export class XMake implements vscode.Disposable {
         }
 
         // end marco
-        this._terminal.execute("xmake m ..");
+        await this._terminal.execute("macro run last", "xmake m ..");
     }
 
     // set project root directory
@@ -798,9 +793,6 @@ export class XMake implements vscode.Disposable {
 
             // reload cache in new project root
             this.loadCache();
-
-            // enter the new project root directory in terminal
-            this._terminal.enterProjectRoot(true);
         }
     }
 
