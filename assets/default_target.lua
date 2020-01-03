@@ -13,6 +13,7 @@ function main ()
         local default = target:get("default")
         if (default == nil or default == true) and target:get("kind") == "binary" then
             print(target:name()) 
+            break
         end
     end
 
