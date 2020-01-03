@@ -67,7 +67,6 @@ export class Terminal implements vscode.Disposable {
             path: "",
         };
 
-        log.info(this.logfile);
         const execution = new vscode.ShellExecution(command, options);
         const task = new vscode.Task(kind, vscode.TaskScope.Workspace, "xmake: " + name, "xmake", execution, undefined);
         this._tasks.push(task);
