@@ -338,9 +338,7 @@
                 },
                 "xmake.customDebugConfig": {
                     "type": "object",
-                    "default": {
-                        "type": "cppdbg"
-                    },
+                    "default": {},
                     "description": "The Custom Debugging Configurations when xmake.debugConfigType is custom"
                 }
             }

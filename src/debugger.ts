@@ -108,13 +108,14 @@ export class Debugger implements vscode.Disposable {
                 };
             }
 
-            if (config.debugConfigType == "custom") {
-                var customcfg = config.customDebugConfig;
-                for (let key in customcfg) {
-                    debugConfig[key] = customcfg[key];
-                }
-            }
         }
+
+        var customcfg = config.customDebugConfig;
+        for (let key in customcfg) {
+            debugConfig[key] = customcfg[key];
+        }
+        // default type if not set yet
+        debugConfig.type = debugConfig.type || 'cppdbg';
 
         // start debugging
         if (debugConfig) {
