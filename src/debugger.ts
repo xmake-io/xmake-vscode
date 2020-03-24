@@ -43,9 +43,15 @@ export class Debugger implements vscode.Disposable {
         else if ("default" in config.debuggingTargetsArguments)
             args = config.debuggingTargetsArguments["default"];
 
+        // uses codelldb debugger?
+        var codelldb = false; 
+        if (config.debugConfigType == "codelldb" || (os.platform() == "darwin" && vscode.extensions.getExtension("vadimcn.vscode-lldb"))) {
+            codelldb = true;
+        }
+
         // init debug configuration
         var debugConfig: vscode.DebugConfiguration = null
-        if (config.debugConfigType == "codelldb") {
+        if (codelldb) {
             debugConfig = {
                 name: `launch: ${targetName}`,
                 type: 'lldb',
@@ -58,6 +64,7 @@ export class Debugger implements vscode.Disposable {
                 externalConsole: false,
             };
         } else {
+            // uses cpptools debugger
             if (os.platform() == "darwin") {
                 debugConfig = {
                     name: `launch: ${targetName}`,

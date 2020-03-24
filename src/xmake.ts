@@ -656,11 +656,19 @@ export class XMake implements vscode.Disposable {
             return ;
         }
 
-        /* cpptools externsions not found?
+        /* cpptools or codelldb externsions not found?
          *
-         * see https://github.com/Microsoft/vscode-cpptools
+         * @see 
+         * https://github.com/Microsoft/vscode-cpptools
+         * https://github.com/vadimcn/vscode-lldb
          */
-        let extension = vscode.extensions.getExtension("ms-vscode.cpptools"); 
+        var extension = null; 
+        if (os.platform() == "darwin") {
+            extension = vscode.extensions.getExtension("vadimcn.vscode-lldb");
+        }
+        if (!extension) { 
+            extension = vscode.extensions.getExtension("ms-vscode.cpptools"); 
+        }
         if (!extension) { 
 
             // get target name 
@@ -677,7 +685,7 @@ export class XMake implements vscode.Disposable {
             return ;
         }
 
-        // active cpptools externsions
+        // active cpptools/codelldb externsions
         if (!extension.isActive) {
             extension.activate();
         }
