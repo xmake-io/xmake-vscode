@@ -331,15 +331,14 @@
                     "default": "default",
                     "enum": [
                         "default",
-                        "codelldb",
-                        "custom"
+                        "codelldb"
                     ],
-                    "description": "The Debugging Configuration Type, .e.g default|codelldb|custom"
+                    "description": "The Debugging Configuration Type, .e.g default|codelldb"
                 },
                 "xmake.customDebugConfig": {
                     "type": "object",
                     "default": {},
-                    "description": "The Custom Debugging Configurations when xmake.debugConfigType is custom"
+                    "description": "The Custom Debugging Configurations"
                 }
             }
         }
