@@ -706,13 +706,25 @@ export class XMake implements vscode.Disposable {
         if (fs.existsSync(getTargetPathScript)) {
             targetProgram = (await process.iorunv("xmake", ["l", getTargetPathScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
             if (targetProgram) {
+                targetProgram = targetProgram.split("__end__")[0].trim();
                 targetProgram = targetProgram.split('\n')[0].trim();
+            }
+        }
+
+        // get target run directory 
+        var targetRunDir = null;
+        let getTargetRunDirScript = path.join(__dirname, `../../assets/target_rundir.lua`);
+        if (fs.existsSync(getTargetRunDirScript)) {
+            targetRunDir = (await process.iorunv("xmake", ["l", getTargetRunDirScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            if (targetRunDir) {
+                targetRunDir = targetRunDir.split("__end__")[0].trim();
+                targetRunDir = targetRunDir.split('\n')[0].trim();
             }
         }
 
         // start debugging
         if (targetProgram && fs.existsSync(targetProgram)) {
-            this._debugger.startDebugging(targetName, targetProgram);
+            this._debugger.startDebugging(targetName, targetProgram, targetRunDir);
         } else {
             await vscode.window.showErrorMessage('The target program not found!');
         }
@@ -838,7 +850,7 @@ export class XMake implements vscode.Disposable {
                 arch = (plat == "windows"? "x86" : {x64: 'x86_64', x86: 'i386'}[os.arch()]);
             }
             else {
-                arch = {windows: "x86", macosx: "x86_64", linux: "x86_64", mingw: "x86_64", iphoneos: "arm64", watchos: "armv7k", android: "armv7-a"}[plat];
+                arch = {windows: "x86", macosx: "x86_64", linux: "x86_64", mingw: "x86_64", iphoneos: "arm64", watchos: "armv7k", android: "arm64-v8a"}[plat];
             }
             if (arch && arch != "") {
                 this._option.set("arch", arch);
@@ -858,37 +870,24 @@ export class XMake implements vscode.Disposable {
         // select architecture
         let items: vscode.QuickPickItem[] = [];
         let plat = this._option.get<string>("plat");
-        if (plat == "windows") {
-            items.push({label: "x86", description: "The x86 Architecture"});
-            items.push({label: "x64", description: "The x64 Architecture"});
-        }
-        else if (plat == "macosx" || plat == "linux" || plat == "mingw") {
-            items.push({label: "i386", description: "The i386 Architecture"});
-            items.push({label: "x86_64", description: "The x86_64 Architecture"});
-        }
-        else if (plat == "iphoneos") {
-            items.push({label: "armv7", description: "The armv7 Architecture"});
-            items.push({label: "armv7s", description: "The armv7s Architecture"});
-            items.push({label: "arm64", description: "The arm64 Architecture"});
-            items.push({label: "i386", description: "The i386 Architecture"});
-            items.push({label: "x86_64", description: "The x86_64 Architecture"});
-        }
-        else if (plat == "watchos") {
-            items.push({label: "armv7k", description: "The armv7s Architecture"});
-            items.push({label: "i386", description: "The i386 Architecture"});
-        }
-        else if (plat == "android") {
-            items.push({label: "armv5te", description: "The armv5te Architecture"});
-            items.push({label: "armv7-a", description: "The armv7-a Architecture"});
-            items.push({label: "arm64-v8a", description: "The arm64-v8a Architecture"});
-            items.push({label: "i386", description: "The i386 Architecture"});
-            items.push({label: "x86_64", description: "The x86_64 Architecture"});
-        }
-        const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
-        if (chosen && chosen.label !== this._option.get<string>("arch")) {
-            this._option.set("arch", chosen.label);
-            this._status.arch = chosen.label;
-            this._optionChanged = true;
+
+        // select files
+        let getArchListScript = path.join(__dirname, `../../assets/archs.lua`);
+        if (fs.existsSync(getArchListScript) && fs.existsSync(getArchListScript)) {
+            let result = (await process.iorunv("xmake", ["l", getArchListScript, plat], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            if (result) {
+                let items: vscode.QuickPickItem[] = [];
+                result = result.split("__end__")[0].trim();
+                result.split("\n").forEach(element => {
+                    items.push({label: element.trim(), description: "The " + element.trim() + " Architecture"});
+                }); 
+                const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+                if (chosen && chosen.label !== this._option.get<string>("arch")) {
+                    this._option.set("arch", chosen.label);
+                    this._status.arch = chosen.label;
+                    this._optionChanged = true;
+                }
+            }
         }
     }
 

@@ -26,9 +26,9 @@ function main (targetname)
         end
     end
 
-    -- get target path
-    if target then 
-        print(path.join(os.projectdir(), target:targetfile())) 
+    -- get run directory
+    if target then
+        print(path.absolute(target:rundir()))
     end
 
     -- print end tag to ignore other deprecated/warnings infos

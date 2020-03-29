@@ -24,7 +24,7 @@ export class Debugger implements vscode.Disposable {
     }
 
     // startDebugging
-    async startDebugging(targetName?: string, targetProgram?: string) {
+    async startDebugging(targetName?: string, targetProgram?: string, targetRunDir?: string) {
 
         // no target program?
         if (!targetProgram) {
@@ -49,6 +49,11 @@ export class Debugger implements vscode.Disposable {
             codelldb = true;
         }
 
+        // get target run directory
+        if (!targetRunDir) {
+            targetRunDir = path.dirname(targetProgram);
+        }
+
         // init debug configuration
         var debugConfig: vscode.DebugConfiguration = null
         if (codelldb) {
@@ -59,7 +64,7 @@ export class Debugger implements vscode.Disposable {
                 program: targetProgram,
                 args: args,
                 stopAtEntry: true,
-                cwd: path.dirname(targetProgram),
+                cwd: targetRunDir,
                 environment: [],
                 externalConsole: false,
             };
@@ -73,7 +78,7 @@ export class Debugger implements vscode.Disposable {
                     program: targetProgram,
                     args: args,
                     stopAtEntry: true,
-                    cwd: path.dirname(targetProgram),
+                    cwd: targetRunDir,
                     environment: [],
                     externalConsole: true,
                     MIMode: "lldb",
@@ -87,7 +92,7 @@ export class Debugger implements vscode.Disposable {
                     program: targetProgram,
                     args: args,
                     stopAtEntry: true,
-                    cwd: path.dirname(targetProgram),
+                    cwd: targetRunDir,
                     environment: [],
                     externalConsole: true,
                     MIMode: "gdb",
@@ -104,7 +109,7 @@ export class Debugger implements vscode.Disposable {
                     program: targetProgram,
                     args: [],
                     stopAtEntry: true,
-                    cwd: path.dirname(targetProgram),
+                    cwd: targetRunDir,
                     environment: [],
                     externalConsole: true,
                     MIMode: "gdb",
