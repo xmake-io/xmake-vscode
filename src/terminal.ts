@@ -25,9 +25,9 @@ export class Terminal implements vscode.Disposable {
 
         // init the task callback
         vscode.tasks.onDidEndTask(async (e) => {
-            
+
             // remove the finished task
-            if (this._tasks.length > 0 && e.execution.task == this._tasks[0]) {
+            if (this._tasks.length > 0) {
                 this._tasks.shift();
             }
 
