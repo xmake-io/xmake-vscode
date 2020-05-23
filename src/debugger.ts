@@ -94,7 +94,7 @@ export class Debugger implements vscode.Disposable {
                     stopAtEntry: true,
                     cwd: targetRunDir,
                     environment: [],
-                    externalConsole: true,
+                    externalConsole: false, // @see https://github.com/xmake-io/xmake-vscode/issues/36 
                     MIMode: "gdb",
                     miDebuggerPath: "",
                     description: "Enable pretty-printing for gdb",
