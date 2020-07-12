@@ -48,8 +48,11 @@ export class XMake implements vscode.Disposable {
     // the status
     private _status: Status;
 
-    // the cache file watcher
-    private _fileSystemWatcher: vscode.FileSystemWatcher;
+    // the log file watcher
+    private _logFileSystemWatcher: vscode.FileSystemWatcher;
+    
+    // the config file watcher
+    private _configFileSystemWatcher: vscode.FileSystemWatcher;
     
     // the constructor
     constructor(context: vscode.ExtensionContext) {
@@ -69,7 +72,8 @@ export class XMake implements vscode.Disposable {
         this._option.dispose();
         this._problems.dispose();
         this._debugger.dispose();
-        this._fileSystemWatcher.dispose();
+        this._logFileSystemWatcher.dispose();
+        this._configFileSystemWatcher.dispose();
     }
 
     // load cache
@@ -106,14 +110,28 @@ export class XMake implements vscode.Disposable {
         this._status.mode = mode;
     }
 
+    // update IntelliSense
+    async updateIntelliSense() {
+        log.verbose("updating IntelliSense ..");
+        let updateIntelliSenseScript = path.join(__dirname, `../../assets/update_intellisense.lua`);
+        if (fs.existsSync(updateIntelliSenseScript)) {
+            await process.runv("xmake", ["l", updateIntelliSenseScript], {"COLORTERM": "nocolor"}, config.workingDirectory);
+        }
+    }
+
     // init watcher
     async initWatcher() {
         
-        // init file system watcher
-        this._fileSystemWatcher = vscode.workspace.createFileSystemWatcher(path.join(config.workingDirectory, ".xmake", "*"));
-		this._fileSystemWatcher.onDidCreate(this.onFileCreate.bind(this));
-        this._fileSystemWatcher.onDidChange(this.onFileChange.bind(this));
-        this._fileSystemWatcher.onDidDelete(this.onFileDelete.bind(this));
+        // init log file system watcher
+        this._logFileSystemWatcher = vscode.workspace.createFileSystemWatcher(path.join(config.workingDirectory, ".xmake", "**", "vscode-build.log"));
+		this._logFileSystemWatcher.onDidCreate(this.onLogFileUpdated.bind(this));
+        this._logFileSystemWatcher.onDidChange(this.onLogFileUpdated.bind(this));
+        this._logFileSystemWatcher.onDidDelete(this.onLogFileDeleted.bind(this));
+
+        // init config file system watcher
+        this._configFileSystemWatcher = vscode.workspace.createFileSystemWatcher(path.join(config.workingDirectory, ".xmake", "**", "xmake.conf"));
+        this._configFileSystemWatcher.onDidCreate(this.onConfigFileUpdated.bind(this));
+        this._configFileSystemWatcher.onDidChange(this.onConfigFileUpdated.bind(this));
     }
 
     // refresh folder
@@ -126,11 +144,11 @@ export class XMake implements vscode.Disposable {
         vscode.commands.executeCommand('workbench.files.action.refreshFilesExplorer');
     }
 
-    // on File Create
-    async onFileCreate(affectedPath: vscode.Uri) {
+    // on Config File Updated
+    async onConfigFileUpdated(affectedPath: vscode.Uri) {
 
         // trace
-        log.verbose("onFileCreate: " + affectedPath.fsPath);
+        log.verbose("onConfigFileUpdated: " + affectedPath.fsPath);
 
         // wait some times
         await utils.sleep(2000);
@@ -139,46 +157,38 @@ export class XMake implements vscode.Disposable {
         let filePath = affectedPath.fsPath;
         if (filePath.includes("xmake.conf")) {
             this.loadCache();
+            this.updateIntelliSense();
+        }
+    }
+
+    // on Log File Updated
+    async onLogFileUpdated(affectedPath: vscode.Uri) {
+
+        // trace
+        log.verbose("onLogFileUpdated: " + affectedPath.fsPath);
+
+        // wait some times
+        await utils.sleep(2000);
+        
         // update problems
-        } else if (filePath.includes("vscode-build.log")) {
+        let filePath = affectedPath.fsPath;
+        if (filePath.includes("vscode-build.log")) {
             this._problems.diagnose(filePath);
         }
     }
 
-    // on File Change
-    async onFileChange(affectedPath: vscode.Uri) {
+    // on Log File Delete
+    async onLogFileDeleted(affectedPath: vscode.Uri) {
 
         // trace
-        log.verbose("onFileChange: " + affectedPath.fsPath);   
-        
-        // wait some times
-        await utils.sleep(2000);
-
-        // update configure cache
-        let filePath = affectedPath.fsPath;
-        if (filePath.includes("xmake.conf")) {  
-            this.loadCache();
-        // update problems
-        } else if (filePath.includes("vscode-build.log")) {
-            this._problems.diagnose(filePath);
-        } 
-    }
-
-    // on File Delete
-    async onFileDelete(affectedPath: vscode.Uri) {
-
-        // trace
-        log.verbose("onFileDelete: " + affectedPath.fsPath);  
+        log.verbose("onLogFileDeleted: " + affectedPath.fsPath);  
     
         // wait some times
         await utils.sleep(2000);
         
-        // update configure cache
-        let filePath = affectedPath.fsPath;
-        if (filePath.includes("xmake.conf")) {
-            this.loadCache();
         // clear problems
-        } else if (filePath.includes("vscode-build.log")) {
+        let filePath = affectedPath.fsPath;
+        if (filePath.includes("vscode-build.log")) {
             this._problems.clear();
         }
     }
