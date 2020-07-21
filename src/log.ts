@@ -23,14 +23,17 @@ class Log implements vscode.Disposable {
 
     // dispose
     public dispose() {
-        this.logChannel.dispose();
+        if (this.logChannel) {
+            this.logChannel.dispose();
+        }
     }
 
     // get the log channel
     private get logChannel(): vscode.OutputChannel {
+        /* we cannot use xmake/log channel now
         if (!this._logChannel) {
             this._logChannel = vscode.window.createOutputChannel("xmake");
-        }
+        }*/
         return this._logChannel;
     }
 
@@ -38,7 +41,9 @@ class Log implements vscode.Disposable {
     public initialize(context: vscode.ExtensionContext) {
         vscode.workspace.onDidChangeConfiguration(this.onConfigurationChanged, this, context.subscriptions);
         this.onConfigurationChanged();
-        this.logChannel.show();
+        if (this.logChannel) {
+            this.logChannel.show();
+        }
     }
 
     // fetch the configuration: xmake.logLevel
@@ -51,13 +56,15 @@ class Log implements vscode.Disposable {
     // show error info
     public error(message: string): void {
         console.error(message);
-        this.logChannel.appendLine(message); 
+        if (this.logChannel) {
+            this.logChannel.appendLine(message); 
+        }
     }
 
     // show info
     public info(message: string): void {
         console.info(message);
-        if (this.logLevel !== LogLevel.Minimal) {
+        if (this.logChannel && this.logLevel !== LogLevel.Minimal) {
             this.logChannel.appendLine(message);
         }
     }
@@ -65,7 +72,7 @@ class Log implements vscode.Disposable {
     // show verbose info
     public verbose(message: string): void {
         console.log(message);
-        if (this.logLevel === LogLevel.Verbose) {
+        if (this.logChannel && this.logLevel === LogLevel.Verbose) {
             this.logChannel.appendLine(message);
         }
     }
