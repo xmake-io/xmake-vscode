@@ -13,6 +13,7 @@ import {Option} from './option';
 import {ProblemList} from './problem';
 import {Debugger} from './debugger';
 import {Completion} from './completion';
+import {XmakeTaskProvider} from './task';
 import * as process from './process';
 import * as utils from './utils';
 
@@ -53,6 +54,9 @@ export class XMake implements vscode.Disposable {
     
     // the config file watcher
     private _configFileSystemWatcher: vscode.FileSystemWatcher;
+
+    // the xmake task provider
+    private _xmakeTaskProvider: vscode.Disposable | undefined;
     
     // the constructor
     constructor(context: vscode.ExtensionContext) {
@@ -67,13 +71,30 @@ export class XMake implements vscode.Disposable {
     // dispose all objects
     public async dispose() {
         await this.stop();
-        this._terminal.dispose();
-        this._status.dispose();
-        this._option.dispose();
-        this._problems.dispose();
-        this._debugger.dispose();
-        this._logFileSystemWatcher.dispose();
-        this._configFileSystemWatcher.dispose();
+        if (this._terminal) {
+            this._terminal.dispose();
+        }
+        if (this._status) {
+            this._status.dispose();
+        }
+        if (this._option) {
+            this._option.dispose();
+        }
+        if (this._problems) {
+            this._problems.dispose();
+        }
+        if (this._debugger) {
+            this._debugger.dispose();
+        }
+        if (this._logFileSystemWatcher) {
+            this._logFileSystemWatcher.dispose();
+        }
+        if (this._configFileSystemWatcher) {
+            this._configFileSystemWatcher.dispose();
+        }
+        if (this._xmakeTaskProvider) {
+            this._xmakeTaskProvider.dispose();
+        }
     }
 
     // load cache
@@ -203,6 +224,9 @@ export class XMake implements vscode.Disposable {
 
         // init languages
         vscode.languages.registerCompletionItemProvider("xmake", new Completion());
+
+        // register xmake task provider
+        this._xmakeTaskProvider = vscode.tasks.registerTaskProvider(XmakeTaskProvider.XmakeType, new XmakeTaskProvider(utils.getProjectRoot()));
 
         // init terminal
         if (!this._terminal) {

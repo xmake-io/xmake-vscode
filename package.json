@@ -73,6 +73,23 @@
                 "path": "./languages/xmake-grammars.json"
             }
         ],
+        "taskDefinitions": [
+        {
+            "type": "xmake",
+            "required": [
+                "task"
+            ],
+            "properties": {
+                "task": {
+                    "type": "string",
+                    "description": "The XMake task to customize"
+                },
+                "file": {
+                    "type": "string",
+                    "description": "The XMake file that provides the task. Can be omitted."
+                }
+            }
+        }],
         "commands": [
             {
                 "command": "xmake.onCreateProject",
