@@ -2,7 +2,7 @@
     "name": "xmake-vscode",
     "displayName": "XMake",
     "description": "Extended XMake support in Visual Studio Code",
-    "version": "1.3.8",
+    "version": "1.3.9",
     "publisher": "tboox",
     "icon": "res/logo256.png",
     "repository": {
@@ -74,22 +74,23 @@
             }
         ],
         "taskDefinitions": [
-        {
-            "type": "xmake",
-            "required": [
-                "task"
-            ],
-            "properties": {
-                "task": {
-                    "type": "string",
-                    "description": "The XMake task to customize"
-                },
-                "file": {
-                    "type": "string",
-                    "description": "The XMake file that provides the task. Can be omitted."
+            {
+                "type": "xmake",
+                "required": [
+                    "task"
+                ],
+                "properties": {
+                    "task": {
+                        "type": "string",
+                        "description": "The XMake task to customize"
+                    },
+                    "file": {
+                        "type": "string",
+                        "description": "The XMake file that provides the task. Can be omitted."
+                    }
                 }
             }
-        }],
+        ],
         "commands": [
             {
                 "command": "xmake.onCreateProject",
