@@ -107,7 +107,7 @@ export class Debugger implements vscode.Disposable {
                     type: 'cppvsdbg',
                     request: 'launch',
                     program: targetProgram,
-                    args: [],
+                    args: args,
                     stopAtEntry: true,
                     cwd: targetRunDir,
                     environment: [],
