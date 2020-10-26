@@ -780,9 +780,13 @@ export class XMake implements vscode.Disposable {
             }
         }
 
+        // get platform
+        var plat = this._option.get<string>("plat");
+        if (!plat) plat = "default";
+
         // start debugging
         if (targetProgram && fs.existsSync(targetProgram)) {
-            this._debugger.startDebugging(targetName, targetProgram, targetRunDir);
+            this._debugger.startDebugging(targetName, targetProgram, targetRunDir, plat);
         } else {
             await vscode.window.showErrorMessage('The target program not found!');
         }

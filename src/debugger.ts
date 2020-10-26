@@ -24,7 +24,7 @@ export class Debugger implements vscode.Disposable {
     }
 
     // startDebugging
-    async startDebugging(targetName?: string, targetProgram?: string, targetRunDir?: string) {
+    async startDebugging(targetName?: string, targetProgram?: string, targetRunDir?: string, plat?: string) {
 
         // no target program?
         if (!targetProgram) {
@@ -95,6 +95,23 @@ export class Debugger implements vscode.Disposable {
                     cwd: targetRunDir,
                     environment: [],
                     externalConsole: false, // @see https://github.com/xmake-io/xmake-vscode/issues/36 
+                    MIMode: "gdb",
+                    miDebuggerPath: "",
+                    description: "Enable pretty-printing for gdb",
+                    text: "-enable-pretty-printing",
+                    ignoreFailures: true
+                };
+            } else if (os.platform() == "win32" && plat == "mingw") {
+                debugConfig = {
+                    name: `launch: ${targetName}`,
+                    type: 'cppdbg',
+                    request: 'launch',
+                    program: targetProgram,
+                    args: args,
+                    stopAtEntry: true,
+                    cwd: targetRunDir,
+                    environment: [],
+                    externalConsole: true,
                     MIMode: "gdb",
                     miDebuggerPath: "",
                     description: "Enable pretty-printing for gdb",
