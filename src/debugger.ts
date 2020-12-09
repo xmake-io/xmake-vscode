@@ -111,7 +111,7 @@ export class Debugger implements vscode.Disposable {
                     stopAtEntry: true,
                     cwd: targetRunDir,
                     environment: [],
-                    externalConsole: true,
+                    externalConsole: false,
                     MIMode: "gdb",
                     miDebuggerPath: "",
                     description: "Enable pretty-printing for gdb",
