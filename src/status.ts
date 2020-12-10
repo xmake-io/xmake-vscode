@@ -61,7 +61,7 @@ export class Status implements vscode.Disposable {
 
         // init mode button
         this._modeButton.command = 'xmake.setBuildMode';
-        this._modeButton.text = `release`;
+        this._modeButton.text = `debug`;
         this._modeButton.tooltip = "Set build mode";
 
         // init build button, icons: https://octicons.github.com/
