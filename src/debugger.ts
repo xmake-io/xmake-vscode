@@ -58,7 +58,7 @@ export class Debugger implements vscode.Disposable {
             args = config.debuggingTargetsArguments["default"];
 
         // uses codelldb debugger?
-        var codelldb = false; 
+        var codelldb = false;
         if (config.debugConfigType == "codelldb" || (os.platform() == "darwin" && vscode.extensions.getExtension("vadimcn.vscode-lldb"))) {
             codelldb = true;
         }
@@ -108,7 +108,7 @@ export class Debugger implements vscode.Disposable {
                     stopAtEntry: true,
                     cwd: targetRunDir,
                     environment: [],
-                    externalConsole: false, // @see https://github.com/xmake-io/xmake-vscode/issues/36 
+                    externalConsole: false, // @see https://github.com/xmake-io/xmake-vscode/issues/36
                     MIMode: "gdb",
                     miDebuggerPath: await this.findGdbPath(),
                     description: "Enable pretty-printing for gdb",

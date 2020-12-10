@@ -27,7 +27,7 @@ export class XMake implements vscode.Disposable {
 
     // the extension context
     private _context: vscode.ExtensionContext;
-   
+
     // enable plugin?
     private _enabled: boolean = false;
 
@@ -51,7 +51,7 @@ export class XMake implements vscode.Disposable {
 
     // the log file watcher
     private _logFileSystemWatcher: vscode.FileSystemWatcher;
-    
+
     // the config file watcher
     private _configFileSystemWatcher: vscode.FileSystemWatcher;
 
@@ -60,10 +60,10 @@ export class XMake implements vscode.Disposable {
 
     // the xmake task provider
     private _xmakeTaskProvider: vscode.Disposable | undefined;
-    
+
     // the constructor
     constructor(context: vscode.ExtensionContext) {
-        
+
         // save context
         this._context = context;
 
@@ -130,7 +130,7 @@ export class XMake implements vscode.Disposable {
             this._option.set("arch", arch);
             this._status.arch = arch;
         }
-        
+
         // init build mode
         const mode = ("mode" in cacheJson && cacheJson["mode"] != "")? cacheJson["mode"] : "debug";
         this._option.set("mode", mode);
@@ -148,7 +148,7 @@ export class XMake implements vscode.Disposable {
 
     // init watcher
     async initWatcher() {
-        
+
         // init log file system watcher
         this._logFileSystemWatcher = vscode.workspace.createFileSystemWatcher(".xmake/**/vscode-build.log");
 		this._logFileSystemWatcher.onDidCreate(this.onLogFileUpdated.bind(this));
@@ -170,8 +170,8 @@ export class XMake implements vscode.Disposable {
     async refreshFolder() {
 
         // wait some times
-        await utils.sleep(2000);       
-        
+        await utils.sleep(2000);
+
         // refresh it
         vscode.commands.executeCommand('workbench.files.action.refreshFilesExplorer');
     }
@@ -197,7 +197,7 @@ export class XMake implements vscode.Disposable {
 
         // wait some times
         await utils.sleep(2000);
-        
+
         // update project cache
         let filePath = affectedPath.fsPath;
         if (filePath.includes("xmake.lua")) {
@@ -214,7 +214,7 @@ export class XMake implements vscode.Disposable {
 
         // wait some times
         await utils.sleep(2000);
-        
+
         // update problems
         let filePath = affectedPath.fsPath;
         if (filePath.includes("vscode-build.log")) {
@@ -226,11 +226,11 @@ export class XMake implements vscode.Disposable {
     async onLogFileDeleted(affectedPath: vscode.Uri) {
 
         // trace
-        log.verbose("onLogFileDeleted: " + affectedPath.fsPath);  
-    
+        log.verbose("onLogFileDeleted: " + affectedPath.fsPath);
+
         // wait some times
         await utils.sleep(2000);
-        
+
         // clear problems
         let filePath = affectedPath.fsPath;
         if (filePath.includes("vscode-build.log")) {
@@ -262,10 +262,10 @@ export class XMake implements vscode.Disposable {
 
         // init debugger
         this._debugger = new Debugger();
-        
+
         // init status
         this._status = new Status();
- 
+
         // init option
         this._option = new Option();
 
@@ -296,7 +296,7 @@ export class XMake implements vscode.Disposable {
                 let items: vscode.QuickPickItem[] = [];
                 result.split("\n").forEach(element => {
                     items.push({label: element.trim(), description: ""});
-                }); 
+                });
                 const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
                 if (chosen) {
 
@@ -306,7 +306,7 @@ export class XMake implements vscode.Disposable {
                         let items2: vscode.QuickPickItem[] = [];
                         result2.split("\n").forEach(element => {
                             items2.push({label: element.trim(), description: ""});
-                        }); 
+                        });
                         const chosen2: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items2);
                         if (chosen2) {
 
@@ -322,10 +322,10 @@ export class XMake implements vscode.Disposable {
                             // refresh folder
                             await this.refreshFolder();
                         }
-                    }        
+                    }
                 }
             }
-        }    
+        }
     }
 
     // start xmake plugin
@@ -396,7 +396,7 @@ export class XMake implements vscode.Disposable {
                 let items: vscode.QuickPickItem[] = [];
                 result.split("\n").forEach(element => {
                     items.push({label: element.trim(), description: ""});
-                }); 
+                });
                 const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
                 if (chosen) {
                     let filesdir = path.join(__dirname, "..", "..", "assets", "newfiles", chosen.label);
@@ -429,7 +429,7 @@ export class XMake implements vscode.Disposable {
 
             // get the target architecture
             let arch = this._option.get<string>("arch");
-            
+
             // get the build mode
             let mode = this._option.get<string>("mode");
 
@@ -463,7 +463,7 @@ export class XMake implements vscode.Disposable {
 
     // on clean configure project
     async onCleanConfigure(target?: string) {
-        
+
         // this plugin enabled?
         if (!this._enabled) {
             return
@@ -477,7 +477,7 @@ export class XMake implements vscode.Disposable {
         if (config.additionalConfigArguments) {
             command += ` ${config.additionalConfigArguments}`
         }
- 
+
         // configure it
         await this._terminal.execute("clean config", command);
 
@@ -493,17 +493,17 @@ export class XMake implements vscode.Disposable {
             return
         }
 
-        // add build level to command     
-        const targetName = this._option.get<string>("target");        
+        // add build level to command
+        const targetName = this._option.get<string>("target");
         const buildLevel = config.get<string>("buildLevel");
-        let command = "xmake"  
+        let command = "xmake"
         if (targetName && targetName != "default")
             command += " build";
-        if (buildLevel == "verbose") 
+        if (buildLevel == "verbose")
             command += " -v";
-        else if (buildLevel == "warning") 
+        else if (buildLevel == "warning")
             command += " -w";
-        else if (buildLevel == "debug") 
+        else if (buildLevel == "debug")
             command += " -v --backtrace";
 
         // add build target to command
@@ -514,25 +514,25 @@ export class XMake implements vscode.Disposable {
 
         // configure and build it
         await this.onConfigure(target);
-        await this._terminal.execute("build", command); 
+        await this._terminal.execute("build", command);
     }
 
     // on rebuild project
     async onRebuild(target?: string) {
-       
+
         // this plugin enabled?
         if (!this._enabled) {
             return
-        } 
+        }
 
-        // add build level to command      
+        // add build level to command
         const buildLevel = config.get<string>("buildLevel");
-        let command = "xmake -r"  
-        if (buildLevel == "verbose") 
+        let command = "xmake -r"
+        if (buildLevel == "verbose")
             command += " -v";
-        else if (buildLevel == "warning") 
+        else if (buildLevel == "warning")
             command += " -w";
-        else if (buildLevel == "debug") 
+        else if (buildLevel == "debug")
             command += " -v --backtrace";
 
         // add build target to command
@@ -544,20 +544,20 @@ export class XMake implements vscode.Disposable {
 
         // configure and rebuild it
         await this.onConfigure(target);
-        await this._terminal.execute("rebuild", command); 
+        await this._terminal.execute("rebuild", command);
     }
 
     // on clean target files
     async onClean(target?: string) {
-       
+
         // this plugin enabled?
         if (!this._enabled) {
             return
         }
- 
-        // get target name 
+
+        // get target name
         const targetName = this._option.get<string>("target");
-        
+
         // make command
         let command = "xmake c";
         if (targetName && targetName != "default")
@@ -565,20 +565,20 @@ export class XMake implements vscode.Disposable {
 
         // configure and clean it
         await this.onConfigure(target);
-        await this._terminal.execute("clean", command); 
+        await this._terminal.execute("clean", command);
     }
 
     // on clean all target files
     async onCleanAll(target?: string) {
-       
+
         // this plugin enabled?
         if (!this._enabled) {
             return
         }
- 
-        // get target name 
+
+        // get target name
         const targetName = this._option.get<string>("target");
-        
+
         // make command
         let command = "xmake c -a";
         if (targetName && targetName != "default")
@@ -591,13 +591,13 @@ export class XMake implements vscode.Disposable {
 
     // on run target
     async onRun(target?: string) {
-       
+
         // this plugin enabled?
         if (!this._enabled) {
             return
         }
 
-        // get target name 
+        // get target name
         let targetName = this._option.get<string>("target");
         if (!targetName) {
             let getDefaultTargetPathScript = path.join(__dirname, `../../assets/default_target.lua`);
@@ -606,9 +606,9 @@ export class XMake implements vscode.Disposable {
                 if (result) {
                     targetName = result.split('__end__')[0].trim();
                 }
-            }    
+            }
         }
-        
+
         // get target arguments
         let args = [];
         if (targetName && targetName in config.debuggingTargetsArguments)
@@ -621,15 +621,15 @@ export class XMake implements vscode.Disposable {
         if (args.length > 0) {
             argstr = '"' + args.join('" "') + '"';
         }
-        
+
         // make command
         let command = "xmake r"
         if (targetName && targetName != "default")
             command += ` ${targetName} ${argstr}`;
         else if (targetName == "all")
             command += " -a";
-        else command += ` ${argstr}`; 
-        
+        else command += ` ${argstr}`;
+
         // configure and run it
         await this.onConfigure(target);
         await this._terminal.execute("run", command);
@@ -637,15 +637,15 @@ export class XMake implements vscode.Disposable {
 
     // on package target
     async onPackage(target?: string) {
-       
+
         // this plugin enabled?
         if (!this._enabled) {
             return
         }
- 
-        // get target name 
+
+        // get target name
         const targetName = this._option.get<string>("target");
-        
+
         // make command
         let command = "xmake p"
         if (targetName && targetName != "default")
@@ -655,20 +655,20 @@ export class XMake implements vscode.Disposable {
 
         // configure and package it
         await this.onConfigure(target);
-        await this._terminal.execute("package", command); 
+        await this._terminal.execute("package", command);
     }
 
     // on install target
     async onInstall(target?: string) {
-        
+
         // this plugin enabled?
         if (!this._enabled) {
             return
         }
-  
-        // get target name 
+
+        // get target name
         const targetName = this._option.get<string>("target");
-         
+
         // make command
         let command = "xmake install"
         if (targetName && targetName != "default")
@@ -680,20 +680,20 @@ export class XMake implements vscode.Disposable {
 
         // configure and install it
         await this.onConfigure(target);
-        await this._terminal.execute("install", command); 
+        await this._terminal.execute("install", command);
     }
 
     // on uninstall target
     async onUninstall(target?: string) {
-        
+
         // this plugin enabled?
         if (!this._enabled) {
             return
         }
-  
-        // get target name 
+
+        // get target name
         const targetName = this._option.get<string>("target");
-         
+
         // make command
         let command = "xmake uninstall"
         if (targetName && targetName != "default")
@@ -703,12 +703,12 @@ export class XMake implements vscode.Disposable {
 
         // configure and uninstall it
         await this.onConfigure(target);
-        await this._terminal.execute("uninstall", command); 
+        await this._terminal.execute("uninstall", command);
     }
 
     // on debug target
     async onDebug(target?: string) {
-       
+
         // this plugin enabled?
         if (!this._enabled) {
             return ;
@@ -716,22 +716,22 @@ export class XMake implements vscode.Disposable {
 
         /* cpptools or codelldb externsions not found?
          *
-         * @see 
+         * @see
          * https://github.com/Microsoft/vscode-cpptools
          * https://github.com/vadimcn/vscode-lldb
          */
-        var extension = null; 
-        if (os.platform() == "darwin" || config.debugConfigType=="codelldb") {
+        var extension = null;
+        if (os.platform() == "darwin" || config.debugConfigType == "codelldb") {
             extension = vscode.extensions.getExtension("vadimcn.vscode-lldb");
         }
-        if (!extension) { 
-            extension = vscode.extensions.getExtension("ms-vscode.cpptools"); 
+        if (!extension) {
+            extension = vscode.extensions.getExtension("ms-vscode.cpptools");
         }
-        if (!extension) { 
+        if (!extension) {
 
-            // get target name 
+            // get target name
             const targetName = this._option.get<string>("target");
-            
+
             // make command
             let command = "xmake r -d";
             if (targetName && targetName != "default")
@@ -739,7 +739,7 @@ export class XMake implements vscode.Disposable {
 
             // configure and debug it
             await this.onConfigure(target);
-            await this._terminal.execute("debug", command); 
+            await this._terminal.execute("debug", command);
             return ;
         }
 
@@ -753,12 +753,12 @@ export class XMake implements vscode.Disposable {
             await vscode.window.showErrorMessage('Configuration have been changed, please rebuild program first!');
             return ;
         }
- 
-        // get target name 
+
+        // get target name
         var targetName = this._option.get<string>("target");
         if (!targetName) targetName = "default";
 
-        // get target program 
+        // get target program
         var targetProgram = null;
         let getTargetPathScript = path.join(__dirname, `../../assets/targetpath.lua`);
         if (fs.existsSync(getTargetPathScript)) {
@@ -769,7 +769,7 @@ export class XMake implements vscode.Disposable {
             }
         }
 
-        // get target run directory 
+        // get target run directory
         var targetRunDir = null;
         let getTargetRunDirScript = path.join(__dirname, `../../assets/target_rundir.lua`);
         if (fs.existsSync(getTargetRunDirScript)) {
@@ -794,7 +794,7 @@ export class XMake implements vscode.Disposable {
 
     // on macro begin
     async onMacroBegin(target?: string) {
-        
+
         // this plugin enabled?
         if (!this._enabled) {
             return
@@ -809,7 +809,7 @@ export class XMake implements vscode.Disposable {
 
     // on macro end
     async onMacroEnd(target?: string) {
-        
+
         // this plugin enabled?
         if (!this._enabled) {
             return
@@ -824,7 +824,7 @@ export class XMake implements vscode.Disposable {
 
     // on macro run
     async onMacroRun(target?: string) {
-        
+
         // this plugin enabled?
         if (!this._enabled) {
             return
@@ -836,7 +836,7 @@ export class XMake implements vscode.Disposable {
 
     // on run last command
     async onRunLastCommand(target?: string) {
-        
+
         // this plugin enabled?
         if (!this._enabled) {
             return
@@ -848,7 +848,7 @@ export class XMake implements vscode.Disposable {
 
     // set project root directory
     async setProjectRoot(target?: string) {
-        
+
         // this plugin enabled?
         if (!this._enabled) {
             return
@@ -858,12 +858,12 @@ export class XMake implements vscode.Disposable {
         if (!vscode.workspace.workspaceFolders || !vscode.workspace.workspaceFolders.length) {
             return;
         }
-    
+
         // select projects
         let items: vscode.QuickPickItem[] = [];
         vscode.workspace.workspaceFolders.forEach(workspaceFolder => {
             items.push({label: workspaceFolder.name, description: workspaceFolder.uri.fsPath});
-        });      
+        });
         const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
         if (chosen && chosen.label !== this._option.get<string>("project")) {
 
@@ -880,7 +880,7 @@ export class XMake implements vscode.Disposable {
 
     // set target platform
     async setTargetPlat(target?: string) {
-        
+
         // this plugin enabled?
         if (!this._enabled) {
             return
@@ -904,7 +904,7 @@ export class XMake implements vscode.Disposable {
             this._status.plat = chosen.label;
             this._optionChanged = true;
 
-            // update architecture  
+            // update architecture
             let plat = chosen.label;
             let arch = "";
             const host = {win32: 'windows', darwin: 'macosx', linux: 'linux'}[os.platform()];
@@ -923,7 +923,7 @@ export class XMake implements vscode.Disposable {
 
     // set target architecture
     async setTargetArch(target?: string) {
-        
+
          // this plugin enabled?
          if (!this._enabled) {
              return
@@ -942,7 +942,7 @@ export class XMake implements vscode.Disposable {
                 result = result.split("__end__")[0].trim();
                 result.split("\n").forEach(element => {
                     items.push({label: element.trim(), description: "The " + element.trim() + " Architecture"});
-                }); 
+                });
                 const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
                 if (chosen && chosen.label !== this._option.get<string>("arch")) {
                     this._option.set("arch", chosen.label);
@@ -955,7 +955,7 @@ export class XMake implements vscode.Disposable {
 
     // set build mode
     async setBuildMode(target?: string) {
-        
+
         // this plugin enabled?
         if (!this._enabled) {
             return
@@ -975,7 +975,7 @@ export class XMake implements vscode.Disposable {
 
     // set default target
     async setDefaultTarget(target?: string) {
-        
+
         // this plugin enabled?
         if (!this._enabled) {
             return
@@ -999,7 +999,7 @@ export class XMake implements vscode.Disposable {
             targets.split('\n').forEach(element => {
                 element = element.trim();
                 if (element.length > 0)
-                    items.push({label: element, description: "The Project Target: " + element}); 
+                    items.push({label: element, description: "The Project Target: " + element});
             });
         }
         const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
