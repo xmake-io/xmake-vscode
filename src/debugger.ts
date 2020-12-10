@@ -6,6 +6,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import * as encoding from 'encoding';
+import * as process from './process';
 import { log } from './log';
 import { config } from './config';
 
@@ -21,6 +22,19 @@ export class Debugger implements vscode.Disposable {
 
     // dispose
     public dispose() {
+    }
+
+    // find gdb path
+    async findGdbPath() {
+        var gdbPath = null;
+        let findGdbScript = path.join(__dirname, `../../assets/find_gdb.lua`);
+        if (fs.existsSync(findGdbScript)) {
+            gdbPath = (await process.iorunv("xmake", ["l", findGdbScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            if (gdbPath) {
+                gdbPath = gdbPath.split('\n')[0].trim();
+            }
+        }
+        return gdbPath? gdbPath : "";
     }
 
     // startDebugging
@@ -96,7 +110,7 @@ export class Debugger implements vscode.Disposable {
                     environment: [],
                     externalConsole: false, // @see https://github.com/xmake-io/xmake-vscode/issues/36 
                     MIMode: "gdb",
-                    miDebuggerPath: "",
+                    miDebuggerPath: await this.findGdbPath(),
                     description: "Enable pretty-printing for gdb",
                     text: "-enable-pretty-printing",
                     ignoreFailures: true
@@ -113,7 +127,7 @@ export class Debugger implements vscode.Disposable {
                     environment: [],
                     externalConsole: false,
                     MIMode: "gdb",
-                    miDebuggerPath: "",
+                    miDebuggerPath: await this.findGdbPath(),
                     description: "Enable pretty-printing for gdb",
                     text: "-enable-pretty-printing",
                     ignoreFailures: true
