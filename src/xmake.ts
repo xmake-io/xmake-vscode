@@ -132,7 +132,7 @@ export class XMake implements vscode.Disposable {
         }
         
         // init build mode
-        const mode = ("mode" in cacheJson && cacheJson["mode"] != "")? cacheJson["mode"] : "release";
+        const mode = ("mode" in cacheJson && cacheJson["mode"] != "")? cacheJson["mode"] : "debug";
         this._option.set("mode", mode);
         this._status.mode = mode;
     }
@@ -721,7 +721,7 @@ export class XMake implements vscode.Disposable {
          * https://github.com/vadimcn/vscode-lldb
          */
         var extension = null; 
-        if (os.platform() == "darwin") {
+        if (os.platform() == "darwin" || config.debugConfigType=="codelldb") {
             extension = vscode.extensions.getExtension("vadimcn.vscode-lldb");
         }
         if (!extension) { 
