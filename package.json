@@ -2,7 +2,7 @@
   "name": "xmake-vscode",
   "displayName": "XMake",
   "description": "Extended XMake support in Visual Studio Code",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "publisher": "tboox",
   "icon": "res/logo256.png",
   "repository": {
@@ -22,7 +22,7 @@
     "lua"
   ],
   "engines": {
-      "vscode": "^1.60.0"
+    "vscode": "^1.60.0"
   },
   "categories": [
     "Other"
