@@ -40,7 +40,7 @@ export function iorunv(program: string, args: string[], env: {[key: string]: str
 
     // trace
     log.verbose('os.execv: ' + [program].concat(args).map(a => a.replace('"', '\"')).map(a => /[ \n\r\f;\t]/.test(a) ? `"${a}"` : a).join(' '));
-    
+
     // return exenution result promise
     return new Promise<IExecutionResult>((resolve, reject) => {
         const child = proc.spawn(program, args, {env: addenv(process.env, env), cwd: workingDirectory});
@@ -75,7 +75,7 @@ export function execv(program: string, args: string[], env: {[key: string]: stri
     // execute process
     const pipe = proc.spawn(program, args, {env: addenv(process.env, env), cwd: workingDirectory});
 
-    // handle stdout and stderr stream 
+    // handle stdout and stderr stream
     const acc = {stdout: '', stderr: ''};
     for (const [acckey, stream] of [['stdout', pipe.stdout], ['stderr', pipe.stderr]] as [string,  NodeJS.ReadableStream][]) {
 
@@ -84,11 +84,11 @@ export function execv(program: string, args: string[], env: {[key: string]: stri
 
             // save data to acc
             acc[acckey] += data.toString();
-            
+
             // append data ot backlog
             backlog += data.toString();
 
-            // got a \n? emit one or more 'line' events 
+            // got a \n? emit one or more 'line' events
             let n = backlog.indexOf('\n');
             while (n >= 0) {
                 stream.emit('line', backlog.substring(0, n).replace(/\r+$/, ''));

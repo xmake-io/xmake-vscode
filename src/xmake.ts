@@ -137,12 +137,12 @@ export class XMake implements vscode.Disposable {
         this._status.mode = mode;
     }
 
-    // update IntelliSense
-    async updateIntelliSense() {
-        log.verbose("updating IntelliSense ..");
-        let updateIntelliSenseScript = path.join(__dirname, `../../assets/update_intellisense.lua`);
-        if (fs.existsSync(updateIntelliSenseScript)) {
-            await process.runv("xmake", ["l", updateIntelliSenseScript], {"COLORTERM": "nocolor"}, config.workingDirectory);
+    // update Intellisense
+    async updateIntellisense() {
+        log.verbose("updating Intellisense ..");
+        let updateIntellisenseScript = path.join(__dirname, `../../assets/update_intellisense.lua`);
+        if (fs.existsSync(updateIntellisenseScript)) {
+            await process.runv("xmake", ["l", updateIntellisenseScript], {"COLORTERM": "nocolor"}, config.workingDirectory);
         }
     }
 
@@ -202,7 +202,7 @@ export class XMake implements vscode.Disposable {
         let filePath = affectedPath.fsPath;
         if (filePath.includes("xmake.lua")) {
             this.loadCache();
-            this.updateIntelliSense();
+            this.updateIntellisense();
         }
     }
 
@@ -794,56 +794,39 @@ export class XMake implements vscode.Disposable {
 
     // on macro begin
     async onMacroBegin(target?: string) {
-
-        // this plugin enabled?
-        if (!this._enabled) {
-            return
+        if (this._enabled) {
+            await this._terminal.execute("macro begin", "xmake m -b");
+            this._status.startRecord();
         }
-
-        // begin marco
-        await this._terminal.execute("macro begin", "xmake m -b");
-
-        // update status: start to record
-        this._status.startRecord();
     }
 
     // on macro end
     async onMacroEnd(target?: string) {
-
-        // this plugin enabled?
-        if (!this._enabled) {
-            return
+        if (this._enabled) {
+            await this._terminal.execute("macro end", "xmake m -e");
+            this._status.stopRecord();
         }
-
-        // end marco
-        await this._terminal.execute("macro end", "xmake m -e");
-
-        // update status: stop to record
-        this._status.stopRecord();
     }
 
     // on macro run
     async onMacroRun(target?: string) {
-
-        // this plugin enabled?
-        if (!this._enabled) {
-            return
+        if (this._enabled) {
+            await this._terminal.execute("macro run", "xmake m .");
         }
-
-        // end marco
-        await this._terminal.execute("macro run", "xmake m .");
     }
 
     // on run last command
     async onRunLastCommand(target?: string) {
-
-        // this plugin enabled?
-        if (!this._enabled) {
-            return
+        if (this._enabled) {
+            await this._terminal.execute("macro run last", "xmake m ..");
         }
+    }
 
-        // end marco
-        await this._terminal.execute("macro run last", "xmake m ..");
+    // on update intellisense
+    async onUpdateIntellisense(target?: string) {
+        if (this._enabled) {
+            await this.updateIntellisense();
+        }
     }
 
     // set project root directory
