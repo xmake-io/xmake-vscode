@@ -142,7 +142,7 @@ export class XMake implements vscode.Disposable {
         log.verbose("updating Intellisense ..");
         let updateIntellisenseScript = path.join(__dirname, `../../assets/update_intellisense.lua`);
         if (fs.existsSync(updateIntellisenseScript)) {
-            await process.runv("xmake", ["l", updateIntellisenseScript], {"COLORTERM": "nocolor"}, config.workingDirectory);
+            await process.runv("xmake", ["l", updateIntellisenseScript, config.compileCommandsDirectory], {"COLORTERM": "nocolor"}, config.workingDirectory);
         }
     }
 

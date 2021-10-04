@@ -56,6 +56,11 @@ export class Config {
     get WDKDirectory(): string {
         return utils.replaceVars(this.get<string>("WDKDirectory"));
     }
+  
+    // the compile_commands.json directory
+    get compileCommandsDirectory(): string {
+        return utils.replaceVars(this.get<string>("compileCommandsDirectory"));
+    }
 
     // the additional config arguments
     get additionalConfigArguments(): string {

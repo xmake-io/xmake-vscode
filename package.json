@@ -334,6 +334,11 @@
           "default": "",
           "description": "The WDK Directory"
         },
+        "xmake.compileCommandsDirectory": {
+          "type": "string",
+          "default": ".vscode",
+          "description": "The compile_commands.json file directory"
+        },
         "xmake.additionalConfigArguments": {
           "type": "string",
           "default": "",
