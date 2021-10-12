@@ -128,6 +128,11 @@ Please see [IntelliSense for cross-compiling](https://code.visualstudio.com/docs
         "type": "object",
         "title": "XMake configuration",
         "properties": {
+            "xmake.executable": {
+                "type": "string",
+                "default": "xmake",
+                "description": "The xmake executable name / path"
+            },
             "xmake.logLevel": {
                 "type": "string",
                 "default": "normal",

@@ -29,7 +29,7 @@ export class Debugger implements vscode.Disposable {
         var gdbPath = null;
         let findGdbScript = path.join(__dirname, `../../assets/find_gdb.lua`);
         if (fs.existsSync(findGdbScript)) {
-            gdbPath = (await process.iorunv("xmake", ["l", findGdbScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            gdbPath = (await process.iorunv(config.executable, ["l", findGdbScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
             if (gdbPath) {
                 gdbPath = gdbPath.split('\n')[0].trim();
             }
