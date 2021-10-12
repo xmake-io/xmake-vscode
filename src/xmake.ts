@@ -110,7 +110,7 @@ export class XMake implements vscode.Disposable {
         let cacheJson = {}
         let getConfigPathScript = path.join(__dirname, `../../assets/config.lua`);
         if (fs.existsSync(getConfigPathScript)) {
-            let configs = (await process.iorunv("xmake", ["l", getConfigPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            let configs = (await process.iorunv(config.executable, ["l", getConfigPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
             if (configs) {
                 configs = configs.split('__end__')[0].trim();
                 cacheJson = JSON.parse(configs);
@@ -142,7 +142,7 @@ export class XMake implements vscode.Disposable {
         log.verbose("updating Intellisense ..");
         let updateIntellisenseScript = path.join(__dirname, `../../assets/update_intellisense.lua`);
         if (fs.existsSync(updateIntellisenseScript)) {
-            await process.runv("xmake", ["l", updateIntellisenseScript, config.compileCommandsDirectory], {"COLORTERM": "nocolor"}, config.workingDirectory);
+            await process.runv(config.executable, ["l", updateIntellisenseScript, config.compileCommandsDirectory], {"COLORTERM": "nocolor"}, config.workingDirectory);
         }
     }
 
@@ -291,7 +291,7 @@ export class XMake implements vscode.Disposable {
         let getLanguagesScript = path.join(__dirname, `../../assets/languages.lua`);
         let gettemplatesScript = path.join(__dirname, `../../assets/templates.lua`);
         if (fs.existsSync(getLanguagesScript) && fs.existsSync(gettemplatesScript)) {
-            let result = (await process.iorunv("xmake", ["l", getLanguagesScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            let result = (await process.iorunv(config.executable, ["l", getLanguagesScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
             if (result) {
                 let items: vscode.QuickPickItem[] = [];
                 result.split("\n").forEach(element => {
@@ -301,7 +301,7 @@ export class XMake implements vscode.Disposable {
                 if (chosen) {
 
                     // select template
-                    let result2 = (await process.iorunv("xmake", ["l", gettemplatesScript, chosen.label], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+                    let result2 = (await process.iorunv(config.executable, ["l", gettemplatesScript, chosen.label], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
                     if (result2) {
                         let items2: vscode.QuickPickItem[] = [];
                         result2.split("\n").forEach(element => {
@@ -314,7 +314,7 @@ export class XMake implements vscode.Disposable {
                             if (!this._terminal) {
                                 this._terminal = new Terminal();
                             }
-                            await this._terminal.execute("create", `xmake create -t ${chosen2.label} -l ${chosen.label} -P ${config.workingDirectory}`);
+                            await this._terminal.execute("create", `${config.executable} create -t ${chosen2.label} -l ${chosen.label} -P ${config.workingDirectory}`);
 
                             // start plugin
                             this.startPlugin();
@@ -344,7 +344,7 @@ export class XMake implements vscode.Disposable {
         log.verbose(`start in ${config.workingDirectory}`);
 
         // check xmake
-        if (0 != (await process.runv("xmake", ["--version"], {"COLORTERM": "nocolor"}, config.workingDirectory)).retval) {
+        if (0 != (await process.runv(config.executable, ["--version"], {"COLORTERM": "nocolor"}, config.workingDirectory)).retval) {
             if (!!(await vscode.window.showErrorMessage('xmake not found!',
                 'Access https://xmake.io to download and install xmake first!'))) {
             }
@@ -391,7 +391,7 @@ export class XMake implements vscode.Disposable {
         // select files
         let getFilesListScript = path.join(__dirname, `../../assets/newfiles.lua`);
         if (fs.existsSync(getFilesListScript) && fs.existsSync(getFilesListScript)) {
-            let result = (await process.iorunv("xmake", ["l", getFilesListScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            let result = (await process.iorunv(config.executable, ["l", getFilesListScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
             if (result) {
                 let items: vscode.QuickPickItem[] = [];
                 result.split("\n").forEach(element => {
@@ -403,7 +403,7 @@ export class XMake implements vscode.Disposable {
                     if (fs.existsSync(filesdir)) {
 
                         // copy files
-                        await process.runv("xmake", ["l", "os.cp", path.join(filesdir, "*"), config.workingDirectory], {"COLORTERM": "nocolor"}, config.workingDirectory);
+                        await process.runv(config.executable, ["l", "os.cp", path.join(filesdir, "*"), config.workingDirectory], {"COLORTERM": "nocolor"}, config.workingDirectory);
 
                         // refresh folder
                         await this.refreshFolder();
@@ -434,7 +434,7 @@ export class XMake implements vscode.Disposable {
             let mode = this._option.get<string>("mode");
 
             // make command
-            let command = `xmake f -p ${plat} -a ${arch} -m ${mode}`;
+            let command = `${config.executable} f -p ${plat} -a ${arch} -m ${mode}`;
             if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
                 command += ` --ndk=\"${config.androidNDKDirectory}\"`;
             }
@@ -470,7 +470,7 @@ export class XMake implements vscode.Disposable {
         }
 
         // make command
-        let command = `xmake f -c`;
+        let command = `${config.executable} f -c`;
         if (config.buildDirectory != "" && config.buildDirectory != path.join(utils.getProjectRoot(), "build")) {
             command += ` -o \"${config.buildDirectory}\"`
         }
@@ -496,7 +496,7 @@ export class XMake implements vscode.Disposable {
         // add build level to command
         const targetName = this._option.get<string>("target");
         const buildLevel = config.get<string>("buildLevel");
-        let command = "xmake"
+        let command = config.executable;
         if (targetName && targetName != "default")
             command += " build";
         if (buildLevel == "verbose")
@@ -527,7 +527,7 @@ export class XMake implements vscode.Disposable {
 
         // add build level to command
         const buildLevel = config.get<string>("buildLevel");
-        let command = "xmake -r"
+        let command = `${config.executable} -r`;
         if (buildLevel == "verbose")
             command += " -v";
         else if (buildLevel == "warning")
@@ -559,7 +559,7 @@ export class XMake implements vscode.Disposable {
         const targetName = this._option.get<string>("target");
 
         // make command
-        let command = "xmake c";
+        let command = `${config.executable} c`;
         if (targetName && targetName != "default")
             command += ` ${targetName}`;
 
@@ -580,7 +580,7 @@ export class XMake implements vscode.Disposable {
         const targetName = this._option.get<string>("target");
 
         // make command
-        let command = "xmake c -a";
+        let command = `${config.executable} c -a`;
         if (targetName && targetName != "default")
             command += ` ${targetName}`;
 
@@ -602,7 +602,7 @@ export class XMake implements vscode.Disposable {
         if (!targetName) {
             let getDefaultTargetPathScript = path.join(__dirname, `../../assets/default_target.lua`);
             if (fs.existsSync(getDefaultTargetPathScript)) {
-                let result = (await process.iorunv("xmake", ["l", getDefaultTargetPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+                let result = (await process.iorunv(config.executable, ["l", getDefaultTargetPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
                 if (result) {
                     targetName = result.split('__end__')[0].trim();
                 }
@@ -623,7 +623,7 @@ export class XMake implements vscode.Disposable {
         }
 
         // make command
-        let command = "xmake r"
+        let command = `${config.executable} r`;
         if (targetName && targetName != "default")
             command += ` ${targetName} ${argstr}`;
         else if (targetName == "all")
@@ -647,7 +647,7 @@ export class XMake implements vscode.Disposable {
         const targetName = this._option.get<string>("target");
 
         // make command
-        let command = "xmake p"
+        let command = `${config.executable} p`;
         if (targetName && targetName != "default")
             command += ` ${targetName}`;
         else if (targetName == "all")
@@ -670,7 +670,7 @@ export class XMake implements vscode.Disposable {
         const targetName = this._option.get<string>("target");
 
         // make command
-        let command = "xmake install"
+        let command = `${config.executable} install`;
         if (targetName && targetName != "default")
             command += ` ${targetName}`;
         else if (targetName == "all")
@@ -695,7 +695,7 @@ export class XMake implements vscode.Disposable {
         const targetName = this._option.get<string>("target");
 
         // make command
-        let command = "xmake uninstall"
+        let command = `${config.executable} uninstall`;
         if (targetName && targetName != "default")
             command += ` ${targetName}`;
         if (config.installDirectory != "")
@@ -733,7 +733,7 @@ export class XMake implements vscode.Disposable {
             const targetName = this._option.get<string>("target");
 
             // make command
-            let command = "xmake r -d";
+            let command = `${config.executable} r -d`;
             if (targetName && targetName != "default")
                 command += ` ${targetName}`;
 
@@ -762,7 +762,7 @@ export class XMake implements vscode.Disposable {
         var targetProgram = null;
         let getTargetPathScript = path.join(__dirname, `../../assets/targetpath.lua`);
         if (fs.existsSync(getTargetPathScript)) {
-            targetProgram = (await process.iorunv("xmake", ["l", getTargetPathScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            targetProgram = (await process.iorunv(config.executable, ["l", getTargetPathScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
             if (targetProgram) {
                 targetProgram = targetProgram.split("__end__")[0].trim();
                 targetProgram = targetProgram.split('\n')[0].trim();
@@ -773,7 +773,7 @@ export class XMake implements vscode.Disposable {
         var targetRunDir = null;
         let getTargetRunDirScript = path.join(__dirname, `../../assets/target_rundir.lua`);
         if (fs.existsSync(getTargetRunDirScript)) {
-            targetRunDir = (await process.iorunv("xmake", ["l", getTargetRunDirScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            targetRunDir = (await process.iorunv(config.executable, ["l", getTargetRunDirScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
             if (targetRunDir) {
                 targetRunDir = targetRunDir.split("__end__")[0].trim();
                 targetRunDir = targetRunDir.split('\n')[0].trim();
@@ -795,7 +795,7 @@ export class XMake implements vscode.Disposable {
     // on macro begin
     async onMacroBegin(target?: string) {
         if (this._enabled) {
-            await this._terminal.execute("macro begin", "xmake m -b");
+            await this._terminal.execute("macro begin", `${config.executable} m -b`);
             this._status.startRecord();
         }
     }
@@ -803,7 +803,7 @@ export class XMake implements vscode.Disposable {
     // on macro end
     async onMacroEnd(target?: string) {
         if (this._enabled) {
-            await this._terminal.execute("macro end", "xmake m -e");
+            await this._terminal.execute("macro end", `${config.executable} m -e`);
             this._status.stopRecord();
         }
     }
@@ -811,14 +811,14 @@ export class XMake implements vscode.Disposable {
     // on macro run
     async onMacroRun(target?: string) {
         if (this._enabled) {
-            await this._terminal.execute("macro run", "xmake m .");
+            await this._terminal.execute("macro run", `${config.executable} m .`);
         }
     }
 
     // on run last command
     async onRunLastCommand(target?: string) {
         if (this._enabled) {
-            await this._terminal.execute("macro run last", "xmake m ..");
+            await this._terminal.execute("macro run last", `${config.executable} m ..`);
         }
     }
 
@@ -919,7 +919,7 @@ export class XMake implements vscode.Disposable {
         // select files
         let getArchListScript = path.join(__dirname, `../../assets/archs.lua`);
         if (fs.existsSync(getArchListScript) && fs.existsSync(getArchListScript)) {
-            let result = (await process.iorunv("xmake", ["l", getArchListScript, plat], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            let result = (await process.iorunv(config.executable, ["l", getArchListScript, plat], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
             if (result) {
                 let items: vscode.QuickPickItem[] = [];
                 result = result.split("__end__")[0].trim();
@@ -968,7 +968,7 @@ export class XMake implements vscode.Disposable {
         let targets = "";
         let getTargetsPathScript = path.join(__dirname, `../../assets/targets.lua`);
         if (fs.existsSync(getTargetsPathScript)) {
-            targets = (await process.iorunv("xmake", ["l", getTargetsPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            targets = (await process.iorunv(config.executable, ["l", getTargetsPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
             if (targets) {
                 targets = targets.split("__end__")[0].trim();
             }

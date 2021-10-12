@@ -22,6 +22,11 @@ export class Config {
         }
     }
 
+    // the xmake executable name / path
+    get executable(): string {
+        return utils.replaceVars(this.get<string>("executable"));
+    }
+
     // the build directory
     get buildDirectory(): string {
         return utils.replaceVars(this.get<string>("buildDirectory"));
