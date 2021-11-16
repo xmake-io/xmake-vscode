@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   version="1.1"
+   id="svg28"
+   sodipodi:docname="logo-mono.svg"
+   inkscape:version="1.1 (ce6663b3b7, 2021-05-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <metadata
+     id="metadata32">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1224"
+     inkscape:window-height="738"
+     id="namedview30"
+     showgrid="false"
+     inkscape:zoom="4"
+     inkscape:cx="-16.375"
+     inkscape:cy="44.25"
+     inkscape:window-x="56"
+     inkscape:window-y="1105"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg28"
+     inkscape:document-rotation="0"
+     inkscape:pagecheckerboard="0" />
+  <defs
+     id="defs16">
+    <filter
+       id="dropshadow">
+      <feGaussianBlur
+         in="SourceGraphic"
+         stdDeviation="0.5"
+         id="feGaussianBlur2" />
+      <feOffset
+         dx="-0.3"
+         dy="-0.3"
+         result="offsetblur"
+         id="feOffset4" />
+      <feMerge
+         id="feMerge10">
+        <feMergeNode
+           id="feMergeNode6" />
+        <feMergeNode
+           in="SourceGraphic"
+           id="feMergeNode8" />
+      </feMerge>
+    </filter>
+    <clipPath
+       id="circlewrapper">
+      <circle
+         cx="32"
+         cy="32"
+         r="27"
+         id="circle13" />
+    </clipPath>
+  </defs>
+  <style
+     type="text/css"
+     id="style18">
+        #background{
+            fill:white;
+        }
+        #midground{
+            fill:#8BC34A;
+        }
+        #shadowline{
+            stroke:#444;
+            stroke-width:1px;
+            fill:transparent;
+        }
+        #foreground{
+            fill:rgba(0,150,136,0.76);
+        }
+        #inside_g{
+            clip-path:url(#circlewrapper);
+        }
+        #outside_g{
+            fill:#e0f2f1;
+        }
+        #inside_layout{
+            transform:translateY(5px);
+        }
+        #outside_s{
+            filter:url(#dropshadow);
+            fill:rgba(0,0,0,0.2);
+        }
+        #inside_w{
+            filter:url(#dropshadow);
+        }
+    </style>
+  <ellipse
+     style="fill:none;stroke:#c5c5c5;stroke-width:3.597;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     id="path857"
+     cx="32"
+     cy="31.999996"
+     rx="28.202"
+     ry="28.201738" />
+  <path
+     style="fill:none;stroke:#c5c5c5;stroke-width:3.61724;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 8.5676467,17.8883 57.396176,48.061174"
+     id="path859" />
+  <path
+     style="fill:none;stroke:#c5c5c5;stroke-width:3.52528;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 4.7854064,39.062145 50.049238,11.145237"
+     id="path861" />
+</svg>

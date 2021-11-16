@@ -49,18 +49,45 @@ export function iorunv(program: string, args: string[], env: {[key: string]: str
         });
         let stdout_acc = '';
         let stderr_acc = '';
+
+        let proc_end = false;
+        let proc_ret = 0;
+        let stdout_end = false;
+        let stderr_end = false;
+
         child.stdout.on('data', (data: Uint8Array) => {
+            log.info(data.toString());
             stdout_acc += data.toString();
         });
+
+        child.stdout.on('end', () => {
+            if (proc_end && stderr_end)
+                resolve({ retval: proc_ret, stdout: stdout_acc, stderr: stderr_acc })
+            else
+                stdout_end = true;
+        });
+
         child.stderr.on('data', (data: Uint8Array) => {
             stderr_acc += data.toString();
         });
+
+        child.stdout.on('end', () => {
+            if (proc_end && stdout_end)
+                resolve({ retval: proc_ret, stdout: stdout_acc, stderr: stderr_acc })
+            else
+                stderr_end = true;
+        });
+
         child.on('exit', (retval) => {
-            resolve({retval: retval, stdout: stdout_acc, stderr: stderr_acc});
+            if (stdout_end && stderr_end)
+                resolve({ retval: retval, stdout: stdout_acc, stderr: stderr_acc });
+            else {
+                proc_end = true;
+                proc_ret = retval;
+            }
         });
     });
 }
-
 // execute shell program with arguments and without output
 export function runv(program: string, args: string[], env: {[key: string]: string} = {}, workingDirectory?: string): Promise<IExecutionResult> {
     return execv(program, args, env, workingDirectory, null);
