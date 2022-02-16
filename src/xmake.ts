@@ -611,10 +611,10 @@ export class XMake implements vscode.Disposable {
 
         // get target arguments
         let args = [];
-        if (targetName && targetName in config.debuggingTargetsArguments)
-            args = config.debuggingTargetsArguments[targetName];
-        else if ("default" in config.debuggingTargetsArguments)
-            args = config.debuggingTargetsArguments["default"];
+        if (targetName && targetName in config.runningTargetsArguments)
+            args = config.runningTargetsArguments[targetName];
+        else if ("default" in config.runningTargetsArguments)
+            args = config.runningTargetsArguments["default"];
 
         // make command line arguments string
         let argstr = "";
