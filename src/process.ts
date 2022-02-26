@@ -4,6 +4,7 @@
 import * as vscode from 'vscode';
 import * as proc from 'child_process';
 import * as fs from 'fs';
+import * as convertor  from './bytes2string';
 import {log} from './log';
 
 // the execution result interface
@@ -50,10 +51,12 @@ export function iorunv(program: string, args: string[], env: {[key: string]: str
         let stdout_acc = '';
         let stderr_acc = '';
         child.stdout.on('data', (data: Uint8Array) => {
-            stdout_acc += data.toString();
+            // stdout_acc += data.toString();
+            stdout_acc += convertor.bytes2string(data);
         });
         child.stderr.on('data', (data: Uint8Array) => {
-            stderr_acc += data.toString();
+            // stderr_acc += data.toString();
+            stderr_acc += convertor.bytes2string(data);
         });
         child.on('exit', (retval) => {
             resolve({retval: retval, stdout: stdout_acc, stderr: stderr_acc});
@@ -83,10 +86,12 @@ export function execv(program: string, args: string[], env: {[key: string]: stri
         stream.on('data', (data: Uint8Array) => {
 
             // save data to acc
-            acc[acckey] += data.toString();
+            // acc[acckey] += data.toString();
+            acc[acckey] += convertor.bytes2string(data);
 
             // append data ot backlog
-            backlog += data.toString();
+            // backlog += data.toString();
+            backlog += convertor.bytes2string(data);
 
             // got a \n? emit one or more 'line' events
             let n = backlog.indexOf('\n');
