@@ -246,6 +246,24 @@
         "title": "Clean",
         "category": "XMake",
         "enablement": "view == xmakeExplorer"
+      },
+      {
+        "command": "xmakeExplorer.runAll",
+        "title": "Run All",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
+      },
+      {
+        "command": "xmakeExplorer.run",
+        "title": "Run",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
+      },
+      {
+        "command": "xmakeExplorer.debug",
+        "title": "Debug",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
       }
     ],
     "menus": {
@@ -330,6 +348,10 @@
         {
           "command": "xmakeExplorer.cleanAll",
           "when": "view == xmakeExplorer"
+        },
+        {
+          "command": "xmakeExplorer.runAll",
+          "when": "view == xmakeExplorer"
         }
       ],
       "view/item/context": [
@@ -344,6 +366,14 @@
         },
         {
           "command": "xmakeExplorer.clean",
+          "when": "view == xmakeExplorer && viewItem == target"
+        },
+        {
+          "command": "xmakeExplorer.run",
+          "when": "view == xmakeExplorer && viewItem == target"
+        },
+        {
+          "command": "xmakeExplorer.debug",
           "when": "view == xmakeExplorer && viewItem == target"
         }
       ]
