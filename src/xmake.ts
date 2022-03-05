@@ -170,6 +170,18 @@ export class XMake implements vscode.Disposable {
         this._projectFileSystemWatcher = vscode.workspace.createFileSystemWatcher("**/xmake.lua");
         this._projectFileSystemWatcher.onDidCreate(this.onProjectFileUpdated.bind(this));
         this._projectFileSystemWatcher.onDidChange(this.onProjectFileUpdated.bind(this));
+
+        this._context.subscriptions.push(
+            vscode.workspace.onDidCreateFiles((e: vscode.FileCreateEvent) => {
+                this._xmakeExplorer.refresh();
+            })
+        );
+
+        this._context.subscriptions.push(
+            vscode.workspace.onDidDeleteFiles((e: vscode.FileDeleteEvent) => {
+                this._xmakeExplorer.refresh();
+            })
+        );
     }
 
     // refresh folder
@@ -192,6 +204,7 @@ export class XMake implements vscode.Disposable {
         let filePath = affectedPath.fsPath;
         if (filePath.includes("xmake.conf")) {
             this.loadCache();
+            this._xmakeExplorer.refresh();
         }
     }
 
@@ -426,6 +439,8 @@ export class XMake implements vscode.Disposable {
                 }
             }
         }
+
+        this._xmakeExplorer.refresh();
     }
 
     // on configure project
