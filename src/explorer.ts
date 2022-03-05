@@ -171,6 +171,14 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
 
     async refresh(targets: any) {
 
+        // Sort targets so they appear correctly in the tree view
+        targets.sort((t1, t2) => {
+            if(t1.group === t2.group)
+                return t1.name.localeCompare(t2.name);
+            
+            return t1.group.localeCompare(t2.group);
+        });
+
         const root = new XMakeExplorerHierarchyNode({ type: XMakeExplorerItemType.ROOT });
 
         // Add the root xmake.lua
@@ -212,6 +220,9 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
             const scriptPath = this.splitPath(targetScript);
             targetNode.children.push(new XMakeExplorerHierarchyNode({ type: XMakeExplorerItemType.FILE, group: groups, target: target.name, path: scriptPath }));
 
+            // Sort files so that they appear the same when refreshed
+            target.files.sort();
+
             // Create folder hierarchy
 
             for (let file of target.files) {
@@ -239,9 +250,6 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
                 current = current.children[current.children.length - 1];
             }
         }
-
-        // Sort the hierarchy
-        this.sortHierarchy(root);
 
         // Merge expand status
         this.mergeExpandState(this.hierarchy, root);
