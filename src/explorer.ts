@@ -729,18 +729,24 @@ export class XMakeExplorer implements vscode.Disposable {
         });
 
         vscode.commands.registerCommand('xmakeExplorer.build', (item: XMakeExplorerItem) => {
-            if (item.info.type == XMakeExplorerItemType.TARGET)
+            if (item.info.type == XMakeExplorerItemType.TARGET) {
+                vscode.commands.executeCommand("xmake.setTarget", item.info.target);
                 vscode.commands.executeCommand("xmake.onBuild", item.info.target);
+            }
         });
 
         vscode.commands.registerCommand('xmakeExplorer.rebuild', (item: XMakeExplorerItem) => {
-            if (item.info.type == XMakeExplorerItemType.TARGET)
+            if (item.info.type == XMakeExplorerItemType.TARGET){
+                vscode.commands.executeCommand("xmake.setTarget", item.info.target);
                 vscode.commands.executeCommand("xmake.onRebuild", item.info.target);
+            }
         });
 
         vscode.commands.registerCommand('xmakeExplorer.clean', (item: XMakeExplorerItem) => {
-            if (item.info.type == XMakeExplorerItemType.TARGET)
+            if (item.info.type == XMakeExplorerItemType.TARGET) {
+                vscode.commands.executeCommand("xmake.setTarget", item.info.target);
                 vscode.commands.executeCommand("xmake.onClean", item.info.target);
+            }
         });
 
         vscode.commands.registerCommand('xmakeExplorer.runAll', () => {
@@ -748,13 +754,17 @@ export class XMakeExplorer implements vscode.Disposable {
         });
 
         vscode.commands.registerCommand('xmakeExplorer.run', (item: XMakeExplorerItem) => {
-            if(item.info.type == XMakeExplorerItemType.TARGET)
+            if(item.info.type == XMakeExplorerItemType.TARGET){
+                vscode.commands.executeCommand("xmake.setTarget", item.info.target);
                 vscode.commands.executeCommand("xmake.onRun", item.info.target);
+            }
         });
 
         vscode.commands.registerCommand('xmakeExplorer.debug', (item: XMakeExplorerItem) => {
-            if(item.info.type == XMakeExplorerItemType.TARGET)
+            if(item.info.type == XMakeExplorerItemType.TARGET) {
+                vscode.commands.executeCommand("xmake.setTarget", item.info.target);
                 vscode.commands.executeCommand("xmake.onDebug", item.info.target);
+            }
         });
     }
 

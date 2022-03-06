@@ -1024,4 +1024,9 @@ export class XMake implements vscode.Disposable {
             this._status.target = chosen.label;
         }
     }
+
+    async setTarget(target?: string) {
+        this._option.set("target", target);
+        this._status.target = target;
+    }
 };
