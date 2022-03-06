@@ -361,6 +361,10 @@
           "group": "inline"
         },
         {
+          "command": "xmakeExplorer.build",
+          "when": "view == xmakeExplorer && viewItem == target"
+        },
+        {
           "command": "xmakeExplorer.rebuild",
           "when": "view == xmakeExplorer && viewItem == target"
         },
