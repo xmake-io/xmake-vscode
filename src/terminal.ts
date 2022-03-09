@@ -34,7 +34,7 @@ export class Terminal implements vscode.Disposable {
             // execute the next task
             if (this._tasks.length > 0) {
                 let task = this._tasks[0];
-                vscode.tasks.executeTask(task).then(function (execution) { 
+                vscode.tasks.executeTask(task).then(function (execution) {
                 }, function (reason) {
                 });
             }
@@ -53,14 +53,13 @@ export class Terminal implements vscode.Disposable {
     /* execute command string
      * @see https://code.visualstudio.com/api/extension-guides/task-provider
      */
-    public async execute(name: string, command: string) {
+    public async execute(name: string, command: string, withlog: boolean = true) {
 
-        const options = {
-            "cwd": config.workingDirectory,
-            "env": {
-                "XMAKE_LOGFILE": this.logfile
-            }
-        };
+        var options = {"cwd": config.workingDirectory};
+        if (withlog) {
+            options["env"] = {XMAKE_LOGFILE: this.logfile};
+        }
+
         const kind: vscode.TaskDefinition = {
             type: "xmake",
             script: "",
@@ -73,7 +72,7 @@ export class Terminal implements vscode.Disposable {
 
         // only one task? execute it directly
         if (this._tasks.length == 1) {
-            vscode.tasks.executeTask(task).then(function (execution) { 
+            vscode.tasks.executeTask(task).then(function (execution) {
             }, function (reason) {
             });
         }
