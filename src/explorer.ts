@@ -542,7 +542,6 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
             switch (message.type) {
                 case 'options':
                     {
-                        console.log(message.data);
                         this._optionValues = message.data;
                         this._optionsChanged = true;
                         break;
@@ -558,13 +557,13 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
 
     public async refresh(optionDefinitions: any) {
         this._optionDefinitions = optionDefinitions;
-        this.updateDefaults();
+
         this.extractOptionValues();
+        this._optionsChanged = false;
 
         if (this._view)
             this._view.webview.postMessage({ type: 'options', data: optionDefinitions });
 
-        this._optionsChanged = true;
     }
 
     // Return the options string suitable for the xmake command
@@ -585,19 +584,6 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
         this._optionsChanged = changed;
     }
 
-    // Copy values from optionValues to optionDefinitions so that next refresh is going to show the correct values
-
-    private updateDefaults() {
-        if (!this._optionValues)
-            return;
-
-        for (let option of this._optionValues) {
-            const definition = this._optionDefinitions.find(def => def.name = option.name);
-            if (definition)
-                definition.default = option.value;
-        }
-    }
-
     // Extract option values from option definitions. This is done when new option definitions are received so add/remove options from option values.
 
     private extractOptionValues() {
@@ -609,7 +595,7 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
 
         // re-populate option values
         for (let option of this._optionDefinitions) {
-            this._optionValues.push({ name: option.name, value: option.default });
+            this._optionValues.push({ name: option.name, value: option.value });
         }
     }
 
@@ -701,9 +687,9 @@ export class XMakeExplorer implements vscode.Disposable {
         // Open file command for files in the tree view
 
         vscode.commands.registerCommand('xmakeExplorer.openFile', (file_path: string) => {
-            const uri = vscode.Uri.file(file_path);
-            vscode.workspace.openTextDocument(uri).then(doc => vscode.window.showTextDocument(uri));
-        }
+                const uri = vscode.Uri.file(file_path);
+                vscode.workspace.openTextDocument(uri).then(doc => vscode.window.showTextDocument(uri));
+            }
         );
 
         // Options panel
@@ -765,6 +751,10 @@ export class XMakeExplorer implements vscode.Disposable {
                 vscode.commands.executeCommand("xmake.setTarget", item.info.target);
                 vscode.commands.executeCommand("xmake.onDebug", item.info.target);
             }
+        });
+
+        vscode.commands.registerCommand('xmakeExplorer.configure', (item: XMakeExplorerItem) => {
+                vscode.commands.executeCommand("xmake.onConfigure");
         });
     }
 

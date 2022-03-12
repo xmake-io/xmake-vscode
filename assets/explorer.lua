@@ -9,11 +9,11 @@ function main ()
     config.load()
     -- config.dump()
 
-    --local f = io.open("project.txt", "w")
-    --local original_output = io.output()
-    --io.output(f)
-    --print(project.options())
-    --io.output(original_output)
+    -- local f = io.open("project.txt", "w")
+    -- local original_output = io.output()
+    -- io.output(f)
+    -- print(project.options())
+    -- io.output(original_output)
 
     print("{")
     print("  \"targets\":[")
@@ -101,13 +101,7 @@ function main ()
             end 
 
             print("      \"name\":\"%s\",", name)
-
-            local default = "auto"
-            if option:get("default") ~= nil then
-                default = option:get("default")
-            end
-
-            print("      \"default\":\"%s\",", default)
+            print("      \"value\":\"%s\",", config.get(name))
 
             print("      \"values\":[")
 
