@@ -264,6 +264,13 @@
         "title": "Debug",
         "category": "XMake",
         "enablement": "view == xmakeExplorer"
+      },
+      {
+        "command": "xmakeExplorer.configure",
+        "title": "Configure",
+        "category": "XMake",
+        "enablement": "view == xmakeOptions",
+        "icon": "$(gear)"
       }
     ],
     "menus": {
@@ -356,6 +363,11 @@
         {
           "command": "xmakeExplorer.runAll",
           "when": "view == xmakeExplorer"
+        },
+        {
+          "command": "xmakeExplorer.configure",
+          "when": "view == xmakeOptions",
+          "group": "navigation"
         }
       ],
       "view/item/context": [

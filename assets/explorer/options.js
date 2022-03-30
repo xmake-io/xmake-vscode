@@ -49,7 +49,7 @@
             labelItem.textContent = option.name;
             optionsItem.append(labelItem);
 
-            const optionValues = findOptionValues(option.default, option.values);
+            const optionValues = findOptionValues(option.value, option.values);
 
             // create the value input
             // if there is a list of values then a drop down combo is used
@@ -66,7 +66,7 @@
                     optionElement.value = value;
                     optionElement.textContent = value;
 
-                    if(option.default == value)
+                    if(option.value == value)
                         optionElement.selected = true;
 
                     selectItem.append(optionElement);
@@ -80,7 +80,7 @@
                 const inputItem = document.createElement("input");
                 inputItem.id = option.name + "Input";
                 inputItem.type = "text";
-                inputItem.value = option.default;
+                inputItem.value = option.value;
                 inputItem.oninput = onOptionsChange;
                 optionsItem.append(inputItem);
             }
@@ -110,7 +110,7 @@
     // Otherwise a list cannot be formed, a text input needs to be shown instead of a select.
     function findOptionValues(defaultValue, values){
         if(values.length > 0)
-            return defaultValue;
+            return values;
         else if(defaultValue == 'y' || defaultValue == 'n')
             return ['y', 'n'];
         else if(defaultValue == 'yes' || defaultValue == 'no')
