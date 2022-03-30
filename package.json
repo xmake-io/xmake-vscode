@@ -342,6 +342,10 @@
           "group": "navigation"
         },
         {
+          "command": "xmakeExplorer.buildAll",
+          "when": "view == xmakeExplorer"
+        },
+        {
           "command": "xmakeExplorer.rebuildAll",
           "when": "view == xmakeExplorer"
         },
