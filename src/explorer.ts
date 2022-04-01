@@ -244,8 +244,28 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
 
                     current = subDirNode;
                 }
+            }
 
-                // Add the file node
+            // Add the file node
+
+            for (let file of target.files) {
+                const path = this.splitPath(file);
+                let subPath: string[] = new Array();
+
+                current = targetNode;
+
+                for (let i = 0; i < path.length - 1; i++) {
+                    const subDirName = path[i];
+                    subPath.push(subDirName);
+
+                    let subDirNode = current.children.find(node => node.info.type == XMakeExplorerItemType.DIRECTORY && node.info.path[node.info.path.length - 1] == subDirName);
+                    if (!subDirNode) {
+                        subDirNode = current.children[current.children.length - 1];
+                    }
+
+                    current = subDirNode;
+                }
+
                 current.children.push(new XMakeExplorerHierarchyNode({ type: XMakeExplorerItemType.FILE, group: groups, target: target.name, path: path }));
                 current = current.children[current.children.length - 1];
             }
