@@ -49,7 +49,7 @@
             labelItem.textContent = option.name;
             optionsItem.append(labelItem);
 
-            const optionValues = findOptionValues(option.value, option.values);
+            const optionValues = findOptionValues(option.value.toString(), option.values);
 
             // create the value input
             // if there is a list of values then a drop down combo is used
@@ -109,7 +109,7 @@
     // If the default value is a known value (y,n,yes,no,true,false) then infer the possible values
     // Otherwise a list cannot be formed, a text input needs to be shown instead of a select.
     function findOptionValues(defaultValue, values){
-        if(values.length > 0)
+        if(values != undefined && values.length > 0)
             return values;
         else if(defaultValue == 'y' || defaultValue == 'n')
             return ['y', 'n'];

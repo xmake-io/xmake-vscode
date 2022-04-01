@@ -1,127 +1,67 @@
 -- imports
 import("core.project.config")
 import("core.project.project")
+import("core.base.json")
 
 -- main entry
 function main ()
-
-    -- load config
     config.load()
-    -- config.dump()
 
-    -- local f = io.open("project.txt", "w")
-    -- local original_output = io.output()
-    -- io.output(f)
-    -- print(project.options())
-    -- io.output(original_output)
-
-    print("{")
-    print("  \"targets\":[")
-
-    -- print targets
-
-    local first_target = true
+    -- Read all the files from the target
+    local explorer_targets = {}
     for name, target in pairs((project.targets())) do
-        
-        if not first_target then
-            print("   ,{")
-        else
-            print("    {")
-            first_target = false
-        end
-
-        print("      \"name\":\"%s\",", name)
-        print("      \"kind\":\"%s\",", target:kind())
-
-        local scriptdir = os.args(target:scriptdir(), {escape = true, nowrap = true})
-        print("      \"scriptdir\":\"%s\",", scriptdir)
-
-        -- add the group
+        local explorer_target = {}
+        explorer_target.name = name
+        explorer_target.kind = target:kind()
+        explorer_target.scriptdir = target:scriptdir()
 
         local group = target:get("group")
         if group then
-            print("      \"group\":\"%s\",", group)
+            explorer_target.group = group
         else
-            print("      \"group\":\"\",")
+            explorer_target.group = ""
         end
 
-        -- add all the source files
-        print("      \"files\":[")
-
         if not target:is_phony() then
+            local explorer_files = {}
 
-            local first_file = true
-            
             for _, headerfile in pairs(target:headerfiles()) do
-                local escaped_headerfile = os.args(headerfile, {escape = true, nowrap = true})
-                if not first_file then
-                    print("       ,\"%s\"", escaped_headerfile)
-                else
-                    print("        \"%s\"", escaped_headerfile)
-                end
-
-                first_file = false
+                table.insert(explorer_files, headerfile)
             end
 
             for _, sourcefile in pairs(target:sourcefiles()) do
-                local escaped_sourcefile = os.args(sourcefile, {escape = true, nowrap = true})
-                
-                if not first_file then
-                    print("       ,\"%s\"", escaped_sourcefile)
-                else
-                    print("        \"%s\"", escaped_sourcefile)
-            
-                end
-                
-                first_file = false
+                table.insert(explorer_files, sourcefile)
             end
 
+            explorer_target.files = explorer_files
         end
 
-        print("      ]")
-        print("    }")
-    end 
+        table.insert(explorer_targets, explorer_target)
+    end
 
-    print("  ],")
-
-    -- add options
-
-    local first_option = true
-    print("  \"options\":[")
-
+    -- Read all the options from the target
+    local explorer_options = {}
     for name, option in pairs((project.options())) do
+        local explorer_option = {}
         if option:get("showmenu") then
+            explorer_option.name = name
+            explorer_option.value = config.get(name)
 
-            if not first_option then
-                print("   ,{")
-                first_option = false
-            else
-                print("    {")
-                first_option = false
-            end 
-
-            print("      \"name\":\"%s\",", name)
-            print("      \"value\":\"%s\",", config.get(name))
-
-            print("      \"values\":[")
-
-            local first_value = true
+            local explorer_option_values = {}
             for _, value in ipairs(option:get("values")) do
-                if not first_value then
-                    print("       ,\"%s\"", value)
-                else
-                    print("        \"%s\"", value)
-                    first_value = false
-                end
+                table.insert(explorer_option_values, value)
             end
 
-            print("      ]")
-            
-            print("    }")
+            if(#explorer_option_values > 0) then
+                explorer_option.values = explorer_option_values
+            end
+
+            table.insert(explorer_options, explorer_option)
         end
     end
 
-    print("  ]");
-
-    print("}")
+    -- Print explorer data
+    local explorer_data = {targets = explorer_targets, options = explorer_options}
+    local jsondata = json.encode(explorer_data)
+    print(jsondata)
 end
