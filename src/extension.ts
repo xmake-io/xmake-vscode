@@ -18,7 +18,7 @@ export async function activate(context: vscode.ExtensionContext) {
     // register all commands of the xmake plugin
     function register(name, fn) {
         fn = fn.bind(xmake);
-        return vscode.commands.registerCommand(name, _ => fn());
+        return vscode.commands.registerCommand(name, _ => fn(_));
     }
     for (const key of [
         'onCreateProject',
@@ -43,7 +43,8 @@ export async function activate(context: vscode.ExtensionContext) {
         'setTargetPlat',
         'setTargetArch',
         'setBuildMode',
-        'setDefaultTarget'
+        'setDefaultTarget',
+        'setTarget'
     ]) {
         context.subscriptions.push(register('xmake.' + key, xmake[key]));
     }

@@ -202,6 +202,75 @@
         "command": "xmake.setDefaultTarget",
         "title": "Set Default Target",
         "category": "XMake"
+      },
+      {
+        "command": "xmakeExplorer.buildAll",
+        "title": "Build All",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer",
+        "icon": {
+          "dark": "res/dark/build-icon.svg",
+          "light": "res/light/build-icon.svg"
+        }
+      },
+      {
+        "command": "xmakeExplorer.rebuildAll",
+        "title": "Rebuild All",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
+      },
+      {
+        "command": "xmakeExplorer.cleanAll",
+        "title": "Clean All",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
+      },
+      {
+        "command": "xmakeExplorer.build",
+        "title": "Build",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer",
+        "icon": {
+          "dark": "res/dark/build-icon.svg",
+          "light": "res/light/build-icon.svg"
+        }
+      },
+      {
+        "command": "xmakeExplorer.rebuild",
+        "title": "Rebuild",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
+      },
+      {
+        "command": "xmakeExplorer.clean",
+        "title": "Clean",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
+      },
+      {
+        "command": "xmakeExplorer.runAll",
+        "title": "Run All",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
+      },
+      {
+        "command": "xmakeExplorer.run",
+        "title": "Run",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
+      },
+      {
+        "command": "xmakeExplorer.debug",
+        "title": "Debug",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
+      },
+      {
+        "command": "xmakeExplorer.configure",
+        "title": "Configure",
+        "category": "XMake",
+        "enablement": "view == xmakeOptions",
+        "icon": "$(gear)"
       }
     ],
     "menus": {
@@ -271,6 +340,61 @@
         },
         {
           "command": "xmake.setDefaultTarget"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "xmakeExplorer.buildAll",
+          "when": "view == xmakeExplorer",
+          "group": "navigation"
+        },
+        {
+          "command": "xmakeExplorer.buildAll",
+          "when": "view == xmakeExplorer"
+        },
+        {
+          "command": "xmakeExplorer.rebuildAll",
+          "when": "view == xmakeExplorer"
+        },
+        {
+          "command": "xmakeExplorer.cleanAll",
+          "when": "view == xmakeExplorer"
+        },
+        {
+          "command": "xmakeExplorer.runAll",
+          "when": "view == xmakeExplorer"
+        },
+        {
+          "command": "xmakeExplorer.configure",
+          "when": "view == xmakeOptions",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "xmakeExplorer.build",
+          "when": "view == xmakeExplorer && viewItem == target",
+          "group": "inline"
+        },
+        {
+          "command": "xmakeExplorer.build",
+          "when": "view == xmakeExplorer && viewItem == target"
+        },
+        {
+          "command": "xmakeExplorer.rebuild",
+          "when": "view == xmakeExplorer && viewItem == target"
+        },
+        {
+          "command": "xmakeExplorer.clean",
+          "when": "view == xmakeExplorer && viewItem == target"
+        },
+        {
+          "command": "xmakeExplorer.run",
+          "when": "view == xmakeExplorer && viewItem == target"
+        },
+        {
+          "command": "xmakeExplorer.debug",
+          "when": "view == xmakeExplorer && viewItem == target"
         }
       ]
     },
@@ -378,6 +502,35 @@
           "description": "The Custom Debugging Configurations"
         }
       }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "xmake-explorer",
+          "title": "XMake",
+          "icon": "res/logo-mono.svg"
+        }
+      ]
+    },
+    "views": {
+      "xmake-explorer": [
+        {
+          "type": "tree",
+          "id": "xmakeExplorer",
+          "name": "Targets",
+          "icon": "res/logo-mono.svg",
+          "contextualTitle": "XMake",
+          "when": "xmakeEnabled"
+        },
+        {
+          "type": "webview",
+          "id": "xmakeOptions",
+          "name": "Options",
+          "icon": "res/logo-mono.svg",
+          "contextualTitle": "XMake",
+          "when": "xmakeEnabled"
+        }
+      ]
     }
   },
   "scripts": {

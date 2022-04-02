@@ -14,6 +14,7 @@ import {ProblemList} from './problem';
 import {Debugger} from './debugger';
 import {Completion} from './completion';
 import {XmakeTaskProvider} from './task';
+import {XMakeExplorer} from './explorer';
 import * as process from './process';
 import * as utils from './utils';
 
@@ -61,6 +62,8 @@ export class XMake implements vscode.Disposable {
     // the xmake task provider
     private _xmakeTaskProvider: vscode.Disposable | undefined;
 
+    private _xmakeExplorer: XMakeExplorer;
+
     // the constructor
     constructor(context: vscode.ExtensionContext) {
 
@@ -100,6 +103,9 @@ export class XMake implements vscode.Disposable {
         }
         if (this._xmakeTaskProvider) {
             this._xmakeTaskProvider.dispose();
+        }
+        if (this._xmakeExplorer) {
+            this._xmakeExplorer.dispose();
         }
     }
 
@@ -151,7 +157,7 @@ export class XMake implements vscode.Disposable {
 
         // init log file system watcher
         this._logFileSystemWatcher = vscode.workspace.createFileSystemWatcher(".xmake/**/vscode-build.log");
-		this._logFileSystemWatcher.onDidCreate(this.onLogFileUpdated.bind(this));
+        this._logFileSystemWatcher.onDidCreate(this.onLogFileUpdated.bind(this));
         this._logFileSystemWatcher.onDidChange(this.onLogFileUpdated.bind(this));
         this._logFileSystemWatcher.onDidDelete(this.onLogFileDeleted.bind(this));
 
@@ -164,6 +170,18 @@ export class XMake implements vscode.Disposable {
         this._projectFileSystemWatcher = vscode.workspace.createFileSystemWatcher("**/xmake.lua");
         this._projectFileSystemWatcher.onDidCreate(this.onProjectFileUpdated.bind(this));
         this._projectFileSystemWatcher.onDidChange(this.onProjectFileUpdated.bind(this));
+
+        this._context.subscriptions.push(
+            vscode.workspace.onDidCreateFiles((e: vscode.FileCreateEvent) => {
+                this._xmakeExplorer.refresh();
+            })
+        );
+
+        this._context.subscriptions.push(
+            vscode.workspace.onDidDeleteFiles((e: vscode.FileDeleteEvent) => {
+                this._xmakeExplorer.refresh();
+            })
+        );
     }
 
     // refresh folder
@@ -186,6 +204,7 @@ export class XMake implements vscode.Disposable {
         let filePath = affectedPath.fsPath;
         if (filePath.includes("xmake.conf")) {
             this.loadCache();
+            this._xmakeExplorer.refresh();
         }
     }
 
@@ -203,6 +222,7 @@ export class XMake implements vscode.Disposable {
         if (filePath.includes("xmake.lua")) {
             this.loadCache();
             this.updateIntellisense();
+            this._xmakeExplorer.refresh();
         }
     }
 
@@ -252,6 +272,10 @@ export class XMake implements vscode.Disposable {
         // register xmake task provider
         this._xmakeTaskProvider = vscode.tasks.registerTaskProvider(XmakeTaskProvider.XmakeType, new XmakeTaskProvider(utils.getProjectRoot()));
 
+        // explorer
+        this._xmakeExplorer = new XMakeExplorer();
+        await this._xmakeExplorer.init(this._context);
+
         // init terminal
         if (!this._terminal) {
             this._terminal = new Terminal();
@@ -282,6 +306,8 @@ export class XMake implements vscode.Disposable {
 
         // enable this plugin
         this._enabled = true;
+
+        vscode.commands.executeCommand('setContext', 'xmakeEnabled', true);
     }
 
     // create project
@@ -334,7 +360,7 @@ export class XMake implements vscode.Disposable {
         // open project directory first!
         if (!utils.getProjectRoot()) {
             if (!!(await vscode.window.showErrorMessage('no opened folder!',
-            'Open a xmake project directory first!'))) {
+                'Open a xmake project directory first!'))) {
                 vscode.commands.executeCommand('vscode.openFolder');
             }
             return;
@@ -372,6 +398,8 @@ export class XMake implements vscode.Disposable {
 
         // disable this plugin
         this._enabled = false;
+
+        vscode.commands.executeCommand('setContext', 'xmakeEnabled', false);
     }
 
     // on create project
@@ -383,7 +411,7 @@ export class XMake implements vscode.Disposable {
 
     // on new files
     async onNewFiles(target?: string) {
-
+ 
         if (!this._enabled) {
             return ;
         }
@@ -411,6 +439,8 @@ export class XMake implements vscode.Disposable {
                 }
             }
         }
+
+        this._xmakeExplorer.refresh();
     }
 
     // on configure project
@@ -422,7 +452,7 @@ export class XMake implements vscode.Disposable {
         }
 
         // option changed?
-        if (this._optionChanged) {
+        if (this._optionChanged || this._xmakeExplorer.getOptionsChanged()) {
 
             // get the target platform
             let plat = this._option.get<string>("plat");
@@ -451,11 +481,14 @@ export class XMake implements vscode.Disposable {
                 command += ` ${config.additionalConfigArguments}`
             }
 
+            command += ` ${this._xmakeExplorer.getCommandOptions()}`
+
             // configure it
             await this._terminal.execute("config", command);
 
             // mark as not changed
             this._optionChanged = false;
+            this._xmakeExplorer.setOptionsChanged(false);
             return true;
         }
         return false;
@@ -990,5 +1023,10 @@ export class XMake implements vscode.Disposable {
             this._option.set("target", chosen.label);
             this._status.target = chosen.label;
         }
+    }
+
+    async setTarget(target?: string) {
+        this._option.set("target", target);
+        this._status.target = target;
     }
 };
