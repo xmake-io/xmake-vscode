@@ -810,13 +810,19 @@ export class XMakeExplorer implements vscode.Disposable {
     // Helper function to read all the information used by the explorer from xmake.lua
 
     private async readInfo() {
-        const getExplorerTargetsScript = path.join(__dirname, `../../assets/explorer.lua`);
-        if (fs.existsSync(getExplorerTargetsScript)) {
-            const infoJson = (await process.iorunv("xmake", ["l", getExplorerTargetsScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
-            const info = JSON.parse(infoJson);
-            return info;
+        try {
+            const getExplorerTargetsScript = path.join(__dirname, `../../assets/explorer.lua`);
+            if (fs.existsSync(getExplorerTargetsScript)) {
+                const infoJson = (await process.iorunv("xmake", ["l", getExplorerTargetsScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
+                const info = JSON.parse(infoJson);
+                return info;
+            }
+        } catch (e: unknown) {
+            const errors = (e as Error).message;
+            if (errors != null) {
+                log.error(errors)
+            }
         }
-        else
-            return null;
+        return null;
     }
 }

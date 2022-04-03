@@ -1,13 +1,11 @@
--- imports
 import("core.project.config")
 import("core.project.project")
 import("core.base.json")
 
--- main entry
 function main ()
     config.load()
 
-    -- Read all the files from the target
+    -- read all the files from the target
     local explorer_targets = {}
     for name, target in pairs((project.targets())) do
         local explorer_target = {}
@@ -24,22 +22,18 @@ function main ()
 
         if not target:is_phony() then
             local explorer_files = {}
-
             for _, headerfile in pairs(target:headerfiles()) do
                 table.insert(explorer_files, headerfile)
             end
-
             for _, sourcefile in pairs(target:sourcefiles()) do
                 table.insert(explorer_files, sourcefile)
             end
-
             explorer_target.files = explorer_files
         end
-
         table.insert(explorer_targets, explorer_target)
     end
 
-    -- Read all the options from the target
+    -- read all the options from the target
     local explorer_options = {}
     for name, option in pairs((project.options())) do
         local explorer_option = {}
@@ -51,16 +45,14 @@ function main ()
             for _, value in ipairs(option:get("values")) do
                 table.insert(explorer_option_values, value)
             end
-
-            if(#explorer_option_values > 0) then
+            if #explorer_option_values > 0 then
                 explorer_option.values = explorer_option_values
             end
-
             table.insert(explorer_options, explorer_option)
         end
     end
 
-    -- Print explorer data
+    -- print explorer data
     local explorer_data = {targets = explorer_targets, options = explorer_options}
     local jsondata = json.encode(explorer_data)
     print(jsondata)

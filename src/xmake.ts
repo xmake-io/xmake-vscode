@@ -411,7 +411,7 @@ export class XMake implements vscode.Disposable {
 
     // on new files
     async onNewFiles(target?: string) {
- 
+
         if (!this._enabled) {
             return ;
         }
