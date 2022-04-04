@@ -600,9 +600,10 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
             this._optionValues = new Array();
 
         // re-populate option values
-        for (let option of this._optionDefinitions) {
-            this._optionValues.push({ name: option.name, value: option.value });
-        }
+        if (this._optionDefinitions)
+            for (let option of this._optionDefinitions) {
+                this._optionValues.push({ name: option.name, value: option.value });
+            }
     }
 
     // Helper function to construct the web view content
@@ -788,7 +789,7 @@ export class XMakeExplorer implements vscode.Disposable {
         try {
             const getExplorerTargetsScript = path.join(__dirname, `../../assets/explorer.lua`);
             if (fs.existsSync(getExplorerTargetsScript)) {
-                const infoJson = (await process.iorunv("xmake", ["l", getExplorerTargetsScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
+                const infoJson = (await process.iorunv(config.executable, ["l", getExplorerTargetsScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
                 const info = JSON.parse(infoJson);
                 return info;
             }
