@@ -600,7 +600,7 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
             this._optionValues = new Array();
 
         // re-populate option values
-        if (this.optionDefinitions)
+        if (this._optionDefinitions)
             for (let option of this._optionDefinitions) {
                 this._optionValues.push({ name: option.name, value: option.value });
             }
