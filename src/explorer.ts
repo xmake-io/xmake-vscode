@@ -53,7 +53,6 @@ type XMakeExplorerItemInfo = XMakeExplorerRootInfo | XMakeExplorerGroupInfo | XM
 
 // Tree view item
 // This stores item specific data and initializes itself to show correct icons and actions
-
 class XMakeExplorerItem extends vscode.TreeItem {
 
     info: XMakeExplorerItemInfo;
@@ -77,7 +76,6 @@ class XMakeExplorerItem extends vscode.TreeItem {
         // Set the icon depending on the type
         // Each known file type is assigned a language specific icon
         // If the file type is recognized then the default file icon is assigned
-
         const resDirPath = [__dirname, "..", "..", "res"];
 
         switch (info.type) {
@@ -130,7 +128,6 @@ class XMakeExplorerItem extends vscode.TreeItem {
 // corresponds to single entity.
 // The main difference between this type and the tree view is that
 // empty folders in the tree view are concatenated together to reduce the depth.
-
 class XMakeExplorerHierarchyNode {
 
     info: XMakeExplorerItemInfo;
@@ -158,7 +155,6 @@ class XMakeExplorerHierarchyNode {
 }
 
 // Data provider for the tree view
-
 class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorerItem> {
 
     private _onDidChangeTreeData: vscode.EventEmitter<XMakeExplorerItem | undefined | void> = new vscode.EventEmitter<XMakeExplorerItem | undefined | void>();
@@ -166,7 +162,6 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
 
     // The hierarchy that is shown in the tree view
     // This is populated in the read config function
-
     private hierarchy: XMakeExplorerHierarchyNode = new XMakeExplorerHierarchyNode({ type: XMakeExplorerItemType.ROOT });
 
     async refresh(targets: any) {
@@ -208,7 +203,6 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
             }
 
             // Add the target
-
             current.children.push(new XMakeExplorerHierarchyNode({ type: XMakeExplorerItemType.TARGET, group: groups, target: target.name, kind: target.kind }));
             current = current.children[current.children.length - 1];
 
@@ -307,7 +301,6 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
             return;
 
         // Set expanded if the element is a group
-
         const groups = (() => {
             if (element.info.type === XMakeExplorerItemType.GROUP)
                 return element.info.group;
@@ -336,9 +329,7 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
             return;
         }
 
-
         // Set expanded if the element type is target
-
         const targetName = (() => {
             if (element.info.type == XMakeExplorerItemType.TARGET)
                 return (<XMakeExplorerTargetInfo>element.info).target;
@@ -358,7 +349,6 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
         }
 
         // Set expanded if the element type is a folder
-
         const dirPath = (<XMakeExplorerDirectoryInfo>element.info).path;
         for (let dir of dirPath) {
             current = current.children.find(item => item.info.type == XMakeExplorerItemType.DIRECTORY && item.getName() == dir);
@@ -525,7 +515,6 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
 }
 
 // Data provider for the options panel
-
 class XMakeOptionsProvider implements vscode.WebviewViewProvider {
 
     private _optionDefinitions?: any; // option definitions read from xmake.lua
@@ -539,7 +528,6 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
     ) { }
 
     // Overriden from WebviewViewProvider
-
     public resolveWebviewView(
         webviewView: vscode.WebviewView,
         context: vscode.WebviewViewResolveContext,
@@ -557,7 +545,6 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
         };
 
         webviewView.webview.html = this.getHtmlForWebView(webviewView.webview);
-
         webviewView.webview.onDidReceiveMessage(message => {
             switch (message.type) {
                 case 'options':
@@ -574,7 +561,6 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
     }
 
     // Refresh options panel when xmake configuration changes
-
     public async refresh(optionDefinitions: any) {
         this._optionDefinitions = optionDefinitions;
 
@@ -587,12 +573,13 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
     }
 
     // Return the options string suitable for the xmake command
-
     public getCommandOptions() {
         let cmd = "";
-        this._optionValues.forEach(element => {
-            cmd += `--${element.name}=${element.value} `;
-        });
+        if (this._optionValues) {
+            this._optionValues.forEach(element => {
+                cmd += `--${element.name}=${element.value} `;
+            });
+        }
         return cmd;
     }
 
@@ -605,7 +592,6 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
     }
 
     // Extract option values from option definitions. This is done when new option definitions are received so add/remove options from option values.
-
     private extractOptionValues() {
         // clear current option values
         if (this._optionValues)
@@ -620,7 +606,6 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
     }
 
     // Helper function to construct the web view content
-
     private getHtmlForWebView(webview: vscode.Webview) {
         // Get the local path to main script run in the webview, then convert it to a uri we can use in the webview.
         const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(this._extensionUri, 'assets', 'explorer', 'options.js'));
@@ -673,7 +658,6 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
 
 // XMakeExplorer contains the targets view and options view
 // Define all the commands
-
 export class XMakeExplorer implements vscode.Disposable {
 
     private _xmakeExplorerDataProvider: XMakeExplorerDataProvider;
@@ -682,10 +666,8 @@ export class XMakeExplorer implements vscode.Disposable {
 
     async init(context: vscode.ExtensionContext) {
 
-        const info = await this.readInfo();
-
         // Tree view
-
+        const info = await this.readInfo();
         this._xmakeExplorerDataProvider = new XMakeExplorerDataProvider();
         if (info)
             await this._xmakeExplorerDataProvider.refresh(info.targets);
@@ -695,7 +677,6 @@ export class XMakeExplorer implements vscode.Disposable {
         });
 
         // Track expand and collapse in tree view
-
         this._treeView.onDidCollapseElement(evt => {
             this._xmakeExplorerDataProvider.itemExpandStateChanged(evt.element, false);
         });
@@ -705,7 +686,6 @@ export class XMakeExplorer implements vscode.Disposable {
         });
 
         // Open file command for files in the tree view
-
         vscode.commands.registerCommand('xmakeExplorer.openFile', (file_path: string) => {
                 const uri = vscode.Uri.file(file_path);
                 vscode.workspace.openTextDocument(uri).then(doc => vscode.window.showTextDocument(uri));
@@ -713,7 +693,6 @@ export class XMakeExplorer implements vscode.Disposable {
         );
 
         // Options panel
-
         this._xmakeOptionsProvider = new XMakeOptionsProvider(context.extensionUri);
         if (info)
             this._xmakeOptionsProvider.refresh(info.options);
@@ -721,7 +700,6 @@ export class XMakeExplorer implements vscode.Disposable {
         vscode.window.registerWebviewViewProvider("xmakeOptions", this._xmakeOptionsProvider);
 
         // Build commands
-
         vscode.commands.registerCommand('xmakeExplorer.buildAll', () => {
             vscode.commands.executeCommand("xmake.onBuild");
         });
@@ -784,7 +762,6 @@ export class XMakeExplorer implements vscode.Disposable {
     }
 
     // Refresh is called whenever the configuration is changed
-
     async refresh() {
         const info = await this.readInfo();
         if (info) {
@@ -794,7 +771,6 @@ export class XMakeExplorer implements vscode.Disposable {
     }
 
     // Option accessors
-
     public getCommandOptions() {
         return this._xmakeOptionsProvider.getCommandOptions();
     }
@@ -808,7 +784,6 @@ export class XMakeExplorer implements vscode.Disposable {
     }
 
     // Helper function to read all the information used by the explorer from xmake.lua
-
     private async readInfo() {
         try {
             const getExplorerTargetsScript = path.join(__dirname, `../../assets/explorer.lua`);
