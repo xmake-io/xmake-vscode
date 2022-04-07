@@ -58,7 +58,7 @@
     "keybindings":[{
       "key": "f5",
       "command": "xmake.onDebug",
-      "when": "xmakeEnabled && debuggersAvailable && debugState == 'inactive'"
+      "when": "xmakeEnabled"
     }],
     "languages": [
       {
