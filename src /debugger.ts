@@ -139,7 +139,7 @@ export class Debugger implements vscode.Disposable {
             } else if (os.platform() == "win32") {
                 debugConfig = {
                     name: `launch: ${targetName}`,
-                    type: 'cppvsdbg', 
+                    type: 'cppvsdbg',
                     request: 'launch',
                     program: targetProgram,
                     args: args,
