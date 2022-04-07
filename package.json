@@ -55,6 +55,11 @@
   ],
   "main": "./out/src/extension",
   "contributes": {
+    "keybindings":[{
+      "key": "f5",
+      "command": "xmake.onDebug",
+      "when": "xmakeEnabled && debuggersAvailable && debugState == 'inactive'"
+    }],
     "languages": [
       {
         "id": "xmake",
