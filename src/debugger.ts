@@ -139,7 +139,7 @@ export class Debugger implements vscode.Disposable {
             } else if (os.platform() == "win32") {
                 debugConfig = {
                     name: `launch: ${targetName}`,
-                    type: 'cppdbg', //解决了调试，命中不了断点的bug
+                    type: 'cppvsdbg', 
                     request: 'launch',
                     program: targetProgram,
                     args: args,
