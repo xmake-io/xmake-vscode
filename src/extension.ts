@@ -45,7 +45,7 @@ export async function activate(context: vscode.ExtensionContext) {
         'setBuildMode',
         'setDefaultTarget',
         'setTarget',
-        'setTargetcompiler'
+        'setTargetToolchain'
     ]) {
         context.subscriptions.push(register('xmake.' + key, xmake[key]));
     }

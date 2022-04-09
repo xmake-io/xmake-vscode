@@ -52,7 +52,7 @@
     "onCommand:xmake.setTargetArch",
     "onCommand:xmake.setBuildMode",
     "onCommand:xmake.setDefaultTarget",
-    "onCommand:xmake.setTargetcompiler"
+    "onCommand:xmake.setTargetToolchain"
   ],
   "main": "./out/src/extension",
   "contributes": {
@@ -101,11 +101,6 @@
       }
     ],
     "commands": [
-      {
-        "command": "xmake.setTargetcompiler",
-        "title": "set Target compiler",
-        "category": "XMake"
-      },
       {
         "command": "xmake.onCreateProject",
         "title": "CreateProject",
@@ -247,6 +242,12 @@
           "dark": "res/dark/build-icon.svg",
           "light": "res/light/build-icon.svg"
         }
+      },
+      {
+        "command": "xmake.setTargetToolchain",
+        "title": "toolchain",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
       },
       {
         "command": "xmakeExplorer.rebuild",
