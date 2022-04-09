@@ -51,7 +51,8 @@
     "onCommand:xmake.setTargetPlat",
     "onCommand:xmake.setTargetArch",
     "onCommand:xmake.setBuildMode",
-    "onCommand:xmake.setDefaultTarget"
+    "onCommand:xmake.setDefaultTarget",
+    "onCommand:xmake.setTargetcompiler"
   ],
   "main": "./out/src/extension",
   "contributes": {
@@ -100,6 +101,11 @@
       }
     ],
     "commands": [
+      {
+        "command": "xmake.setTargetcompiler",
+        "title": "set Target compiler",
+        "category": "XMake"
+      },
       {
         "command": "xmake.onCreateProject",
         "title": "CreateProject",

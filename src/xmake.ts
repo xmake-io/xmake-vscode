@@ -543,7 +543,7 @@ export class XMake implements vscode.Disposable {
         if (targetName && targetName != "default")
             command += ` ${targetName}`;
         else if (targetName == "all")
-            command += " -a";
+        command += " -a";
 
         // configure and build it
         await this.onConfigure(target);
@@ -935,6 +935,50 @@ export class XMake implements vscode.Disposable {
                 this._status.arch = arch;
             }
         }
+    }
+
+    // set C/C++ compiler
+    async setTargetcompiler(target?: string) {
+
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+
+        // make xmake-tools-kits.json
+        let getConfigPathScript = path.join(__dirname, `../../assets/find_tools.lua`);
+        if (fs.existsSync(getConfigPathScript)) {
+            await process.runv(config.executable,["l",getConfigPathScript,config.workingDirectory]);
+        }
+
+        // read xmake-tools-kits.json
+        const xmake_tools_path = path.join(config.workingDirectory,"xmake-tools-kits.json")
+
+        var tools;
+        if (fs.existsSync(xmake_tools_path)){
+            tools = JSON.parse(fs.readFileSync(xmake_tools_path,"utf8"));
+            console.log(tools)
+        }
+       
+        // select compiler
+        let items: vscode.QuickPickItem[] = [];
+
+        for (let i = 0; i<tools.tools_kits.length; i++){
+            items.push({label:tools.tools_kits[i],description:"Temporary replacement, only this time"});
+        }
+
+        const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+
+        if (chosen && chosen.label !== this._option.get<string>("compiler")) {
+            
+            // update compiler
+            this._option.set("compiler", chosen.label);
+            this._optionChanged = true;
+            
+            await process.execv('xmake',['f','--toolchain='+chosen.label],{},config.workingDirectory);
+            await process.execv('xmake',['-rv'],{},config.workingDirectory);
+            vscode.window.showInformationMessage('build complete with'+chosen.label);
+        }   
     }
 
     // set target architecture
