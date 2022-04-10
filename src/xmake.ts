@@ -150,7 +150,7 @@ export class XMake implements vscode.Disposable {
 
     // update Intellisense
     async updateIntellisense() {
-        log.verbose("updating Intellisense .."); 
+        log.verbose("updating Intellisense ..");
         let updateIntellisenseScript = path.join(__dirname, `../../assets/update_intellisense.lua`);
         if (fs.existsSync(updateIntellisenseScript)) {
             await process.runv(config.executable, ["l", updateIntellisenseScript, config.compileCommandsDirectory], {"COLORTERM": "nocolor"}, config.workingDirectory);
@@ -931,6 +931,7 @@ export class XMake implements vscode.Disposable {
             this._option.set("plat", chosen.label);
             this._status.plat = chosen.label;
             this._optionChanged = true;
+            
             // update architecture
             let plat = chosen.label;
             let arch = "";
