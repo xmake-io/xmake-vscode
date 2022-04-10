@@ -492,7 +492,7 @@ export class XMake implements vscode.Disposable {
             command += ` ${this._xmakeExplorer.getCommandOptions()}`
 
             if (toolchain != "toolchain") {
-                command += " --toolchain="+toolchain;
+                command += " --toolchain=" + toolchain;
             }
             
             // configure it
