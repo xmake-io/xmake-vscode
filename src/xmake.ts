@@ -931,9 +931,6 @@ export class XMake implements vscode.Disposable {
             this._option.set("plat", chosen.label);
             this._status.plat = chosen.label;
             this._optionChanged = true;
-            
-            this._option.set("toolchain", "toolchain");
-            this._status.toolchain = "toolchain";   
             // update architecture
             let plat = chosen.label;
             let arch = "";
@@ -977,11 +974,6 @@ export class XMake implements vscode.Disposable {
             this._option.set("toolchain", chosen.label);
             this._optionChanged = true;
             this._status.toolchain = chosen.label;
-            if (chosen.label != "toolchain") {
-                var command:string;
-                command = 'xmake ' + 'f --toolchain=' + chosen.label + " -c";
-                await this._terminal.execute("build", command);
-            }
         }   
     }
 
@@ -1012,8 +1004,6 @@ export class XMake implements vscode.Disposable {
                     this._option.set("arch", chosen.label);
                     this._status.arch = chosen.label;
                     this._optionChanged = true;
-                    this._option.set("toolchain", "toolchain");
-                    this._status.toolchain = "toolchain";   
                 }
             }
         }
@@ -1036,8 +1026,6 @@ export class XMake implements vscode.Disposable {
             this._option.set("mode", chosen.label);
             this._status.mode = chosen.label;
             this._optionChanged = true;
-            this._option.set("toolchain", "toolchain");
-            this._status.toolchain = "toolchain";   
         }
     }
 

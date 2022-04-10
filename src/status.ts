@@ -42,7 +42,7 @@ export class Status implements vscode.Disposable {
     private _visible: boolean = true;
 
     // the toolchain 
-    private readonly _toolChainButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left,4.3);
+    private readonly _toolChainButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.3);
     
     // the constructor
     constructor() {
@@ -163,12 +163,12 @@ export class Status implements vscode.Disposable {
 
     // set the target platform  
     public set plat(value: string) {
-        this._platButton.text = `${value}`;
+        this._platButton.text = value;
     }
 
     // set the toolchain
     public set toolchain(value: string) {
-        this._toolChainButton.text = `${value}`;
+        this._toolChainButton.text = value;
     }
 
     // set the target architecture  
