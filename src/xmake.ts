@@ -959,17 +959,16 @@ export class XMake implements vscode.Disposable {
             return
         }
 
-        let getConfigPathScript = path.join(__dirname, `../../assets/find_tools.lua`);
+        let getToolchainsPathScript = path.join(__dirname, `../../assets/find_tools.lua`);
         var tools;
-        if (fs.existsSync(getConfigPathScript)) {
-            tools = Object.values(JSON.parse((await process.iorunv(config.executable, ["l", getConfigPathScript, config.workingDirectory])).stdout.trim()));
+        if (fs.existsSync(getToolchainsPathScript)) {
+            tools = JSON.parse((await process.iorunv(config.executable, ["l", getToolchainsPathScript, config.workingDirectory])).stdout.trim());
         }
         // select toolchain
         let items: vscode.QuickPickItem[] = [];
         items.push({label: "toolchain", description:"default toolchain for each platform or arch"})
-        for(var i = 0; i < tools.length; i++){
+        for (var i = 0; i < tools.length; i++){
             items.push({label: tools[i][0], description:tools[i][1]});
-            i++;
         }        
 
         const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
@@ -978,7 +977,7 @@ export class XMake implements vscode.Disposable {
             this._option.set("toolchain", chosen.label);
             this._optionChanged = true;
             this._status.toolchain = chosen.label;
-            if(chosen.label != "toolchain") {
+            if (chosen.label != "toolchain") {
                 var command:string;
                 command = 'xmake ' + 'f --toolchain=' + chosen.label + " -c";
                 await this._terminal.execute("build", command);
