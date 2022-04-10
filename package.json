@@ -51,7 +51,8 @@
     "onCommand:xmake.setTargetPlat",
     "onCommand:xmake.setTargetArch",
     "onCommand:xmake.setBuildMode",
-    "onCommand:xmake.setDefaultTarget"
+    "onCommand:xmake.setDefaultTarget",
+    "onCommand:xmake.setTargetToolchain"
   ],
   "main": "./out/src/extension",
   "contributes": {
@@ -241,6 +242,12 @@
           "dark": "res/dark/build-icon.svg",
           "light": "res/light/build-icon.svg"
         }
+      },
+      {
+        "command": "xmake.setTargetToolchain",
+        "title": "toolchain",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
       },
       {
         "command": "xmakeExplorer.rebuild",

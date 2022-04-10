@@ -141,6 +141,11 @@ export class XMake implements vscode.Disposable {
         const mode = ("mode" in cacheJson && cacheJson["mode"] != "")? cacheJson["mode"] : "debug";
         this._option.set("mode", mode);
         this._status.mode = mode;
+    
+        // init defaualt toolchain
+        const toolchain = "toolchain";
+        this._option.set("toolchain", toolchain);
+        this._status.toolchain = toolchain;        
     }
 
     // update Intellisense
@@ -463,6 +468,9 @@ export class XMake implements vscode.Disposable {
             // get the build mode
             let mode = this._option.get<string>("mode");
 
+            // get the toolchain
+            let toolchain = this._option.get<string>("toolchain");
+             
             // make command
             let command = `${config.executable} f -p ${plat} -a ${arch} -m ${mode}`;
             if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
@@ -483,6 +491,10 @@ export class XMake implements vscode.Disposable {
 
             command += ` ${this._xmakeExplorer.getCommandOptions()}`
 
+            if (toolchain != "toolchain") {
+                command += " --toolchain=" + toolchain;
+            }
+            
             // configure it
             await this._terminal.execute("config", command);
 
@@ -935,6 +947,35 @@ export class XMake implements vscode.Disposable {
                 this._status.arch = arch;
             }
         }
+    }
+
+    // set C/C++ toolchain
+    async setTargetToolchain(target?: string) {
+
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+
+        let getToolchainsPathScript = path.join(__dirname, `../../assets/toolchains.lua`);
+        var tools;
+        if (fs.existsSync(getToolchainsPathScript)) {
+            tools = JSON.parse((await process.iorunv(config.executable, ["l", getToolchainsPathScript, config.workingDirectory])).stdout.trim());
+        }
+        // select toolchain
+        let items: vscode.QuickPickItem[] = [];
+        items.push({label: "toolchain", description:"default toolchain for each platform or arch"})
+        for (var i = 0; i < tools.length; i++){
+            items.push({label: tools[i][0], description:tools[i][1]});
+        }        
+
+        const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+        if (chosen && chosen.label !== this._option.get<string>("toolchain")) {
+            // update compiler
+            this._option.set("toolchain", chosen.label);
+            this._optionChanged = true;
+            this._status.toolchain = chosen.label;
+        }   
     }
 
     // set target architecture

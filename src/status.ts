@@ -41,6 +41,9 @@ export class Status implements vscode.Disposable {
     // is visible?
     private _visible: boolean = true;
 
+    // the toolchain 
+    private readonly _toolChainButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.3);
+    
     // the constructor
     constructor() {
 
@@ -94,6 +97,11 @@ export class Status implements vscode.Disposable {
         this._macroPlaybackButton.text = `$(history)`;
         this._macroPlaybackButton.tooltip = "Playback the last anonymous macro";
 
+        // init toolchain button
+        this._toolChainButton.command = 'xmake.setTargetToolchain';
+        this._toolChainButton.text = `toolchain`;
+        this._toolChainButton.tooltip = "change the toolchain";
+
         // update visibility
         this.updateVisibility();
     }
@@ -110,7 +118,8 @@ export class Status implements vscode.Disposable {
                             this._runButton,
                             this._debugButton,
                             this._macroRecordButton,
-                            this._macroPlaybackButton]) {
+                            this._macroPlaybackButton,
+                            this._toolChainButton]) {
             item.dispose();
         }
     }
@@ -126,7 +135,8 @@ export class Status implements vscode.Disposable {
                             this._runButton,
                             this._debugButton,
                             this._macroRecordButton,
-                            this._macroPlaybackButton]) {
+                            this._macroPlaybackButton,
+                            this._toolChainButton]) {
             if (this.visible && !!item.text) {
                 item.show();
             } else {
@@ -153,7 +163,12 @@ export class Status implements vscode.Disposable {
 
     // set the target platform  
     public set plat(value: string) {
-        this._platButton.text = `${value}`;
+        this._platButton.text = value;
+    }
+
+    // set the toolchain
+    public set toolchain(value: string) {
+        this._toolChainButton.text = value;
     }
 
     // set the target architecture  
