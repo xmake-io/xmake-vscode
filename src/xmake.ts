@@ -468,7 +468,7 @@ export class XMake implements vscode.Disposable {
             // get the build mode
             let mode = this._option.get<string>("mode");
 
-            //get the toolchain
+            // get the toolchain
             let toolchain = this._option.get<string>("toolchain");
              
             // make command
@@ -491,7 +491,7 @@ export class XMake implements vscode.Disposable {
 
             command += ` ${this._xmakeExplorer.getCommandOptions()}`
 
-            if (toolchain!="toolchain") {
+            if (toolchain != "toolchain") {
                 command += " --toolchain="+toolchain;
             }
             
@@ -931,6 +931,7 @@ export class XMake implements vscode.Disposable {
             this._option.set("plat", chosen.label);
             this._status.plat = chosen.label;
             this._optionChanged = true;
+            
             this._option.set("toolchain", "toolchain");
             this._status.toolchain = "toolchain";   
             // update architecture
@@ -961,7 +962,7 @@ export class XMake implements vscode.Disposable {
         let getConfigPathScript = path.join(__dirname, `../../assets/find_tools.lua`);
         var tools;
         if (fs.existsSync(getConfigPathScript)) {
-            tools = Object.values(JSON.parse((await process.runv(config.executable, ["l", getConfigPathScript, config.workingDirectory])).stdout.trim()));
+            tools = Object.values(JSON.parse((await process.iorunv(config.executable, ["l", getConfigPathScript, config.workingDirectory])).stdout.trim()));
         }
         // select toolchain
         let items: vscode.QuickPickItem[] = [];
@@ -977,9 +978,9 @@ export class XMake implements vscode.Disposable {
             this._option.set("toolchain", chosen.label);
             this._optionChanged = true;
             this._status.toolchain = chosen.label;
-            if(chosen.label!="toolchain") {
+            if(chosen.label != "toolchain") {
                 var command:string;
-                command = 'xmake ' + 'f --toolchain=' + chosen.label+" -c";
+                command = 'xmake ' + 'f --toolchain=' + chosen.label + " -c";
                 await this._terminal.execute("build", command);
             }
         }   
