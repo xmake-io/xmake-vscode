@@ -959,7 +959,7 @@ export class XMake implements vscode.Disposable {
             return
         }
 
-        let getToolchainsPathScript = path.join(__dirname, `../../assets/find_tools.lua`);
+        let getToolchainsPathScript = path.join(__dirname, `../../assets/toolchains.lua`);
         var tools;
         if (fs.existsSync(getToolchainsPathScript)) {
             tools = JSON.parse((await process.iorunv(config.executable, ["l", getToolchainsPathScript, config.workingDirectory])).stdout.trim());
