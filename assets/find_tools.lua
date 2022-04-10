@@ -1,25 +1,18 @@
-import("lib.detect.find_tool")
-import("detect.sdks.find_mingw")
+import("core.tool.toolchain")
+import("core.base.text")
+import("core.project.config")
+import("core.project.project")
 import("core.base.json")
 
-function main ()
+-- show all toolchains
+function main()
 
-    -- find mingw and msvc ,clang,clang++,gcc,g++
-    local tools = {"gcc","clang","msvc","mingw"}
-    local enabled_tools = {};
-    local i = 1
-
-    if find_mingw() then
-        table.insert(enabled_tools,"mingw")
+    config.load()
+    local tbl = {align = 'l', sep = "        "}
+    for _, name in ipairs(toolchain.list()) do
+        local t = os.isfile(os.projectfile()) and project.toolchain(name) or toolchain.load(name)
+        table.insert(tbl, {name, t:get("description")})
     end
-    while i < 5 do
-        if find_tool(tools[i]) then
-            table.insert(enabled_tools,tools[i])
-        end
-        i = i + 1;
-    end
-
-    local localjson =  json.encode(enabled_tools)
-
+    local localjson =  json.encode(tbl)
     print(localjson)
 end

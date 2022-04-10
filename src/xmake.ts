@@ -141,6 +141,11 @@ export class XMake implements vscode.Disposable {
         const mode = ("mode" in cacheJson && cacheJson["mode"] != "")? cacheJson["mode"] : "debug";
         this._option.set("mode", mode);
         this._status.mode = mode;
+    
+        // init defaualt toolchain
+        const toolchain = "toolchain";
+        this._option.set("toolchain", toolchain);
+        this._status.toolchain = toolchain;        
     }
 
     // update Intellisense
@@ -463,6 +468,9 @@ export class XMake implements vscode.Disposable {
             // get the build mode
             let mode = this._option.get<string>("mode");
 
+            //get the toolchain
+            let toolchain = this._option.get<string>("toolchain");
+             
             // make command
             let command = `${config.executable} f -p ${plat} -a ${arch} -m ${mode}`;
             if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
@@ -483,6 +491,10 @@ export class XMake implements vscode.Disposable {
 
             command += ` ${this._xmakeExplorer.getCommandOptions()}`
 
+            if (toolchain!="toolchain") {
+                command += " --toolchain="+toolchain;
+            }
+            
             // configure it
             await this._terminal.execute("config", command);
 
@@ -919,7 +931,8 @@ export class XMake implements vscode.Disposable {
             this._option.set("plat", chosen.label);
             this._status.plat = chosen.label;
             this._optionChanged = true;
-
+            this._option.set("toolchain", "toolchain");
+            this._status.toolchain = "toolchain";   
             // update architecture
             let plat = chosen.label;
             let arch = "";
@@ -948,24 +961,27 @@ export class XMake implements vscode.Disposable {
         let getConfigPathScript = path.join(__dirname, `../../assets/find_tools.lua`);
         var tools;
         if (fs.existsSync(getConfigPathScript)) {
-            tools = JSON.parse((await process.runv(config.executable, ["l", getConfigPathScript, config.workingDirectory])).stdout.trim());
+            tools = Object.values(JSON.parse((await process.runv(config.executable, ["l", getConfigPathScript, config.workingDirectory])).stdout.trim()));
         }
         // select toolchain
         let items: vscode.QuickPickItem[] = [];
-        for(var i = 0; i < tools.length; i++) {
-            items.push({label: tools[i]});
+        items.push({label: "toolchain", description:"default toolchain for each platform or arch"})
+        for(var i = 0; i < tools.length; i++){
+            items.push({label: tools[i][0], description:tools[i][1]});
+            i++;
         }        
-        const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
 
+        const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
         if (chosen && chosen.label !== this._option.get<string>("toolchain")) {
-            
             // update compiler
             this._option.set("toolchain", chosen.label);
             this._optionChanged = true;
             this._status.toolchain = chosen.label;
-            var command:string;
-            command = 'xmake ' + 'f --toolchain=' + chosen.label;
-            await this._terminal.execute("build", command);
+            if(chosen.label!="toolchain") {
+                var command:string;
+                command = 'xmake ' + 'f --toolchain=' + chosen.label+" -c";
+                await this._terminal.execute("build", command);
+            }
         }   
     }
 
@@ -996,6 +1012,8 @@ export class XMake implements vscode.Disposable {
                     this._option.set("arch", chosen.label);
                     this._status.arch = chosen.label;
                     this._optionChanged = true;
+                    this._option.set("toolchain", "toolchain");
+                    this._status.toolchain = "toolchain";   
                 }
             }
         }
@@ -1018,6 +1036,8 @@ export class XMake implements vscode.Disposable {
             this._option.set("mode", chosen.label);
             this._status.mode = chosen.label;
             this._optionChanged = true;
+            this._option.set("toolchain", "toolchain");
+            this._status.toolchain = "toolchain";   
         }
     }
 
