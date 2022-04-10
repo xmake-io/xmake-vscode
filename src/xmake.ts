@@ -931,7 +931,7 @@ export class XMake implements vscode.Disposable {
             this._option.set("plat", chosen.label);
             this._status.plat = chosen.label;
             this._optionChanged = true;
-            
+
             // update architecture
             let plat = chosen.label;
             let arch = "";
