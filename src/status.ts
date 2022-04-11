@@ -16,34 +16,34 @@ export class Status implements vscode.Disposable {
 
     // the architecture button
     private readonly _archButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.4);
-    
+
     // the mode button
     private readonly _modeButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.3);
-    
+
     // the build button
     private readonly _buildButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.2);
-    
+
     // the target button
     private readonly _targetButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.1);
 
     // the run button
     private readonly _runButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.0);
-    
+
     // the debug button
     private readonly _debugButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.9);
-    
+
     // the macro record button
     private readonly _macroRecordButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.8);
 
     // the macro playback button
     private readonly _macroPlaybackButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.7);
-    
+
     // is visible?
     private _visible: boolean = true;
 
-    // the toolchain 
+    // the toolchain
     private readonly _toolChainButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.3);
-    
+
     // the constructor
     constructor() {
 
@@ -110,10 +110,10 @@ export class Status implements vscode.Disposable {
     public dispose() {
 
         for (const item of [this._projectButton,
-                            this._platButton, 
+                            this._platButton,
                             this._archButton,
                             this._modeButton,
-                            this._buildButton, 
+                            this._buildButton,
                             this._targetButton,
                             this._runButton,
                             this._debugButton,
@@ -127,10 +127,10 @@ export class Status implements vscode.Disposable {
     // update visibility
     private updateVisibility() {
         for (const item of [this._projectButton,
-                            this._platButton, 
+                            this._platButton,
                             this._archButton,
                             this._modeButton,
-                            this._buildButton, 
+                            this._buildButton,
                             this._targetButton,
                             this._runButton,
                             this._debugButton,
@@ -150,18 +150,18 @@ export class Status implements vscode.Disposable {
         return this._visible;
     }
 
-    // set visible  
+    // set visible
     public set visible(v: boolean) {
         this._visible = v;
         this.updateVisibility();
     }
-    
-    // set the project root  
+
+    // set the project root
     public set project(value: string) {
         this._projectButton.text = `XMake: ${value}`;
     }
 
-    // set the target platform  
+    // set the target platform
     public set plat(value: string) {
         this._platButton.text = value;
     }
@@ -171,28 +171,28 @@ export class Status implements vscode.Disposable {
         this._toolChainButton.text = value;
     }
 
-    // set the target architecture  
+    // set the target architecture
     public set arch(value: string) {
         this._archButton.text = value;
     }
 
-    // set the build mode  
+    // set the build mode
     public set mode(value: string) {
         this._modeButton.text = value;
     }
 
-    // set the default target   
+    // set the default target
     public set target(value: string) {
         this._targetButton.text = value;
     }
 
-    // start to record  
+    // start to record
     public startRecord() {
         this._macroRecordButton.command = 'xmake.onMacroEnd';
         this._macroRecordButton.text = `$(primitive-dot)`;
     }
 
-    // stop to record  
+    // stop to record
     public stopRecord() {
         this._macroRecordButton.command = 'xmake.onMacroBegin';
         this._macroRecordButton.text = `$(primitive-square)`;

@@ -124,7 +124,7 @@ class XMakeExplorerItem extends vscode.TreeItem {
 
 // Node of an internal representation of the tree view hierarchy
 // This can be deeper than the tree that is shown to the user
-// This stores all nodes in the most primitive form so that each node 
+// This stores all nodes in the most primitive form so that each node
 // corresponds to single entity.
 // The main difference between this type and the tree view is that
 // empty folders in the tree view are concatenated together to reduce the depth.
@@ -170,7 +170,7 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
         targets.sort((t1, t2) => {
             if(t1.group === t2.group)
                 return t1.name.localeCompare(t2.name);
-            
+
             return t1.group.localeCompare(t2.group);
         });
 
@@ -577,7 +577,9 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
         let cmd = "";
         if (this._optionValues) {
             this._optionValues.forEach(element => {
-                cmd += `--${element.name}=${element.value} `;
+                if (element.value) {
+                    cmd += `--${element.name}=${element.value} `;
+                }
             });
         }
         return cmd;
@@ -635,7 +637,7 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
 				<link href="${styleResetUri}" rel="stylesheet">
 				<link href="${styleVSCodeUri}" rel="stylesheet">
 				<link href="${styleMainUri}" rel="stylesheet">
-				
+
 				<title>Options</title>
 			</head>
 			<body>

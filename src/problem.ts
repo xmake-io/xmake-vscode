@@ -27,16 +27,16 @@ export class ProblemList implements vscode.Disposable {
         this._diagnosticCollection.dispose();
     }
 
-    // clear problems 
+    // clear problems
     public clear() {
-        
+
         // clear the previous problems first
         this._diagnosticCollection.clear();
     }
 
     // diagnose problems from the current logfile
     public diagnose(logfile: string) {
-        
+
         // clear the previous problems first
         this._diagnosticCollection.clear();
 
@@ -48,9 +48,9 @@ export class ProblemList implements vscode.Disposable {
 
             // read the log file
             fs.readFile(logfile, isWin? null : "utf8", (err, content) => {
-                    
+
                 if (!err && content) {
-                    
+
                     // convert gbk to utf8
                     let text = content;
                     if (isWin) {
@@ -59,19 +59,19 @@ export class ProblemList implements vscode.Disposable {
 
                     // init regex of gcc/clang output
                     const rOutputGcc: RegExp = new RegExp("^(error: )?(.*?):([0-9]*):([0-9]*): (.*?): (.*)$");
-                    
+
                     // init regex of msvc output
-                    const rOutputMsvc: RegExp = new RegExp("(.*?)\\(([0-9]*)\\): (.*?) .*?: (.*)");                    
+                    const rOutputMsvc: RegExp = new RegExp("(.*?)\\(([0-9]*)\\): (.*?) .*?: (.*)");
                     // init diagnostics map
                     let diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
-    
+
                     // parse errors and warnings
                     text.split("\n").forEach(textLine => {
                         if (textLine) {
 
                             // parse warning and error from the given text line
                             let matches: RegExpExecArray = isWin? rOutputMsvc.exec(textLine) : rOutputGcc.exec(textLine);
-                            if (matches) { 
+                            if (matches) {
 
                                 // get warning and error info
                                 let file = "";
@@ -99,8 +99,8 @@ export class ProblemList implements vscode.Disposable {
                                 let uri: vscode.Uri = vscode.Uri.file(path.isAbsolute(file)? file : path.join(config.workingDirectory, file));
 
                                 // get diagnostics of this file
-                                let diagnostics: vscode.Diagnostic[] = diagnosticsMap.get(uri.fsPath);                      
-                                // init severity 
+                                let diagnostics: vscode.Diagnostic[] = diagnosticsMap.get(uri.fsPath);
+                                // init severity
                                 let severity: vscode.DiagnosticSeverity = {error: vscode.DiagnosticSeverity.Error, warning: vscode.DiagnosticSeverity.Warning}[kind];
                                 if (severity != vscode.DiagnosticSeverity.Error && severity != vscode.DiagnosticSeverity.Warning) {
                                     severity = vscode.DiagnosticSeverity.Error;
@@ -118,14 +118,14 @@ export class ProblemList implements vscode.Disposable {
 
                                 // init range
                                 let range = new vscode.Range(startLine, startColumn, endLine, endColumn);
-                                
+
                                 // save diagnostic
                                 let diagnostic = new vscode.Diagnostic(range, message, severity);
                                 if (!diagnostics) {
                                     diagnostics = [];
                                     diagnosticsMap.set(uri.fsPath, diagnostics);
                                 }
-                                diagnostics.push(diagnostic);                         
+                                diagnostics.push(diagnostic);
                             }
                         }
                     });
@@ -137,7 +137,7 @@ export class ProblemList implements vscode.Disposable {
                 }
                 else if (err) {
                     log.error(err.message);
-                } 
+                }
             });
         }
     }
