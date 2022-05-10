@@ -630,6 +630,9 @@ export class XMake implements vscode.Disposable {
         // configure and clean all
         await this.onConfigure(target);
         await this._terminal.execute("clean all", command);
+
+        // mark as changed, so that next `onConfigure` will be executed
+        this._optionChanged = true;
     }
 
     // on run target
