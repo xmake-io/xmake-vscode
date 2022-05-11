@@ -8,7 +8,7 @@
     const oldState = vscode.getState() || { options: [] };
 
     let options = oldState.options || [];
-    
+
     refresh(options);
 
     // Handle messages sent from the extension to the webview
@@ -22,7 +22,7 @@
                 }
             }
         });
-        
+
     // Recreate the options UI from the incoming options definition
     function refresh(new_options){
 
@@ -32,7 +32,7 @@
             else if(a.name > b.name) return 1;
             else return 0;
         })
-        
+
         // store option so that web page can be re-loaded and refreshed
         options = new_options;
         vscode.setState({ options: new_options });
@@ -42,7 +42,7 @@
         optionsItem.innerHTML = "";
 
         for(const option of options){
-            
+
             // create the label
             const labelItem = document.createElement("label");
             labelItem.className = "options-label";
@@ -60,7 +60,7 @@
                 const selectItem = document.createElement("select");
                 selectItem.id = option.name + "Input";
                 selectItem.oninput = onOptionsChange;
-                
+
                 for(let value of optionValues){
                     const optionElement = document.createElement("option");
                     optionElement.value = value;

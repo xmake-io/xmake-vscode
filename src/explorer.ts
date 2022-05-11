@@ -166,6 +166,10 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
 
     async refresh(targets: any) {
 
+        if (targets == null) {
+            return;
+        }
+
         // Sort targets so they appear correctly in the tree view
         targets.sort((t1, t2) => {
             if(t1.group === t2.group)
