@@ -995,7 +995,7 @@ export class XMake implements vscode.Disposable {
         let items: vscode.QuickPickItem[] = [];
         let plat = this._option.get<string>("plat");
 
-        // select files
+        // select archs
         let getArchListScript = path.join(__dirname, `../../assets/archs.lua`);
         if (fs.existsSync(getArchListScript) && fs.existsSync(getArchListScript)) {
             let result = (await process.iorunv(config.executable, ["l", getArchListScript, plat], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
@@ -1003,7 +1003,7 @@ export class XMake implements vscode.Disposable {
                 let items: vscode.QuickPickItem[] = [];
                 result = result.split("__end__")[0].trim();
                 result.split("\n").forEach(element => {
-                    items.push({label: element.trim(), description: "The " + element.trim() + " Architecture"});
+                    items.push({label: element.trim(), description: "The " + element.trim() + " architecture"});
                 });
                 const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
                 if (chosen && chosen.label !== this._option.get<string>("arch")) {
@@ -1024,14 +1024,22 @@ export class XMake implements vscode.Disposable {
         }
 
         // select mode
-        let items: vscode.QuickPickItem[] = [];
-        items.push({label: "debug", description: "The Debug Mode"});
-        items.push({label: "release", description: "The Release Mode"});
-        const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
-        if (chosen && chosen.label !== this._option.get<string>("mode")) {
-            this._option.set("mode", chosen.label);
-            this._status.mode = chosen.label;
-            this._optionChanged = true;
+        let getModeListScript = path.join(__dirname, `../../assets/modes.lua`);
+        if (fs.existsSync(getModeListScript) && fs.existsSync(getModeListScript)) {
+            let result = (await process.iorunv(config.executable, ["l", getModeListScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            if (result) {
+                let items: vscode.QuickPickItem[] = [];
+                result = result.split("__end__")[0].trim();
+                result.split("\n").forEach(element => {
+                    items.push({label: element.trim(), description: "The " + element.trim() + " mode"});
+                });
+                const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+                if (chosen && chosen.label !== this._option.get<string>("mode")) {
+                    this._option.set("mode", chosen.label);
+                    this._status.arch = chosen.label;
+                    this._optionChanged = true;
+                }
+            }
         }
     }
 
