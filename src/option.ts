@@ -23,7 +23,7 @@ export class Option implements vscode.Disposable {
     public get<T>(key: string): T|null {
         return this._entries.get(key) as T;
     }
-    
+
     // get value from the given key
     public set(key: string, value: any) {
         this._entries.set(key, value);

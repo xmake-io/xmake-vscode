@@ -219,10 +219,13 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
             targetNode.children.push(new XMakeExplorerHierarchyNode({ type: XMakeExplorerItemType.FILE, group: groups, target: target.name, path: scriptPath }));
 
             // Sort files so that they appear the same when refreshed
-            target.files.sort();
+            if (target.files != null) {
+                target.files.sort();
+            } else {
+                target.files = [];
+            }
 
             // Create folder hierarchy
-
             for (let file of target.files) {
                 const path = this.splitPath(file);
                 let subPath: string[] = new Array();
@@ -245,7 +248,6 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
             }
 
             // Add the file node
-
             for (let file of target.files) {
                 const path = this.splitPath(file);
                 let subPath: string[] = new Array();
