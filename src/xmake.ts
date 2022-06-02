@@ -1036,7 +1036,7 @@ export class XMake implements vscode.Disposable {
                 const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
                 if (chosen && chosen.label !== this._option.get<string>("mode")) {
                     this._option.set("mode", chosen.label);
-                    this._status.arch = chosen.label;
+                    this._status.mode = chosen.label;
                     this._optionChanged = true;
                 }
             }
