@@ -147,6 +147,7 @@ export class Debugger implements vscode.Disposable {
                     cwd: targetRunDir,
                     environment: [],
                     // externalConsole: true, // https://github.com/microsoft/vscode-cpptools/issues/6939
+                    // externalTerminal only supports cmd when debugging. https://github.com/microsoft/vscode/issues/147120
                     console: "internalConsole",
                     MIMode: "gdb",
                     miDebuggerPath: "",
