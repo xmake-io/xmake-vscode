@@ -115,9 +115,13 @@ export class Debugger implements vscode.Disposable {
                     externalConsole: false, // @see https://github.com/xmake-io/xmake-vscode/issues/36
                     MIMode: "gdb",
                     miDebuggerPath: await this.findGdbPath(),
-                    description: "Enable pretty-printing for gdb",
-                    text: "-enable-pretty-printing",
-                    ignoreFailures: true
+                    setupCommands:[
+                        {
+                            description: "Enable pretty-printing for gdb",
+                            text: "-enable-pretty-printing",
+                            ignoreFailures: true
+                        }
+                    ]
                 };
             } else if (os.platform() == "win32" && plat == "mingw") {
                 debugConfig = {
@@ -132,9 +136,15 @@ export class Debugger implements vscode.Disposable {
                     externalConsole: false,
                     MIMode: "gdb",
                     miDebuggerPath: await this.findGdbPath(),
-                    description: "Enable pretty-printing for gdb",
-                    text: "-enable-pretty-printing",
-                    ignoreFailures: true
+                    setupCommands:[
+                        {
+                            description: "Enable pretty-printing for gdb",
+                            text: "-enable-pretty-printing",
+                            ignoreFailures: true
+                        }                    ]
+                    // description: "Enable pretty-printing for gdb",
+                    // text: "-enable-pretty-printing",
+                    // ignoreFailures: true
                 };
             } else if (os.platform() == "win32") {
                 debugConfig = {
@@ -151,9 +161,15 @@ export class Debugger implements vscode.Disposable {
                     console: "internalConsole",
                     MIMode: "gdb",
                     miDebuggerPath: "",
-                    description: "Enable pretty-printing for gdb",
-                    text: "-enable-pretty-printing",
-                    ignoreFailures: true
+                    setupCommands:[
+                        {
+                            description: "Enable pretty-printing for gdb",
+                            text: "-enable-pretty-printing",
+                            ignoreFailures: true
+                        }                    ]
+                    // description: "Enable pretty-printing for gdb",
+                    // text: "-enable-pretty-printing",
+                    // ignoreFailures: true
                 };
             }
 
