@@ -141,7 +141,8 @@ export class Debugger implements vscode.Disposable {
                             description: "Enable pretty-printing for gdb",
                             text: "-enable-pretty-printing",
                             ignoreFailures: true
-                        }                    ]
+                        }
+                    ]
                     // description: "Enable pretty-printing for gdb",
                     // text: "-enable-pretty-printing",
                     // ignoreFailures: true
@@ -166,7 +167,8 @@ export class Debugger implements vscode.Disposable {
                             description: "Enable pretty-printing for gdb",
                             text: "-enable-pretty-printing",
                             ignoreFailures: true
-                        }                    ]
+                        }
+                    ]
                     // description: "Enable pretty-printing for gdb",
                     // text: "-enable-pretty-printing",
                     // ignoreFailures: true
