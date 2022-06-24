@@ -22,7 +22,6 @@
                 }
             }
         });
-
     // Recreate the options UI from the incoming options definition
     function refresh(new_options){
 
@@ -49,7 +48,10 @@
             labelItem.textContent = option.name;
             optionsItem.append(labelItem);
 
-            const optionValues = findOptionValues(option.value.toString(), option.values);
+            var optionValues = [];
+            if (option.value != null && option.value != undefined) {
+                optionValues = findOptionValues(option.value.toString(), option.values);
+            }
 
             // create the value input
             // if there is a list of values then a drop down combo is used
@@ -65,13 +67,10 @@
                     const optionElement = document.createElement("option");
                     optionElement.value = value;
                     optionElement.textContent = value;
-
                     if(option.value == value)
                         optionElement.selected = true;
-
                     selectItem.append(optionElement);
                 }
-
                 optionsItem.append(selectItem);
             }
             else

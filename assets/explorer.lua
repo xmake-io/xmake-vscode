@@ -37,9 +37,16 @@ function main ()
     local explorer_options = {}
     for name, option in pairs((project.options())) do
         local explorer_option = {}
-        if option:get("showmenu") then
+        local show
+        if option.showmenu then
+            showmenu = option:showmenu()
+            show = showmenu ~= false
+        else
+            show = option:get("showmenu")
+        end
+        if show then
             explorer_option.name = name
-            explorer_option.value = config.get(name)
+            explorer_option.value = option:value() or option:get("default")
 
             local explorer_option_values = {}
             for _, value in ipairs(option:get("values")) do
