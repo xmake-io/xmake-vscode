@@ -547,7 +547,7 @@ export class XMake implements vscode.Disposable {
         else if (buildLevel == "warning")
             command += " -w";
         else if (buildLevel == "debug")
-            command += " -v --backtrace";
+            command += " -vD";
 
         // add build target to command
         if (targetName && targetName != "default")
@@ -576,7 +576,7 @@ export class XMake implements vscode.Disposable {
         else if (buildLevel == "warning")
             command += " -w";
         else if (buildLevel == "debug")
-            command += " -v --backtrace";
+            command += " -vD";
 
         // add build target to command
         const targetName = this._option.get<string>("target");
