@@ -219,7 +219,7 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
             targetNode.children.push(new XMakeExplorerHierarchyNode({ type: XMakeExplorerItemType.FILE, group: groups, target: target.name, path: scriptPath }));
 
             // Sort files so that they appear the same when refreshed
-            if (target.files != null) {
+            if (target.files != null && Array.isArray(target.files)) {
                 target.files.sort();
             } else {
                 target.files = [];
