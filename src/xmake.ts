@@ -826,13 +826,29 @@ export class XMake implements vscode.Disposable {
             }
         }
 
+        // get target run envs
+        var targetRunEnvs = null;
+        let getTargetRunEnvsScript = path.join(__dirname, `../../assets/target_runenvs.lua`);
+        if (fs.existsSync(getTargetRunEnvsScript)) {
+            targetRunEnvs = (await process.iorunv(config.executable, ["l", getTargetRunEnvsScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            if (targetRunEnvs) {
+                targetRunEnvs = targetRunEnvs.split("__end__")[0].trim();
+                targetRunEnvs = targetRunEnvs.split('\n')[0].trim();
+            }
+            if (targetRunEnvs) {
+                targetRunEnvs = JSON.parse(targetRunEnvs);
+            } else {
+                targetRunEnvs = null;
+            }
+        }
+
         // get platform
         var plat = this._option.get<string>("plat");
         if (!plat) plat = "default";
 
         // start debugging
         if (targetProgram && fs.existsSync(targetProgram)) {
-            this._debugger.startDebugging(targetName, targetProgram, targetRunDir, plat);
+            this._debugger.startDebugging(targetName, targetProgram, targetRunDir, targetRunEnvs, plat);
         } else {
             await vscode.window.showErrorMessage('The target program not found!');
         }

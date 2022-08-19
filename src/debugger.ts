@@ -38,7 +38,7 @@ export class Debugger implements vscode.Disposable {
     }
 
     // startDebugging
-    async startDebugging(targetName?: string, targetProgram?: string, targetRunDir?: string, plat?: string) {
+    async startDebugging(targetName?: string, targetProgram?: string, targetRunDir?: string, targetRunEnvs?: object, plat?: string) {
 
         // no target program?
         if (!targetProgram) {
@@ -72,6 +72,11 @@ export class Debugger implements vscode.Disposable {
             targetRunDir = path.dirname(targetProgram);
         }
 
+        // get target run envs
+        if (!targetRunEnvs) {
+            targetRunEnvs = [];
+        }
+
         // init debug configuration
         var debugConfig: vscode.DebugConfiguration = null
         if (codelldb) {
@@ -83,7 +88,7 @@ export class Debugger implements vscode.Disposable {
                 args: args,
                 stopAtEntry: true,
                 cwd: targetRunDir,
-                environment: [],
+                environment: targetRunEnvs,
                 externalConsole: false,
             };
         } else {
@@ -97,7 +102,7 @@ export class Debugger implements vscode.Disposable {
                     args: args,
                     stopAtEntry: true,
                     cwd: targetRunDir,
-                    environment: [],
+                    environment: targetRunEnvs,
                     externalConsole: true,
                     MIMode: "lldb",
                     miDebuggerPath: ""
@@ -111,7 +116,7 @@ export class Debugger implements vscode.Disposable {
                     args: args,
                     stopAtEntry: true,
                     cwd: targetRunDir,
-                    environment: [],
+                    environment: targetRunEnvs,
                     externalConsole: false, // @see https://github.com/xmake-io/xmake-vscode/issues/36
                     MIMode: "gdb",
                     miDebuggerPath: await this.findGdbPath(),
@@ -132,7 +137,7 @@ export class Debugger implements vscode.Disposable {
                     args: args,
                     stopAtEntry: true,
                     cwd: targetRunDir,
-                    environment: [],
+                    environment: targetRunEnvs,
                     externalConsole: false,
                     MIMode: "gdb",
                     miDebuggerPath: await this.findGdbPath(),
@@ -156,7 +161,7 @@ export class Debugger implements vscode.Disposable {
                     args: args,
                     stopAtEntry: true,
                     cwd: targetRunDir,
-                    environment: [],
+                    environment: targetRunEnvs,
                     // externalConsole: true, // https://github.com/microsoft/vscode-cpptools/issues/6939
                     // externalTerminal only supports cmd when debugging. https://github.com/microsoft/vscode/issues/147120
                     console: "internalConsole",
