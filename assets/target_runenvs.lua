@@ -4,6 +4,18 @@ import("core.project.project")
 import("core.base.json")
 import("private.action.run.make_runenvs")
 
+-- recursively target add env
+function _add_target_pkgenvs(target, targets_added)
+    if targets_added[target:name()] then
+        return
+    end
+    targets_added[target:name()] = true
+    os.addenvs(target:pkgenvs())
+    for _, dep in ipairs(target:orderdeps()) do
+        _add_target_pkgenvs(dep, targets_added)
+    end
+end
+
 -- main entry
 function main (targetname)
 
@@ -32,6 +44,7 @@ function main (targetname)
     local envs = {}
     if target then
         local oldenvs = os.getenvs()
+        _add_target_pkgenvs(target, {})
         local addrunenvs, setrunenvs = make_runenvs(target)
         for name, values in pairs(addrunenvs) do
             os.addenv(name, table.unpack(table.wrap(values)))
