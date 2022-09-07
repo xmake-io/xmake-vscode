@@ -64,6 +64,9 @@ function main (targetname)
         table.insert(envirnoments, {name = k, value = v})
         empty = false
     end
+    if json.mark_as_array then
+        json.mark_as_array(envirnoments)
+    end
     if not empty then
         print(json.encode(envirnoments))
     else

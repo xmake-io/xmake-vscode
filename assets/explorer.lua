@@ -60,6 +60,14 @@ function main ()
     end
 
     -- print explorer data
+    if json.mark_as_array then
+        if explorer_targets then
+            json.mark_as_array(explorer_targets)
+        end
+        if explorer_options then
+            json.mark_as_array(explorer_options)
+        end
+    end
     local explorer_data = {targets = explorer_targets, options = explorer_options}
     local jsondata = json.encode(explorer_data)
     print(jsondata)
