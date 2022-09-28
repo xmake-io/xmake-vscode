@@ -345,7 +345,7 @@ export class XMake implements vscode.Disposable {
                             if (!this._terminal) {
                                 this._terminal = new Terminal();
                             }
-                            await this._terminal.execute("create", `${config.executable} create -t ${chosen2.label} -l ${chosen.label} -P ${config.workingDirectory}`, false);
+                            await this._terminal.execute("create", `${config.executable} create -t ${chosen2.label} -l ${chosen.label} -P "${config.workingDirectory}"`, false);
 
                             // start plugin
                             this.startPlugin();
