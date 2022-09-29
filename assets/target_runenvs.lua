@@ -5,14 +5,20 @@ import("core.base.json")
 import("private.action.run.make_runenvs")
 
 -- recursively target add env
-function _add_target_pkgenvs(target, targets_added)
+function _add_target_pkgenvs(target, envs, targets_added)
     if targets_added[target:name()] then
         return
     end
     targets_added[target:name()] = true
-    os.addenvs(target:pkgenvs())
+    local pkgenvs = target:pkgenvs()
+    if pkgenvs then
+        os.addenvs(pkgenvs)
+        for _, name in ipairs(table.keys(pkgenvs)) do
+            envs[name] = os.getenv(name)
+        end
+    end
     for _, dep in ipairs(target:orderdeps()) do
-        _add_target_pkgenvs(dep, targets_added)
+        _add_target_pkgenvs(dep, envs, targets_added)
     end
 end
 
@@ -44,7 +50,7 @@ function main (targetname)
     local envs = {}
     if target then
         local oldenvs = os.getenvs()
-        _add_target_pkgenvs(target, {})
+        _add_target_pkgenvs(target, envs, {})
         local addrunenvs, setrunenvs = make_runenvs(target)
         for name, values in pairs(addrunenvs) do
             os.addenv(name, table.unpack(table.wrap(values)))
