@@ -676,8 +676,8 @@ export class XMake implements vscode.Disposable {
             command += " -a";
         else command += ` ${argstr}`;
 
-        // configure and run it
-        await this.onConfigure(target);
+        // build and run it
+        await this.onBuild(target);
         await this._terminal.execute("run", command);
     }
 
