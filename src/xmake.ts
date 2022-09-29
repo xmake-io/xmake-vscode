@@ -636,7 +636,7 @@ export class XMake implements vscode.Disposable {
     }
 
     // on run target
-    async onRun(target?: string) {
+    async onBuildRun(target?: string) {
 
         // this plugin enabled?
         if (!this._enabled) {
@@ -678,6 +678,58 @@ export class XMake implements vscode.Disposable {
 
         // build and run it
         await this.onBuild(target);
+        await this._terminal.execute("run", command);
+    }
+
+    // on run target
+    async onRun(target?: string) {
+
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+
+        // build and run?
+        const runMode = config.get<string>("runMode");
+        if (runMode == "buildRun") {
+            return this.onBuildRun(target)
+        }
+
+        // get target name
+        let targetName = this._option.get<string>("target");
+        if (!targetName) {
+            let getDefaultTargetPathScript = path.join(__dirname, `../../assets/default_target.lua`);
+            if (fs.existsSync(getDefaultTargetPathScript)) {
+                let result = (await process.iorunv(config.executable, ["l", getDefaultTargetPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+                if (result) {
+                    targetName = result.split('__end__')[0].trim();
+                }
+            }
+        }
+
+        // get target arguments
+        let args = [];
+        if (targetName && targetName in config.runningTargetsArguments)
+            args = config.runningTargetsArguments[targetName];
+        else if ("default" in config.runningTargetsArguments)
+            args = config.runningTargetsArguments["default"];
+
+        // make command line arguments string
+        let argstr = "";
+        if (args.length > 0) {
+            argstr = '"' + args.join('" "') + '"';
+        }
+
+        // make command
+        let command = `${config.executable} r`;
+        if (targetName && targetName != "default")
+            command += ` ${targetName} ${argstr}`;
+        else if (targetName == "all")
+            command += " -a";
+        else command += ` ${argstr}`;
+
+        // configure and run it
+        await this.onConfigure(target);
         await this._terminal.execute("run", command);
     }
 

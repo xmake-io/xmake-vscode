@@ -29,6 +29,7 @@ export async function activate(context: vscode.ExtensionContext) {
         'onRebuild',
         'onClean',
         'onCleanAll',
+        'onBuildRun',
         'onRun',
         'onPackage',
         'onInstall',

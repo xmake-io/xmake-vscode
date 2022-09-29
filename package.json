@@ -37,6 +37,7 @@
     "onCommand:xmake.onRebuild",
     "onCommand:xmake.onClean",
     "onCommand:xmake.onCleanAll",
+    "onCommand:xmake.onBuildRun",
     "onCommand:xmake.onRun",
     "onCommand:xmake.onPackage",
     "onCommand:xmake.onInstall",
@@ -139,6 +140,11 @@
       {
         "command": "xmake.onCleanAll",
         "title": "CleanAll",
+        "category": "XMake"
+      },
+      {
+        "command": "xmake.onBuildRun",
+        "title": "BuildRun",
         "category": "XMake"
       },
       {
@@ -314,6 +320,9 @@
           "command": "xmake.onCleanAll"
         },
         {
+          "command": "xmake.onBuildRun"
+        },
+        {
           "command": "xmake.onRun"
         },
         {
@@ -440,6 +449,15 @@
             "normal",
             "warning",
             "debug"
+          ]
+        },
+        "xmake.runMode": {
+          "type": "string",
+          "default": "runOnly",
+          "description": "The Run Mode: runOnly/buildRun",
+          "enum": [
+            "runOnly",
+            "buildRun"
           ]
         },
         "xmake.buildDirectory": {
