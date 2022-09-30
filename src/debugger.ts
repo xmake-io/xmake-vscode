@@ -80,6 +80,21 @@ export class Debugger implements vscode.Disposable {
         // init debug configuration
         var debugConfig: vscode.DebugConfiguration = null
         if (codelldb) {
+            /* convert environments
+             * https://github.com/xmake-io/xmake-vscode/issues/139
+             * https://github.com/vadimcn/vscode-lldb/blob/master/MANUAL.md#launching-a-new-process
+             */
+            var envs = {};
+            for (let item of (targetRunEnvs as Array<Object>)) {
+                let map = item as Map<String, String>;
+                if (map) {
+                    let name = map["name"];
+                    let value = map["value"];
+                    if (name && value) {
+                        envs[name] = value;
+                    }
+                }
+            }
             debugConfig = {
                 name: `launch: ${targetName}`,
                 type: 'lldb',
@@ -88,7 +103,7 @@ export class Debugger implements vscode.Disposable {
                 args: args,
                 stopAtEntry: true,
                 cwd: targetRunDir,
-                environment: targetRunEnvs,
+                env: envs,
                 externalConsole: false,
             };
         } else {
