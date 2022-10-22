@@ -710,10 +710,12 @@ export class XMakeExplorer implements vscode.Disposable {
 
         // Build commands
         vscode.commands.registerCommand('xmakeExplorer.buildAll', () => {
+            vscode.commands.executeCommand("xmake.setTarget", undefined);
             vscode.commands.executeCommand("xmake.onBuild");
         });
 
         vscode.commands.registerCommand('xmakeExplorer.rebuildAll', (item: XMakeExplorerItem) => {
+            vscode.commands.executeCommand("xmake.setTarget", undefined);
             vscode.commands.executeCommand("xmake.onRebuild");
         });
 
