@@ -73,6 +73,10 @@
         "aliases": [
           "XMake"
         ],
+        "icon": {
+          "light": "./res/logo.svg",
+          "dark": "./res/logo.svg"
+        },
         "configuration": "./languages/xmake-configuration.json"
       }
     ],
