@@ -118,7 +118,7 @@ export class Debugger implements vscode.Disposable {
                     stopAtEntry: true,
                     cwd: targetRunDir,
                     environment: targetRunEnvs,
-                    externalConsole: true,
+                    externalConsole: false,
                     MIMode: "lldb",
                     miDebuggerPath: ""
                 };
