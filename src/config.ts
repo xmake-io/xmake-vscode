@@ -71,7 +71,6 @@ export class Config {
     // the additional config arguments
     get additionalConfigArguments(): string[] {
         let values = this.get("additionalConfigArguments");
-        log.info(typeof values)
         if (typeof values === "string") {
             return [utils.replaceVars(values)];
         }
