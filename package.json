@@ -507,7 +507,7 @@
         "xmake.additionalConfigArguments": {
           "type": "string[]",
           "default": [],
-          "description": "The Additional Config Arguments, .e.g --cc=gcc --cxflags=\"-DDEBUG\""
+          "description": "The Additional Config Arguments, .e.g [\"--cc=gcc\", \"--myopt=xxx\"]"
         },
         "xmake.runningTargetsArguments": {
           "type": "object",
