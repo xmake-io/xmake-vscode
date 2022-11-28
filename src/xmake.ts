@@ -662,29 +662,31 @@ export class XMake implements vscode.Disposable {
         }
 
         // get target arguments
-        let args = [];
+        let args = ["run"];
+        let configArgs = [];
         if (targetName && targetName in config.runningTargetsArguments)
-            args = config.runningTargetsArguments[targetName];
+            configArgs = config.runningTargetsArguments[targetName];
         else if ("default" in config.runningTargetsArguments)
-            args = config.runningTargetsArguments["default"];
-
-        // make command line arguments string
-        let argstr = "";
-        if (args.length > 0) {
-            argstr = '"' + args.join('" "') + '"';
-        }
+            configArgs = config.runningTargetsArguments["default"];
 
         // make command
-        let command = `${config.executable} r`;
-        if (targetName && targetName != "default")
-            command += ` ${targetName} ${argstr}`;
-        else if (targetName == "all")
-            command += " -a";
-        else command += ` ${argstr}`;
+        let command = config.executable;
+        if (targetName && targetName != "default") {
+            args.push(targetName);
+            for (let arg of configArgs) {
+                args.push(arg);
+            }
+        } else if (targetName == "all") {
+            args.push("-a");
+        } else {
+            for (let arg of configArgs) {
+                args.push(arg);
+            }
+        }
 
         // build and run it
         await this.onBuild(target);
-        await this._terminal.exec("run", command);
+        await this._terminal.execv("run", command, args);
     }
 
     // on run target
@@ -714,29 +716,31 @@ export class XMake implements vscode.Disposable {
         }
 
         // get target arguments
-        let args = [];
+        let args = ["run"];
+        let configArgs = [];
         if (targetName && targetName in config.runningTargetsArguments)
-            args = config.runningTargetsArguments[targetName];
+            configArgs = config.runningTargetsArguments[targetName];
         else if ("default" in config.runningTargetsArguments)
-            args = config.runningTargetsArguments["default"];
-
-        // make command line arguments string
-        let argstr = "";
-        if (args.length > 0) {
-            argstr = '"' + args.join('" "') + '"';
-        }
+            configArgs = config.runningTargetsArguments["default"];
 
         // make command
-        let command = `${config.executable} r`;
-        if (targetName && targetName != "default")
-            command += ` ${targetName} ${argstr}`;
-        else if (targetName == "all")
-            command += " -a";
-        else command += ` ${argstr}`;
+        let command = config.executable;
+        if (targetName && targetName != "default") {
+            args.push(targetName);
+            for (let arg of configArgs) {
+                args.push(arg);
+            }
+        } else if (targetName == "all") {
+            args.push("-a");
+        } else {
+            for (let arg of configArgs) {
+                args.push(arg);
+            }
+        }
 
         // configure and run it
         await this.onConfigure(target);
-        await this._terminal.exec("run", command);
+        await this._terminal.execv("run", command, args);
     }
 
     // on package target
@@ -774,17 +778,21 @@ export class XMake implements vscode.Disposable {
         const targetName = this._option.get<string>("target");
 
         // make command
-        let command = `${config.executable} install`;
-        if (targetName && targetName != "default")
-            command += ` ${targetName}`;
-        else if (targetName == "all")
-            command += " -a";
-        if (config.installDirectory != "")
-            command += ` -o \"${config.installDirectory}\"`;
+        let args = ["install"];
+        let command = config.executable;
+        if (targetName && targetName != "default") {
+            args.push(targetName);
+        } else if (targetName == "all") {
+            args.push("-a");
+        }
+        if (config.installDirectory != "") {
+            args.push("-o");
+            args.push(config.installDirectory);
+        }
 
         // configure and install it
         await this.onConfigure(target);
-        await this._terminal.exec("install", command);
+        await this._terminal.execv("install", command, args);
     }
 
     // on uninstall target
@@ -799,15 +807,18 @@ export class XMake implements vscode.Disposable {
         const targetName = this._option.get<string>("target");
 
         // make command
-        let command = `${config.executable} uninstall`;
-        if (targetName && targetName != "default")
-            command += ` ${targetName}`;
-        if (config.installDirectory != "")
-            command += ` --installdir=\"${config.installDirectory}\"`;
+        let args = ["uninstall"];
+        let command = config.executable;
+        if (targetName && targetName != "default") {
+            args.push(targetName);
+        }
+        if (config.installDirectory != "") {
+            args.push(`--installdir=${config.installDirectory}`);
+        }
 
         // configure and uninstall it
         await this.onConfigure(target);
-        await this._terminal.exec("uninstall", command);
+        await this._terminal.execv("uninstall", command, args);
     }
 
     // on debug target
