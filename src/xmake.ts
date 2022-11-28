@@ -457,7 +457,7 @@ export class XMake implements vscode.Disposable {
         }
 
         // option changed?
-        if (this._optionChanged || this._xmakeExplorer.getOptionsChanged()) {
+        if (this._optionChanged) {
 
             // get the target platform
             let plat = this._option.get<string>("plat");
@@ -501,7 +501,6 @@ export class XMake implements vscode.Disposable {
 
             // mark as not changed
             this._optionChanged = false;
-            this._xmakeExplorer.setOptionsChanged(false);
             return true;
         }
         return false;

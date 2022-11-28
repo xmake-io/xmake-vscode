@@ -520,6 +520,7 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
     }
 }
 
+/*
 // Data provider for the options panel
 class XMakeOptionsProvider implements vscode.WebviewViewProvider {
 
@@ -664,6 +665,7 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
         return text;
     }
 }
+*/
 
 // XMakeExplorer contains the targets view and options view
 // Define all the commands
@@ -671,7 +673,7 @@ export class XMakeExplorer implements vscode.Disposable {
 
     private _xmakeExplorerDataProvider: XMakeExplorerDataProvider;
     private _treeView: vscode.TreeView<XMakeExplorerItem>;
-    private _xmakeOptionsProvider: XMakeOptionsProvider;
+//    private _xmakeOptionsProvider: XMakeOptionsProvider;
 
     async init(context: vscode.ExtensionContext) {
 
@@ -701,12 +703,13 @@ export class XMakeExplorer implements vscode.Disposable {
             }
         );
 
-        // Options panel
+        /* disable Options panel now
         this._xmakeOptionsProvider = new XMakeOptionsProvider(context.extensionUri);
         if (info)
             this._xmakeOptionsProvider.refresh(info.options);
 
         vscode.window.registerWebviewViewProvider("xmakeOptions", this._xmakeOptionsProvider);
+        */
 
         // Build commands
         vscode.commands.registerCommand('xmakeExplorer.buildAll', () => {
@@ -777,10 +780,11 @@ export class XMakeExplorer implements vscode.Disposable {
         const info = await this.readInfo();
         if (info) {
             await this._xmakeExplorerDataProvider.refresh(info.targets);
-            await this._xmakeOptionsProvider.refresh(info.options);
+          //  await this._xmakeOptionsProvider.refresh(info.options);
         }
     }
 
+    /*
     // Option accessors
     public getCommandOptions() {
         return this._xmakeOptionsProvider.getCommandOptions();
@@ -792,7 +796,7 @@ export class XMakeExplorer implements vscode.Disposable {
 
     public setOptionsChanged(changed: boolean) {
         return this._xmakeOptionsProvider.setOptionsChanged(changed);
-    }
+    }*/
 
     // Helper function to read all the information used by the explorer from xmake.lua
     private async readInfo() {

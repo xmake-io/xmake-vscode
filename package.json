@@ -557,14 +557,6 @@
           "icon": "res/logo-mono.svg",
           "contextualTitle": "XMake",
           "when": "xmakeEnabled"
-        },
-        {
-          "type": "webview",
-          "id": "xmakeOptions",
-          "name": "Options",
-          "icon": "res/logo-mono.svg",
-          "contextualTitle": "XMake",
-          "when": "xmakeEnabled"
         }
       ]
     }
