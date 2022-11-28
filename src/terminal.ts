@@ -53,7 +53,7 @@ export class Terminal implements vscode.Disposable {
     /* execute command string
      * @see https://code.visualstudio.com/api/extension-guides/task-provider
      */
-    public async execute(name: string, command: string, withlog: boolean = true) {
+    public async exec(name: string, command: string, withlog: boolean = true) {
 
         var options = {"cwd": config.workingDirectory};
         if (withlog) {
@@ -67,6 +67,34 @@ export class Terminal implements vscode.Disposable {
         };
 
         const execution = new vscode.ShellExecution(command, options);
+        const task = new vscode.Task(kind, vscode.TaskScope.Workspace, "xmake: " + name, "xmake", execution, undefined);
+        this._tasks.push(task);
+
+        // only one task? execute it directly
+        if (this._tasks.length == 1) {
+            vscode.tasks.executeTask(task).then(function (execution) {
+            }, function (reason) {
+            });
+        }
+    }
+
+    /* execute command with arguments list
+     * @see https://code.visualstudio.com/api/extension-guides/task-provider
+     */
+    public async execv(name: string, command: string, args: string[], withlog: boolean = true) {
+
+        var options = {"cwd": config.workingDirectory};
+        if (withlog) {
+            options["env"] = {XMAKE_LOGFILE: this.logfile};
+        }
+
+        const kind: vscode.TaskDefinition = {
+            type: "xmake",
+            script: "",
+            path: "",
+        };
+
+        const execution = new vscode.ShellExecution(command, args, options);
         const task = new vscode.Task(kind, vscode.TaskScope.Workspace, "xmake: " + name, "xmake", execution, undefined);
         this._tasks.push(task);
 
