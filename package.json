@@ -505,8 +505,8 @@
           "description": "The compile_commands.json file directory"
         },
         "xmake.additionalConfigArguments": {
-          "type": "string",
-          "default": "",
+          "type": "string[]",
+          "default": [],
           "description": "The Additional Config Arguments, .e.g --cc=gcc --cxflags=\"-DDEBUG\""
         },
         "xmake.runningTargetsArguments": {

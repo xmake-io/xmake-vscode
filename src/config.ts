@@ -4,6 +4,7 @@
 import * as vscode from 'vscode';
 import * as os from 'os';
 import * as utils from './utils';
+import {log} from './log';
 
 // the config class
 export class Config {
@@ -68,8 +69,19 @@ export class Config {
     }
 
     // the additional config arguments
-    get additionalConfigArguments(): string {
-        return utils.replaceVars(this.get<string>("additionalConfigArguments"));
+    get additionalConfigArguments(): string[] {
+        let values = this.get("additionalConfigArguments");
+        log.info(typeof values)
+        if (typeof values === "string") {
+            return [utils.replaceVars(values)];
+        }
+        var results = []
+        if (values) {
+            for (let value of values as string[]) {
+                results.push(utils.replaceVars(value))
+            }
+        }
+        return results
     }
 
     // the running targets arguments

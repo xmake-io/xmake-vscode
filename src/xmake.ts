@@ -472,7 +472,7 @@ export class XMake implements vscode.Disposable {
             let toolchain = this._option.get<string>("toolchain");
 
             // make command
-            let command = `${config.executable}`
+            let command = config.executable
             var args = ["f", "-p", `${plat}`, "-a", `${arch}`, "-m", `${mode}`];
             if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
                 args.push(`--ndk=${config.androidNDKDirectory}`);
@@ -484,13 +484,14 @@ export class XMake implements vscode.Disposable {
                 args.push(`--wdk=${config.WDKDirectory}`);
             }
             if (config.buildDirectory != "" && config.buildDirectory != path.join(utils.getProjectRoot(), "build")) {
-                args.push("-o")
-                args.push(`${config.buildDirectory}`);
+                args.push("-o");
+                args.push(config.buildDirectory);
             }
             if (config.additionalConfigArguments) {
-                args.push(`${config.additionalConfigArguments}`);
+                for (let arg of config.additionalConfigArguments) {
+                    args.push(arg);
+                }
             }
-            args.push(`${this._xmakeExplorer.getCommandOptions()}`);
             if (toolchain != "toolchain") {
                 args.push("--toolchain=" + toolchain);
             }
@@ -515,16 +516,20 @@ export class XMake implements vscode.Disposable {
         }
 
         // make command
-        let command = `${config.executable} f -c`;
+        let command = config.executable;
+        var args = ["f", "-c"];
         if (config.buildDirectory != "" && config.buildDirectory != path.join(utils.getProjectRoot(), "build")) {
-            command += ` -o \"${config.buildDirectory}\"`
+            args.push("-o");
+            args.push(config.buildDirectory);
         }
         if (config.additionalConfigArguments) {
-            command += ` ${config.additionalConfigArguments}`
+            for (let arg of config.additionalConfigArguments) {
+                args.push(arg);
+            }
         }
 
         // configure it
-        await this._terminal.exec("clean config", command);
+        await this._terminal.execv("clean config", command, args);
 
         // mark as not changed
         this._optionChanged = false;
