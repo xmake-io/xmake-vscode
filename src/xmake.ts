@@ -543,27 +543,31 @@ export class XMake implements vscode.Disposable {
         }
 
         // add build level to command
+        let args = [];
         const targetName = this._option.get<string>("target");
         const buildLevel = config.get<string>("buildLevel");
         let command = config.executable;
-        if (targetName && targetName != "default")
-            command += " build";
-        if (buildLevel == "verbose")
-            command += " -v";
-        else if (buildLevel == "warning")
-            command += " -w";
-        else if (buildLevel == "debug")
-            command += " -vD";
+        if (targetName && targetName != "default") {
+            args.push("build");
+        }
+        if (buildLevel == "verbose") {
+            args.push("-v");
+        } else if (buildLevel == "warning") {
+            args.push("-w");
+        } else if (buildLevel == "debug") {
+            args.push("-vD");
+        }
 
         // add build target to command
-        if (targetName && targetName != "default")
-            command += ` ${targetName}`;
-        else if (targetName == "all")
-            command += " -a";
+        if (targetName && targetName != "default") {
+            args.push(targetName);
+        } else if (targetName == "all") {
+            args.push("-a");
+        }
 
         // configure and build it
         await this.onConfigure(target);
-        await this._terminal.exec("build", command);
+        await this._terminal.execv("build", command, args);
     }
 
     // on rebuild project
@@ -575,25 +579,28 @@ export class XMake implements vscode.Disposable {
         }
 
         // add build level to command
+        let args = ["-r"];
         const buildLevel = config.get<string>("buildLevel");
-        let command = `${config.executable} -r`;
-        if (buildLevel == "verbose")
-            command += " -v";
-        else if (buildLevel == "warning")
-            command += " -w";
-        else if (buildLevel == "debug")
-            command += " -vD";
+        let command = config.executable;
+        if (buildLevel == "verbose") {
+            args.push("-v");
+        } else if (buildLevel == "warning") {
+            args.push("-w");
+        } else if (buildLevel == "debug") {
+            args.push("-vD");
+        }
 
         // add build target to command
         const targetName = this._option.get<string>("target");
-        if (targetName && targetName != "default")
-            command += ` ${targetName}`;
-        else if (targetName == "all")
-            command += " -a";
+        if (targetName && targetName != "default") {
+            args.push(targetName);
+        } else if (targetName == "all") {
+            args.push("-a");
+        }
 
         // configure and rebuild it
         await this.onConfigure(target);
-        await this._terminal.exec("rebuild", command);
+        await this._terminal.execv("rebuild", command, args);
     }
 
     // on clean target files
