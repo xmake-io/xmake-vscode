@@ -84,11 +84,10 @@ export class Config {
     }
 
     get debugConfigType(): string {
-        return utils.replaceVars(this.get<string>("debugConfigType"));
+        return this.debuggerBackend;
     }
-
-    get customDebugConfig(): {} {
-        return this.get<{}>("customDebugConfig");
+    get debuggerBackend(): string {
+        return utils.replaceVars(this.get<string>("debuggerBackend"));
     }
 }
 

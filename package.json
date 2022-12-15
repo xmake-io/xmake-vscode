@@ -509,19 +509,14 @@
           "default": [],
           "description": "The Additional Config Arguments, .e.g [\"--cc=gcc\", \"--myopt=xxx\"]"
         },
-        "xmake.debugConfigType": {
+        "xmake.debuggerBackend": {
           "type": "string",
           "default": "default",
           "enum": [
             "default",
             "codelldb"
           ],
-          "description": "The Debugging Configuration Type, .e.g default|codelldb"
-        },
-        "xmake.customDebugConfig": {
-          "type": "object",
-          "default": {},
-          "description": "The Custom Debugging Configurations"
+          "description": "The Debugger backend, .e.g default|codelldb"
         }
       }
     },
