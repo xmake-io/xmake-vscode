@@ -83,16 +83,6 @@ export class Config {
         return results
     }
 
-    // the running targets arguments
-    get runningTargetsArguments(): {} {
-        return this.get<{}>("runningTargetsArguments");
-    }
-
-    // the debugging targets arguments
-    get debuggingTargetsArguments(): {} {
-        return this.get<{}>("debuggingTargetsArguments");
-    }
-
     get debugConfigType(): string {
         return utils.replaceVars(this.get<string>("debugConfigType"));
     }

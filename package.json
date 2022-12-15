@@ -509,20 +509,6 @@
           "default": [],
           "description": "The Additional Config Arguments, .e.g [\"--cc=gcc\", \"--myopt=xxx\"]"
         },
-        "xmake.runningTargetsArguments": {
-          "type": "object",
-          "default": {
-            "default": []
-          },
-          "description": "The Running Targets Arguments, .e.g {\"targetName\": [\"args\", \"...\"]}"
-        },
-        "xmake.debuggingTargetsArguments": {
-          "type": "object",
-          "default": {
-            "default": []
-          },
-          "description": "The Debugging Targets Arguments, .e.g {\"targetName\": [\"args\", \"...\"]}"
-        },
         "xmake.debugConfigType": {
           "type": "string",
           "default": "default",
