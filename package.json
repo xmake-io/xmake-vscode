@@ -425,6 +425,117 @@
         }
       ]
     },
+    "debuggers": [
+      {
+        "type": "xmake",
+        "languages": [
+          "c",
+          "cpp"
+        ],
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "target",
+              "cwd"
+            ],
+            "properties": {
+              "target": {
+                "type": "string",
+                "description": "The xmake target name",
+                "default": ""
+              },
+              "cwd": {
+                "description": "Program working directory.",
+                "type": "string",
+                "default": "${workspaceFolder}"
+              },
+              "args": {
+                "description": "Program arguments.",
+                "type": [
+                  "array",
+                  "string"
+                ],
+                "default": []
+              },
+              "terminal": {
+                "type": "string",
+                "enum": [
+                  "integrated",
+                  "external",
+                  "console"
+                ],
+                "enumDescriptions": [
+                  "Use integrated terminal in VSCode.",
+                  "Use external terminal window.",
+                  "Use VScode Debug Console for stdout and stderr. Stdin will be unavailable."
+                ],
+                "default": "integrated"
+              },
+              "environment": {
+                "type": "object",
+                "description": "Additional environment variables.",
+                "patternProperties": {
+                  ".*": {
+                    "type": "string"
+                  }
+                },
+                "default": {}
+              }
+            }
+          },
+          "attach": {
+            "required": [
+              "target",
+              "cwd"
+            ],
+            "properties": {
+              "target": {
+                "type": "string",
+                "description": "The xmake target name",
+                "default": ""
+              },
+              "cwd": {
+                "description": "Program working directory.",
+                "type": "string",
+                "default": "${workspaceFolder}"
+              },
+              "args": {
+                "description": "Program arguments.",
+                "type": [
+                  "array",
+                  "string"
+                ],
+                "default": []
+              },
+              "terminal": {
+                "type": "string",
+                "enum": [
+                  "integrated",
+                  "external",
+                  "console"
+                ],
+                "enumDescriptions": [
+                  "Use integrated terminal in VSCode.",
+                  "Use external terminal window.",
+                  "Use VScode Debug Console for stdout and stderr. Stdin will be unavailable."
+                ],
+                "default": "integrated"
+              },
+              "environment": {
+                "type": "object",
+                "description": "Additional environment variables.",
+                "patternProperties": {
+                  ".*": {
+                    "type": "string"
+                  }
+                },
+                "default": {}
+              }
+            }
+          }
+        }
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "XMake configuration",
