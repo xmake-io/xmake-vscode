@@ -543,7 +543,20 @@
               }
             }
           }
-        }
+        },
+        "configurationSnippets": [
+          {
+            "label": "XMake Debug: Launch",
+            "description": "A new configuration xmake debugger.",
+            "body": {
+              "type": "xmake",
+              "request": "launch",
+              "name": "${2:Launch}",
+              "program": "${1:Target}",
+              "stopAtEntry": true
+            }
+          }
+        ]
       }
     ],
     "configuration": {
