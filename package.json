@@ -504,6 +504,11 @@
                 "type": "string",
                 "default": "${workspaceFolder}"
               },
+              "stopAtEntry": {
+                "description": "If set to true, the debugger should stop at the entry-point of the target.",
+                "type": "boolean",
+                "default": false
+              },
               "args": {
                 "description": "Program arguments.",
                 "type": [
