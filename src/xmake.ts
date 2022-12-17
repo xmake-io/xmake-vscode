@@ -11,7 +11,6 @@ import {Terminal} from './terminal';
 import {Status} from './status';
 import {Option} from './option';
 import {ProblemList} from './problem';
-import {Debugger} from './debugger';
 import {Completion} from './completion';
 import {XmakeTaskProvider} from './task';
 import {XMakeExplorer} from './explorer';
@@ -37,9 +36,6 @@ export class XMake implements vscode.Disposable {
 
     // the problems
     private _problems: ProblemList;
-
-    // the debugger
-    private _debugger: Debugger;
 
     // the terminal
     private _terminal: Terminal;
@@ -89,9 +85,6 @@ export class XMake implements vscode.Disposable {
         if (this._problems) {
             this._problems.dispose();
         }
-        if (this._debugger) {
-            this._debugger.dispose();
-        }
         if (this._logFileSystemWatcher) {
             this._logFileSystemWatcher.dispose();
         }
@@ -127,25 +120,25 @@ export class XMake implements vscode.Disposable {
         const plat = ("plat" in cacheJson && cacheJson["plat"] != "")? cacheJson["plat"] : {win32: 'windows', darwin: 'macosx', linux: 'linux'}[os.platform()];
         if (plat) {
             this._option.set("plat", plat);
-            this._status.plat = plat;
+            this._status.plat = plat as string;
         }
 
         // init architecture
         const arch = ("arch" in cacheJson && cacheJson["arch"] != "")? cacheJson["arch"] : (plat == "windows"? "x86" : {x64: 'x86_64', x86: 'i386'}[os.arch()]);
         if (arch) {
             this._option.set("arch", arch);
-            this._status.arch = arch;
+            this._status.arch = arch as string;
         }
 
         // init build mode
         const mode = ("mode" in cacheJson && cacheJson["mode"] != "")? cacheJson["mode"] : "debug";
         this._option.set("mode", mode);
-        this._status.mode = mode;
+        this._status.mode = mode as string;
 
         // init defaualt toolchain
         const toolchain = "toolchain";
         this._option.set("toolchain", toolchain);
-        this._status.toolchain = toolchain;
+        this._status.toolchain = toolchain as string;
     }
 
     // update Intellisense
@@ -288,9 +281,6 @@ export class XMake implements vscode.Disposable {
 
         // init problems
         this._problems = new ProblemList();
-
-        // init debugger
-        this._debugger = new Debugger();
 
         // init status
         this._status = new Status();
@@ -647,108 +637,7 @@ export class XMake implements vscode.Disposable {
         // mark as changed, so that next `onConfigure` will be executed
         this._optionChanged = true;
     }
-
-    // on run target
-    async onBuildRun(target?: string) {
-
-        // this plugin enabled?
-        if (!this._enabled) {
-            return
-        }
-
-        // get target name
-        let targetName = this._option.get<string>("target");
-        if (!targetName) {
-            let getDefaultTargetPathScript = path.join(__dirname, `../../assets/default_target.lua`);
-            if (fs.existsSync(getDefaultTargetPathScript)) {
-                let result = (await process.iorunv(config.executable, ["l", getDefaultTargetPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
-                if (result) {
-                    targetName = result.split('__end__')[0].trim();
-                }
-            }
-        }
-
-        // get target arguments
-        let args = ["run"];
-        let configArgs = [];
-        if (targetName && targetName in config.runningTargetsArguments)
-            configArgs = config.runningTargetsArguments[targetName];
-        else if ("default" in config.runningTargetsArguments)
-            configArgs = config.runningTargetsArguments["default"];
-
-        // make command
-        let command = config.executable;
-        if (targetName && targetName != "default") {
-            args.push(targetName);
-            for (let arg of configArgs) {
-                args.push(arg);
-            }
-        } else if (targetName == "all") {
-            args.push("-a");
-        } else {
-            for (let arg of configArgs) {
-                args.push(arg);
-            }
-        }
-
-        // build and run it
-        await this.onBuild(target);
-        await this._terminal.execv("run", command, args);
-    }
-
-    // on run target
-    async onRun(target?: string) {
-
-        // this plugin enabled?
-        if (!this._enabled) {
-            return
-        }
-
-        // build and run?
-        const runMode = config.get<string>("runMode");
-        if (runMode == "buildRun") {
-            return this.onBuildRun(target)
-        }
-
-        // get target name
-        let targetName = this._option.get<string>("target");
-        if (!targetName) {
-            let getDefaultTargetPathScript = path.join(__dirname, `../../assets/default_target.lua`);
-            if (fs.existsSync(getDefaultTargetPathScript)) {
-                let result = (await process.iorunv(config.executable, ["l", getDefaultTargetPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
-                if (result) {
-                    targetName = result.split('__end__')[0].trim();
-                }
-            }
-        }
-
-        // get target arguments
-        let args = ["run"];
-        let configArgs = [];
-        if (targetName && targetName in config.runningTargetsArguments)
-            configArgs = config.runningTargetsArguments[targetName];
-        else if ("default" in config.runningTargetsArguments)
-            configArgs = config.runningTargetsArguments["default"];
-
-        // make command
-        let command = config.executable;
-        if (targetName && targetName != "default") {
-            args.push(targetName);
-            for (let arg of configArgs) {
-                args.push(arg);
-            }
-        } else if (targetName == "all") {
-            args.push("-a");
-        } else {
-            for (let arg of configArgs) {
-                args.push(arg);
-            }
-        }
-
-        // configure and run it
-        await this.onConfigure(target);
-        await this._terminal.execv("run", command, args);
-    }
+    
 
     // on package target
     async onPackage(target?: string) {
@@ -826,108 +715,6 @@ export class XMake implements vscode.Disposable {
         // configure and uninstall it
         await this.onConfigure(target);
         await this._terminal.execv("uninstall", command, args);
-    }
-
-    // on debug target
-    async onDebug(target?: string) {
-
-        // this plugin enabled?
-        if (!this._enabled) {
-            return ;
-        }
-
-        /* cpptools or codelldb externsions not found?
-         *
-         * @see
-         * https://github.com/Microsoft/vscode-cpptools
-         * https://github.com/vadimcn/vscode-lldb
-         */
-        var extension = null;
-        if (os.platform() == "darwin" || config.debugConfigType == "codelldb") {
-            extension = vscode.extensions.getExtension("vadimcn.vscode-lldb");
-        }
-        if (!extension) {
-            extension = vscode.extensions.getExtension("ms-vscode.cpptools");
-        }
-        if (!extension) {
-
-            // get target name
-            const targetName = this._option.get<string>("target");
-
-            // make command
-            let command = `${config.executable} r -d`;
-            if (targetName && targetName != "default")
-                command += ` ${targetName}`;
-
-            // configure and debug it
-            await this.onConfigure(target);
-            await this._terminal.exec("debug", command);
-            return ;
-        }
-
-        // active cpptools/codelldb externsions
-        if (!extension.isActive) {
-            extension.activate();
-        }
-
-        // option changed?
-        if (this._optionChanged) {
-            await vscode.window.showErrorMessage('Configuration have been changed, please rebuild program first!');
-            return ;
-        }
-
-        // get target name
-        var targetName = this._option.get<string>("target");
-        if (!targetName) targetName = "default";
-
-        // get target program
-        var targetProgram = null;
-        let getTargetPathScript = path.join(__dirname, `../../assets/targetpath.lua`);
-        if (fs.existsSync(getTargetPathScript)) {
-            targetProgram = (await process.iorunv(config.executable, ["l", getTargetPathScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
-            if (targetProgram) {
-                targetProgram = targetProgram.split("__end__")[0].trim();
-                targetProgram = targetProgram.split('\n')[0].trim();
-            }
-        }
-
-        // get target run directory
-        var targetRunDir = null;
-        let getTargetRunDirScript = path.join(__dirname, `../../assets/target_rundir.lua`);
-        if (fs.existsSync(getTargetRunDirScript)) {
-            targetRunDir = (await process.iorunv(config.executable, ["l", getTargetRunDirScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
-            if (targetRunDir) {
-                targetRunDir = targetRunDir.split("__end__")[0].trim();
-                targetRunDir = targetRunDir.split('\n')[0].trim();
-            }
-        }
-
-        // get target run envs
-        var targetRunEnvs = null;
-        let getTargetRunEnvsScript = path.join(__dirname, `../../assets/target_runenvs.lua`);
-        if (fs.existsSync(getTargetRunEnvsScript)) {
-            targetRunEnvs = (await process.iorunv(config.executable, ["l", getTargetRunEnvsScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
-            if (targetRunEnvs) {
-                targetRunEnvs = targetRunEnvs.split("__end__")[0].trim();
-                targetRunEnvs = targetRunEnvs.split('\n')[0].trim();
-            }
-            if (targetRunEnvs) {
-                targetRunEnvs = JSON.parse(targetRunEnvs);
-            } else {
-                targetRunEnvs = null;
-            }
-        }
-
-        // get platform
-        var plat = this._option.get<string>("plat");
-        if (!plat) plat = "default";
-
-        // start debugging
-        if (targetProgram && fs.existsSync(targetProgram)) {
-            this._debugger.startDebugging(targetName, targetProgram, targetRunDir, targetRunEnvs, plat);
-        } else {
-            await vscode.window.showErrorMessage('The target program not found!');
-        }
     }
 
     // on macro begin
