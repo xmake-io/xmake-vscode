@@ -16,6 +16,7 @@ import {XmakeTaskProvider} from './task';
 import {XMakeExplorer} from './explorer';
 import * as process from './process';
 import * as utils from './utils';
+import { initDebugger } from './debugger';
 
 // the option arguments
 export interface OptionArguments extends vscode.QuickPickItem {
@@ -303,6 +304,8 @@ export class XMake implements vscode.Disposable {
         this._enabled = true;
 
         vscode.commands.executeCommand('setContext', 'xmakeEnabled', true);
+
+        initDebugger(this._context, this._option);
     }
 
     // create project

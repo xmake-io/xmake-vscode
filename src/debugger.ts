@@ -15,12 +15,18 @@ import { debug } from 'console';
 import { StreamPriorityOptions } from 'http2';
 
 
-type Terminal = "integrated" | "external" | "console"
+/**
+ * integrated: Use integrated terminal in VSCode
+ * external: Use external terminal window
+ * console: Use VScode Debug Console for stdout and stderr. Stdin will be unavailable
+ * newExternal: Use external terminal window for console application, nothing for the others (only with cpptools)
+ */
+type Terminal = "integrated" | "external" | "console" | "newExternal"
 type DebugType = "cppvsdbg" | "cppdbg" | "lldb"
-type Envs = {name: string, value: string}
+type Envs = { name: string, value: string }
 
 interface DebugConfiguration extends vscode.DebugConfiguration {
-    type: DebugType
+    type: string
     target: string;
     cwd?: string;
     stopAtEntry?: boolean;
@@ -33,7 +39,7 @@ interface DebugConfiguration extends vscode.DebugConfiguration {
 /**
  * Get the Gnu Debugger path from xmake
  * @returns gbd path
- */ 
+ */
 async function findGdbPath(): Promise<string> {
     let gdbPath = null;
     let findGdbScript = path.join(__dirname, `../../assets/find_gdb.lua`);
@@ -89,7 +95,7 @@ async function getProgram(targetName: string): Promise<string> {
  * @param targetName xmake target
  * @returns return object like { "name": "config", "value": "Debug" }
  */
-async function getEnvs(targetName: string): Promise<Envs> {
+async function getEnvs(targetName: string): Promise<Array<Envs>> {
     let getTargetRunEnvsScript = path.join(__dirname, `../../assets/target_runenvs.lua`);
     if (fs.existsSync(getTargetRunEnvsScript)) {
         let targetRunEnvs = (await process.iorunv(settings.executable, ["l", getTargetRunEnvsScript, targetName], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
@@ -97,12 +103,12 @@ async function getEnvs(targetName: string): Promise<Envs> {
             targetRunEnvs = targetRunEnvs.split("__end__")[0].trim();
             targetRunEnvs = targetRunEnvs.split('\n')[0].trim();
         }
-        if (targetRunEnvs) {
-            targetRunEnvs = JSON.parse(targetRunEnvs);
-        } else {
-            targetRunEnvs = null;
-        }
-        return null;
+        // if (targetRunEnvs) {
+        //     targetRunEnvs = JSON.parse(targetRunEnvs);
+        // } else {
+        //     targetRunEnvs = null;
+        // }
+        return JSON.parse(targetRunEnvs);
     }
 
     return null;
@@ -135,6 +141,26 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         return this.option.get<string>("plat");
     }
 
+    private getTerminalCppTools(terminal: Terminal): string {
+        switch(terminal) {
+            case 'console':
+                return 'internalConsole';
+                break;
+            case 'integrated':
+                return 'integratedTerminal';
+                break;
+            case 'external':
+                return 'externalTerminal';
+                break;
+            case 'newExternal':
+                return 'newExternalWindow';
+                break;
+            default:
+                return 'internalConsole';
+                break;
+        }
+    }
+
     /**
      *  Resolve the xmake debug configuration.
      * @param folder current folder path. Will be used if cwd in launch.json is not set
@@ -142,30 +168,70 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
      * @param token 
      * @returns the modified config to cpptols or codelldb
      */
-    public async resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration, token?: vscode.CancellationToken): Promise<DebugConfiguration> {
-        
-        // Set the current working directory
-        if(config.cwd == "") {
+    public async resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration> {
+        // TODO Test if debug or run
+        // See: debugType: "debug" | "run"
+        // LLDB debug on Linux see: https://github.com/lldb-tools/lldb-mi
+
+        // Set the program path
+        config.program = getProgram(config.target);
+
+
+        //If cwd is empty, set the run directory as cwd
+        if (!('cwd' in config)) {
             config.cwd = await getRunDirectory(config.target);
         }
 
         // Get xmake env and merge it with config envs
         // config envs will override xmake envs
         const xmakeEnvs = await getEnvs(config.target);
-        config.environment = {...xmakeEnvs, ...config.environment};
+        config.environment = { ...xmakeEnvs, ...config.environment };
 
         // Configure debugger type
-        config.type = 'cppdbg';
-        if(settings.debuggerBackend == "codelldb") {
-            config.type = 'lldb';
-            config.envs = convertEnvsToLLDB(config.environment);
-        }
         // On windows, use vs debugger if it's not mingw
-        if(os.platform() == 'win32' && this.getPlat() != 'mingw') {
+        config.type = 'cppdbg';
+        if (os.platform() == 'win32' && this.getPlat() != 'mingw') {
             config.type = 'cppvsdbg';
         }
 
-        return config;
+        // Switch to lldb if needed
+        if (settings.debuggerBackend == "codelldb") {
+            config.type = 'lldb';
+            config.stopOnEntry = config.stopAtEntry;
+            config.env = convertEnvsToLLDB(config.environment);
+            if(config.terminal == 'newExternal') {
+                config.terminal = 'external'; // Code LLDB doesn't support newExternal
+            }
+        }
+        // Set MIMode for macos
+        if (os.platform() == 'darwin') {
+            config.MIMode = "lldb";
+            config.miDebuggerPath = "";
+        }
+
+        // Set MIMode for linux or windows/linux mingw
+        if (os.platform() == 'linux' || this.getPlat() == 'mingw') {
+            config.MIMode = "gdb";
+            config.miDebuggerPath = await findGdbPath();
+        }
+
+        // Set the console for cpptools
+        config.console = this.getTerminalCppTools(config.terminal);
+
+        // Merge pretty printing
+        const setupCommands = {
+            setupCommands: [
+                {
+                    description: "Enable pretty-printing for gdb",
+                    text: "-enable-pretty-printing",
+                    ignoreFailures: true
+                }
+            ]
+        };
+        config = { ...config, ...setupCommands};
+
+        //return config; 
+        return { type: 'python', name: "dd", request: 'launch' };
     }
 }
 
