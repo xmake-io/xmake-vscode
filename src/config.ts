@@ -83,9 +83,6 @@ export class Config {
         return results
     }
 
-    get debugConfigType(): string {
-        return this.debuggerBackend;
-    }
     get debuggerBackend(): string {
         return utils.replaceVars(this.get<string>("debuggerBackend"));
     }
