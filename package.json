@@ -532,14 +532,21 @@
                 "default": "integrated"
               },
               "environment": {
-                "type": "object",
+                "type": "array",
                 "description": "Additional environment variables.",
-                "patternProperties": {
-                  ".*": {
-                    "type": "string"
+                "items": {
+                  "type": "object",
+                  "default": {},
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "value": {
+                      "type": "string"
+                    }
                   }
                 },
-                "default": {}
+                "default": []
               }
             }
           }
