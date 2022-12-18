@@ -37,12 +37,9 @@
     "onCommand:xmake.onRebuild",
     "onCommand:xmake.onClean",
     "onCommand:xmake.onCleanAll",
-    "onCommand:xmake.onBuildRun",
-    "onCommand:xmake.onRun",
     "onCommand:xmake.onPackage",
     "onCommand:xmake.onInstall",
     "onCommand:xmake.onUninstall",
-    "onCommand:xmake.onDebug",
     "onCommand:xmake.onMacroBegin",
     "onCommand:xmake.onMacroEnd",
     "onCommand:xmake.onMacroRun",
@@ -57,13 +54,6 @@
   ],
   "main": "./out/src/extension",
   "contributes": {
-    "keybindings": [
-      {
-        "key": "f5",
-        "command": "xmake.onDebug",
-        "when": "xmakeEnabled && debuggersAvailable && debugState == 'inactive'"
-      }
-    ],
     "languages": [
       {
         "id": "xmake",
@@ -147,23 +137,8 @@
         "category": "XMake"
       },
       {
-        "command": "xmake.onBuildRun",
-        "title": "BuildRun",
-        "category": "XMake"
-      },
-      {
-        "command": "xmake.onRun",
-        "title": "Run",
-        "category": "XMake"
-      },
-      {
         "command": "xmake.onPackage",
         "title": "Package",
-        "category": "XMake"
-      },
-      {
-        "command": "xmake.onDebug",
-        "title": "Debug",
         "category": "XMake"
       },
       {
@@ -322,19 +297,10 @@
         },
         {
           "command": "xmake.onCleanAll"
-        },
-        {
-          "command": "xmake.onBuildRun"
-        },
-        {
-          "command": "xmake.onRun"
-        },
+        },  
         {
           "command": "xmake.onPackage"
-        },
-        {
-          "command": "xmake.onDebug"
-        },
+        }, 
         {
           "command": "xmake.onInstall"
         },
@@ -556,6 +522,16 @@
             }
           }
         },
+        "initialConfigurations": [
+          {
+            "type": "xmake",
+            "request": "launch",
+            "name": "Debug XMake target",
+            "target": "target name",
+            "cwd":"${workspaceFolder}",
+            "stopOnEntry": true
+          }
+        ],
         "configurationSnippets": [
           {
             "label": "XMake Debug: Launch",
@@ -564,7 +540,7 @@
               "type": "xmake",
               "request": "launch",
               "name": "${2:Launch}",
-              "program": "${1:Target}",
+              "target": "${1:Target}",
               "cwd": "${workspaceFolder}",
               "stopAtEntry": true
             }
