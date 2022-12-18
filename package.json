@@ -435,8 +435,7 @@
         "configurationAttributes": {
           "launch": {
             "required": [
-              "target",
-              "cwd"
+              "target"
             ],
             "properties": {
               "target": {
@@ -447,7 +446,7 @@
               "cwd": {
                 "description": "Program working directory.",
                 "type": "string",
-                "default": "${workspaceFolder}"
+                "default": ""
               },
               "stopAtEntry": {
                 "description": "If set to true, the debugger should stop at the entry-point of the target.",
@@ -491,14 +490,13 @@
                     }
                   }
                 },
-                "default": {}
+                "default": []
               }
             }
           },
           "attach": {
             "required": [
-              "target",
-              "cwd"
+              "target"
             ],
             "properties": {
               "target": {
@@ -509,7 +507,7 @@
               "cwd": {
                 "description": "Program working directory.",
                 "type": "string",
-                "default": "${workspaceFolder}"
+                "default": ""
               },
               "stopAtEntry": {
                 "description": "If set to true, the debugger should stop at the entry-point of the target.",
@@ -567,6 +565,7 @@
               "request": "launch",
               "name": "${2:Launch}",
               "program": "${1:Target}",
+              "cwd": "${workspaceFolder}",
               "stopAtEntry": true
             }
           }
