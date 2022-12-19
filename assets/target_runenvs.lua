@@ -64,20 +64,7 @@ function main (targetname)
     end
 
     -- convert to envirnoments for vscode
-    local empty = true
-    local envirnoments = {}
-    for k, v in pairs(envs) do
-        table.insert(envirnoments, {name = k, value = v})
-        empty = false
-    end
-    if json.mark_as_array then
-        json.mark_as_array(envirnoments)
-    end
-    if not empty then
-        print(json.encode(envirnoments))
-    else
-        print("[]")
-    end
+    print(json.encode(envs))
 
     -- print end tag to ignore other deprecated/warnings infos
     print("__end__")
