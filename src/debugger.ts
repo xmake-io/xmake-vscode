@@ -11,8 +11,6 @@ import * as process from './process';
 import { config as settings } from './config';
 import { log } from './log';
 import { Option } from './option';
-import { debug } from 'console';
-import { StreamPriorityOptions } from 'http2';
 
 
 /**
@@ -32,7 +30,7 @@ interface DebugConfiguration extends vscode.DebugConfiguration {
     stopAtEntry?: boolean;
     args?: Array<string> | string;
     terminal?: Terminal;
-    environment: Array<Envs>
+    env;
 }
 
 
@@ -41,7 +39,7 @@ interface DebugConfiguration extends vscode.DebugConfiguration {
  * @returns gbd path
  */
 async function findGdbPath(): Promise<string> {
-    let gdbPath = null;
+    let gdbPath = "";
     let findGdbScript = path.join(__dirname, `../../assets/find_gdb.lua`);
     if (fs.existsSync(findGdbScript)) {
         gdbPath = (await process.iorunv(settings.executable, ["l", findGdbScript], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
@@ -114,19 +112,12 @@ async function getEnvs(targetName: string): Promise<Array<Envs>> {
     return null;
 }
 
-function convertEnvsToLLDB(envs: Array<Envs>) {
-    let envsLLDB = {};
-    for (let item of (envs as Array<Object>)) {
-        let map = item as Map<String, String>;
-        if (map) {
-            let name = map["name"];
-            let value = map["value"];
-            if (name && value) {
-                envsLLDB[name] = value;
-            }
-        }
+function convertEnvsToCppTools(envs) {
+    let cppToolsEnvs = []
+    for(const key in envs) {
+        cppToolsEnvs.push({name: key, value: envs[key]});
     }
-    return envsLLDB;
+    return cppToolsEnvs;
 }
 
 class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
@@ -169,13 +160,8 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
      * @returns the modified config to cpptols or codelldb
      */
     public async resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration> {
-        // TODO Test if debug or run
-        // See: debugType: "debug" | "run"
-        // LLDB debug on Linux see: https://github.com/lldb-tools/lldb-mi
-
         // Set the program path
-        config.program = getProgram(config.target);
-
+        config.program = await getProgram(config.target);
 
         //If cwd is empty, set the run directory as cwd
         if (!('cwd' in config)) {
@@ -183,9 +169,26 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         }
 
         // Get xmake env and merge it with config envs
-        // config envs will override xmake envs
         const xmakeEnvs = await getEnvs(config.target);
-        config.environment = { ...xmakeEnvs, ...config.environment };
+
+        if(settings.envBehaviour === 'override') {
+            config.env = { ...xmakeEnvs, ...config.env };
+        } else if(settings.envBehaviour === 'merge') {
+            for(const key in config.env) {
+                // If the key exist in xmake envs
+                if(key in xmakeEnvs) {
+                    let sep = ':'
+                    if(os.platform() == "win32") {          
+                        sep = ';'   
+                    }
+                    // Concat the two envs
+                    config.env[key] = `${config.env[key]}${sep}${xmakeEnvs[key]}`;
+                }
+            }
+        }
+
+        // Set the env for cpptools
+        config.environment = convertEnvsToCppTools(config.env);
 
         // Configure debugger type
         // On windows, use vs debugger if it's not mingw
@@ -198,7 +201,6 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         if (settings.debuggerBackend == "codelldb") {
             config.type = 'lldb';
             config.stopOnEntry = config.stopAtEntry;
-            config.env = convertEnvsToLLDB(config.environment);
             if(config.terminal == 'newExternal') {
                 config.terminal = 'external'; // Code LLDB doesn't support newExternal
             }
@@ -230,8 +232,7 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         };
         config = { ...config, ...setupCommands};
 
-        //return config; 
-        return { type: 'python', name: "dd", request: 'launch' };
+        return config; 
     }
 }
 
