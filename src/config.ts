@@ -84,7 +84,11 @@ export class Config {
     }
 
     get debuggerBackend(): string {
-        return utils.replaceVars(this.get<string>("debuggerBackend"));
+        return this.get<string>("debuggerBackend");
+    }
+
+    get envBehaviour(): string {
+        return this.get<string>("envBehaviour");
     }
 }
 

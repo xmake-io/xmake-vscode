@@ -612,6 +612,16 @@
           "default": [],
           "description": "The Additional Config Arguments, .e.g [\"--cc=gcc\", \"--myopt=xxx\"]"
         },
+        "xmake.envBehaviour": {
+          "type": "string",
+          "default":"merge",
+          "enum": ["merge", "override"],
+          "description": "Env environment between launch.json and xmake envs", 
+          "enumDescriptions": [
+            "This will concat the envs that are defined in launch.json to xmake envs",
+            "VSCode debug configurations will be override xmake envs"
+          ]
+        },
         "xmake.debuggerBackend": {
           "type": "string",
           "default": "default",
