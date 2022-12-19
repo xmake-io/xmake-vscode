@@ -237,6 +237,12 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
 }
 
 export function initDebugger(context: vscode.ExtensionContext, option: Option) {
+    const extension = vscode.extensions.getExtension("ms-vscode.cpptools");
+    if (!extension) {
+       log.error("Cpp tools is not installed");
+       return;
+    }
+    extension.activate();
     const provider = new XmakeConfigurationProvider(option);
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('xmake', provider));
 }
