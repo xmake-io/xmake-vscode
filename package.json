@@ -442,23 +442,16 @@
                 ],
                 "default": "integrated"
               },
-              "environment": {
-                "type": "array",
-                "description": "Additional environment variables.",
-                "items": {
-                  "type": "object",
-                  "default": {},
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "default": []
-              }
+              "env": {
+								"description": "Additional environment variables.",
+								"type": "object",
+								"patternProperties": {
+									".*": {
+										"type": "string"
+									}
+								},
+								"default": {}
+							}
             }
           },
           "attach": {
@@ -505,23 +498,16 @@
                 ],
                 "default": "integrated"
               },
-              "environment": {
-                "type": "array",
-                "description": "Additional environment variables.",
-                "items": {
-                  "type": "object",
-                  "default": {},
-                  "properties": {
-                    "name": {
-                      "type": "string"
-                    },
-                    "value": {
-                      "type": "string"
-                    }
-                  }
-                },
-                "default": []
-              }
+              "env": {
+								"description": "Additional environment variables.",
+								"type": "object",
+								"patternProperties": {
+									".*": {
+										"type": "string"
+									}
+								},
+								"default": {}
+							}
             }
           }
         },
