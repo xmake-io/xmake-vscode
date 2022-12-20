@@ -19,12 +19,11 @@ import { Option } from './option';
  * console: Use VScode Debug Console for stdout and stderr. Stdin will be unavailable
  * newExternal: Use external terminal window for console application, nothing for the others (only with cpptools)
  */
-type Terminal = "integrated" | "external" | "console" | "newExternal"
-type DebugType = "cppvsdbg" | "cppdbg" | "lldb"
-type Envs = { name: string, value: string }
+type Terminal = "integrated" | "external" | "console" | "newExternal";
+
 
 interface DebugConfiguration extends vscode.DebugConfiguration {
-    type: string
+    type: string;
     target: string;
     cwd?: string;
     stopAtEntry?: boolean;
@@ -33,6 +32,35 @@ interface DebugConfiguration extends vscode.DebugConfiguration {
     env;
 }
 
+interface TargetInformations {
+    rundir: string;
+    path: string;
+    envs;
+}
+
+/**
+ * Get informations for xmake target
+ * @param targetName xmake target
+ * @returns TargetInformations
+ */
+async function getInformations(targetName: string): Promise<TargetInformations> {
+    let getTargetInformationsScript = path.join(__dirname, `../../assets/target_informations.lua`);
+    if (fs.existsSync(getTargetInformationsScript)) {
+        let targetInformations = (await process.iorunv(settings.executable, ["l", getTargetInformationsScript, targetName], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
+        if (targetInformations) {
+            targetInformations = targetInformations.split("__end__")[0].trim();
+            targetInformations = targetInformations.split('\n')[0].trim();
+        }
+        // if (targetRunEnvs) {
+        //     targetRunEnvs = JSON.parse(targetRunEnvs);
+        // } else {
+        //     targetRunEnvs = null;
+        // }
+        return JSON.parse(targetInformations);
+    }
+
+    return null;
+}
 
 /**
  * Get the Gnu Debugger path from xmake
@@ -50,68 +78,11 @@ async function findGdbPath(): Promise<string> {
     return gdbPath ? gdbPath : "";
 }
 
-/**
- * Get the running directory of a given target
- * @param targetName xmake target
- * @returns running directory path
-*/
-async function getRunDirectory(targetName: string): Promise<string> {
-    let getTargetRunDirScript = path.join(__dirname, `../../assets/target_rundir.lua`);
-    if (fs.existsSync(getTargetRunDirScript)) {
-        let targetRunDir = (await process.iorunv(settings.executable, ["l", getTargetRunDirScript, targetName], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
-        if (targetRunDir) {
-            targetRunDir = targetRunDir.split("__end__")[0].trim();
-            targetRunDir = targetRunDir.split('\n')[0].trim();
-
-            return targetRunDir;
-        }
-    }
-    return null;
-}
-
-/**
- * Get the executable path from a target name
- * @param targetName xmake target
- * @returns executable path
-*/
-async function getProgram(targetName: string): Promise<string> {
-    let getTargetPathScript = path.join(__dirname, `../../assets/targetpath.lua`);
-    if (fs.existsSync(getTargetPathScript)) {
-        let targetProgram = (await process.iorunv(settings.executable, ["l", getTargetPathScript, targetName], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
-        if (targetProgram) {
-            targetProgram = targetProgram.split("__end__")[0].trim();
-            targetProgram = targetProgram.split('\n')[0].trim();
-
-            return targetProgram;
-        }
-    }
-    return null;
-}
-
-/**
- * Get envs for xmake target
- * @param targetName xmake target
- * @returns return object like { "name": "config", "value": "Debug" }
+/** 
+ * Convert code lldb envs like to cpp tools env
+ * @param envs 
+ * @returns cpp tools envs
  */
-async function getEnvs(targetName: string): Promise<Array<Envs>> {
-    let getTargetRunEnvsScript = path.join(__dirname, `../../assets/target_runenvs.lua`);
-    if (fs.existsSync(getTargetRunEnvsScript)) {
-        let targetRunEnvs = (await process.iorunv(settings.executable, ["l", getTargetRunEnvsScript, targetName], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
-        if (targetRunEnvs) {
-            targetRunEnvs = targetRunEnvs.split("__end__")[0].trim();
-            targetRunEnvs = targetRunEnvs.split('\n')[0].trim();
-        }
-        // if (targetRunEnvs) {
-        //     targetRunEnvs = JSON.parse(targetRunEnvs);
-        // } else {
-        //     targetRunEnvs = null;
-        // }
-        return JSON.parse(targetRunEnvs);
-    }
-
-    return null;
-}
-
 function convertEnvsToCppTools(envs) {
     let cppToolsEnvs = []
     for(const key in envs) {
@@ -160,31 +131,36 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
      * @returns the modified config to cpptols or codelldb
      */
     public async resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration> {
+        const targetInformations = await getInformations(config.target);
+        
         // Set the program path
-        config.program = await getProgram(config.target);
+        config.program = targetInformations.path;
 
         //If cwd is empty, set the run directory as cwd
         if (!('cwd' in config)) {
-            config.cwd = await getRunDirectory(config.target);
+            config.cwd = targetInformations.rundir;
         }
 
         // Get xmake env and merge it with config envs
-        const xmakeEnvs = await getEnvs(config.target);
+        let xmakeEnvs = targetInformations.envs;
 
         if(settings.envBehaviour === 'override') {
             config.env = { ...xmakeEnvs, ...config.env };
-        } else if(settings.envBehaviour === 'merge') {
-            for(const key in config.env) {
+        } else if(settings.envBehaviour === 'merge' && config.env !== undefined) {
+            for(const key in xmakeEnvs) {
                 // If the key exist in xmake envs
-                if(key in xmakeEnvs) {
+                if(key in config.env) {
                     let sep = ':'
                     if(os.platform() == "win32") {          
                         sep = ';'   
                     }
                     // Concat the two envs
-                    config.env[key] = `${config.env[key]}${sep}${xmakeEnvs[key]}`;
+                    xmakeEnvs[key] +=  sep + config.env[key];
+                    config.env[key] = xmakeEnvs[key];
                 }
             }
+        } else {
+            config.env = xmakeEnvs;
         }
 
         // Set the env for cpptools
