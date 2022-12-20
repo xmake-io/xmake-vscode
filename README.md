@@ -120,6 +120,47 @@ Please see [IntelliSense for cross-compiling](https://code.visualstudio.com/docs
 
 ![](https://code.visualstudio.com/assets/docs/cpp/cpp/command-palette.png)
 
+## Debugging
+
+
+|attribute          |type  |         |
+|-------------------|------|---------|
+|**name**           |string| *Required.* Launch configuration name, as you want it to appear in the Run and Debug panel.
+|**type**           |string| *Required.* Set to `xmake`.
+|**request**        |string| *Required.* Session initiation method:`launch` or `attach`.
+|**target**         |string| *Required.* XMake target.
+|env                |object| 	Additional environment variables. `{"PATH" : "some/path"}`
+|args               |string ❘ [string]| Command line parameters.
+|cwd                |string| If not defined xmake will use the target directory. 
+|stopAtEntry        |boolean| If set to true, the debugger should stop at the entry-point of the target (ignored on attach). Default value is false.
+|terminal           |string| Destination of stdio streams: <ul><li>`console` for Debug Console</li><li>`integrated` (default) for VSCode integrated terminal</li><li>`external` for a new terminal window</li><li>`newExternal` for a new terminal window but only with cli application (only cpptools / for lldb it will be converted to `external`)</li></ul>|
+
+Example:
+```json
+{
+    "configurations": [
+    {
+       "name": "XMake Debug",
+        "type": "xmake",
+        "request": "launch",
+        "target": "example",
+        "env": {"PATH": "some/path"},
+        "stopAtEntry": true
+    }
+  ]
+}
+```
+
+### Envs behaviour
+
+You can choose the behaviour between xmake envs and envs that are defined in `launch.json`
+For an xmake envs that are like this `{"PATH: "path/from/xmake"}` and in `launch.json` 
+`{"PATH": "path/from/config}`. 
+
+* With `xmake.envBehaviour` set to `merge`, the result is `{"PATH": "path/from/xmake;path/from/config"}`.
+* And with `xmake.envBehaviour` set to `override`, the result is: `{"PATH": "path/from/config}`.
+XMake envs will only be replaced for the same key, if another xmake env key is present, it will be present in the final result.
+
 ## Global Configuration
 
 ```json
@@ -142,6 +183,28 @@ Please see [IntelliSense for cross-compiling](https://code.visualstudio.com/docs
                     "normal",
                     "minimal"
                 ]
+            },
+            "xmake.envBehaviour": {
+                "type": "string",
+                "default": "merge",
+                "enum": [
+                    "merge",
+                    "override"
+                ],
+                "description": "Environment behaviour between launch.json and xmake envs",
+                "enumDescriptions": [
+                    "This will concat launch.json envs and xmake envs",
+                    "Launch configurations will override xmake envs"
+                ]
+            },
+            "xmake.debuggerBackend": {
+                "type": "string",
+                "default": "default",
+                "enum": [
+                    "default",
+                    "codelldb"
+                ],
+                "description": "The Debugger backend, .e.g default|codelldb"
             },
             "xmake.buildLevel": {
                 "type": "string",
