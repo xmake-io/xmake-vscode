@@ -761,6 +761,7 @@ export class XMakeExplorer implements vscode.Disposable {
         vscode.commands.registerCommand('xmakeExplorer.debug', (item: XMakeExplorerItem) => {
             if(item.info.type == XMakeExplorerItemType.TARGET) {
                 vscode.commands.executeCommand("xmake.setTarget", item.info.target);
+                vscode.commands.executeCommand("xmake.onDebug", item.info.target);
             }
         });
 

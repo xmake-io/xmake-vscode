@@ -2,8 +2,8 @@
 
 // imports
 import * as vscode from 'vscode';
-import {log} from './log';
-import {config} from './config';
+import { log } from './log';
+import { config } from './config';
 
 // the status class
 export class Status implements vscode.Disposable {
@@ -25,6 +25,9 @@ export class Status implements vscode.Disposable {
 
     // the target button
     private readonly _targetButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.1);
+
+    // the debug button
+    private readonly _debugButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.9);
 
     // the macro record button
     private readonly _macroRecordButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.8);
@@ -71,6 +74,11 @@ export class Status implements vscode.Disposable {
         this._targetButton.text = `default`;
         this._targetButton.tooltip = "Set the default target";
 
+        // init debug button
+        this._debugButton.command = 'xmake.onDebug';
+        this._debugButton.text = `$(bug)`;
+        this._debugButton.tooltip = "Debug the given target";
+
         // init macro record button
         this._macroRecordButton.command = 'xmake.onMacroBegin';
         this._macroRecordButton.text = `$(primitive-square)`;
@@ -94,14 +102,15 @@ export class Status implements vscode.Disposable {
     public dispose() {
 
         for (const item of [this._projectButton,
-                            this._platButton,
-                            this._archButton,
-                            this._modeButton,
-                            this._buildButton,
-                            this._targetButton,
-                            this._macroRecordButton,
-                            this._macroPlaybackButton,
-                            this._toolChainButton]) {
+        this._platButton,
+        this._archButton,
+        this._modeButton,
+        this._buildButton,
+        this._targetButton,
+        this._debugButton,
+        this._macroRecordButton,
+        this._macroPlaybackButton,
+        this._toolChainButton]) {
             item.dispose();
         }
     }
@@ -109,14 +118,15 @@ export class Status implements vscode.Disposable {
     // update visibility
     private updateVisibility() {
         for (const item of [this._projectButton,
-                            this._platButton,
-                            this._archButton,
-                            this._modeButton,
-                            this._buildButton,
-                            this._targetButton,
-                            this._macroRecordButton,
-                            this._macroPlaybackButton,
-                            this._toolChainButton]) {
+        this._platButton,
+        this._archButton,
+        this._modeButton,
+        this._buildButton,
+        this._targetButton,
+        this._debugButton,
+        this._macroRecordButton,
+        this._macroPlaybackButton,
+        this._toolChainButton]) {
             if (this.visible && !!item.text) {
                 item.show();
             } else {

@@ -5,15 +5,15 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import {log} from './log';
-import {config} from './config';
-import {Terminal} from './terminal';
-import {Status} from './status';
-import {Option} from './option';
-import {ProblemList} from './problem';
-import {Completion} from './completion';
-import {XmakeTaskProvider} from './task';
-import {XMakeExplorer} from './explorer';
+import { log } from './log';
+import { config } from './config';
+import { Terminal } from './terminal';
+import { Status } from './status';
+import { Option } from './option';
+import { ProblemList } from './problem';
+import { Completion } from './completion';
+import { XmakeTaskProvider } from './task';
+import { XMakeExplorer } from './explorer';
 import * as process from './process';
 import * as utils from './utils';
 import { initDebugger } from './debugger';
@@ -110,7 +110,7 @@ export class XMake implements vscode.Disposable {
         let cacheJson = {}
         let getConfigPathScript = path.join(__dirname, `../../assets/config.lua`);
         if (fs.existsSync(getConfigPathScript)) {
-            let configs = (await process.iorunv(config.executable, ["l", getConfigPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            let configs = (await process.iorunv(config.executable, ["l", getConfigPathScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (configs) {
                 configs = configs.split('__end__')[0].trim();
                 cacheJson = JSON.parse(configs);
@@ -118,21 +118,21 @@ export class XMake implements vscode.Disposable {
         }
 
         // init platform
-        const plat = ("plat" in cacheJson && cacheJson["plat"] != "")? cacheJson["plat"] : {win32: 'windows', darwin: 'macosx', linux: 'linux'}[os.platform()];
+        const plat = ("plat" in cacheJson && cacheJson["plat"] != "") ? cacheJson["plat"] : { win32: 'windows', darwin: 'macosx', linux: 'linux' }[os.platform()];
         if (plat) {
             this._option.set("plat", plat);
             this._status.plat = plat as string;
         }
 
         // init architecture
-        const arch = ("arch" in cacheJson && cacheJson["arch"] != "")? cacheJson["arch"] : (plat == "windows"? "x86" : {x64: 'x86_64', x86: 'i386'}[os.arch()]);
+        const arch = ("arch" in cacheJson && cacheJson["arch"] != "") ? cacheJson["arch"] : (plat == "windows" ? "x86" : { x64: 'x86_64', x86: 'i386' }[os.arch()]);
         if (arch) {
             this._option.set("arch", arch);
             this._status.arch = arch as string;
         }
 
         // init build mode
-        const mode = ("mode" in cacheJson && cacheJson["mode"] != "")? cacheJson["mode"] : "debug";
+        const mode = ("mode" in cacheJson && cacheJson["mode"] != "") ? cacheJson["mode"] : "debug";
         this._option.set("mode", mode);
         this._status.mode = mode as string;
 
@@ -147,7 +147,7 @@ export class XMake implements vscode.Disposable {
         log.verbose("updating Intellisense ..");
         let updateIntellisenseScript = path.join(__dirname, `../../assets/update_intellisense.lua`);
         if (fs.existsSync(updateIntellisenseScript)) {
-            await process.runv(config.executable, ["l", updateIntellisenseScript, config.compileCommandsDirectory], {"COLORTERM": "nocolor"}, config.workingDirectory);
+            await process.runv(config.executable, ["l", updateIntellisenseScript, config.compileCommandsDirectory], { "COLORTERM": "nocolor" }, config.workingDirectory);
         }
     }
 
@@ -262,7 +262,7 @@ export class XMake implements vscode.Disposable {
 
         // has been enabled?
         if (this._enabled) {
-            return ;
+            return;
         }
 
         // init languages
@@ -315,23 +315,23 @@ export class XMake implements vscode.Disposable {
         let getLanguagesScript = path.join(__dirname, `../../assets/languages.lua`);
         let gettemplatesScript = path.join(__dirname, `../../assets/templates.lua`);
         if (fs.existsSync(getLanguagesScript) && fs.existsSync(gettemplatesScript)) {
-            let result = (await process.iorunv(config.executable, ["l", getLanguagesScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            let result = (await process.iorunv(config.executable, ["l", getLanguagesScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (result) {
                 let items: vscode.QuickPickItem[] = [];
                 result.split("\n").forEach(element => {
-                    items.push({label: element.trim(), description: ""});
+                    items.push({ label: element.trim(), description: "" });
                 });
-                const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+                const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
                 if (chosen) {
 
                     // select template
-                    let result2 = (await process.iorunv(config.executable, ["l", gettemplatesScript, chosen.label], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+                    let result2 = (await process.iorunv(config.executable, ["l", gettemplatesScript, chosen.label], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
                     if (result2) {
                         let items2: vscode.QuickPickItem[] = [];
                         result2.split("\n").forEach(element => {
-                            items2.push({label: element.trim(), description: ""});
+                            items2.push({ label: element.trim(), description: "" });
                         });
-                        const chosen2: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items2);
+                        const chosen2: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items2);
                         if (chosen2) {
 
                             // create project
@@ -368,7 +368,7 @@ export class XMake implements vscode.Disposable {
         log.verbose(`start in ${config.workingDirectory}`);
 
         // check xmake
-        if (0 != (await process.runv(config.executable, ["--version"], {"COLORTERM": "nocolor"}, config.workingDirectory)).retval) {
+        if (0 != (await process.runv(config.executable, ["--version"], { "COLORTERM": "nocolor" }, config.workingDirectory)).retval) {
             if (!!(await vscode.window.showErrorMessage('xmake not found!',
                 'Access https://xmake.io to download and install xmake first!'))) {
             }
@@ -411,25 +411,25 @@ export class XMake implements vscode.Disposable {
     async onNewFiles(target?: string) {
 
         if (!this._enabled) {
-            return ;
+            return;
         }
 
         // select files
         let getFilesListScript = path.join(__dirname, `../../assets/newfiles.lua`);
         if (fs.existsSync(getFilesListScript) && fs.existsSync(getFilesListScript)) {
-            let result = (await process.iorunv(config.executable, ["l", getFilesListScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            let result = (await process.iorunv(config.executable, ["l", getFilesListScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (result) {
                 let items: vscode.QuickPickItem[] = [];
                 result.split("\n").forEach(element => {
-                    items.push({label: element.trim(), description: ""});
+                    items.push({ label: element.trim(), description: "" });
                 });
-                const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+                const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
                 if (chosen) {
                     let filesdir = path.join(__dirname, "..", "..", "assets", "newfiles", chosen.label);
                     if (fs.existsSync(filesdir)) {
 
                         // copy files
-                        await process.runv(config.executable, ["l", "os.cp", path.join(filesdir, "*"), config.workingDirectory], {"COLORTERM": "nocolor"}, config.workingDirectory);
+                        await process.runv(config.executable, ["l", "os.cp", path.join(filesdir, "*"), config.workingDirectory], { "COLORTERM": "nocolor" }, config.workingDirectory);
 
                         // refresh folder
                         await this.refreshFolder();
@@ -640,7 +640,7 @@ export class XMake implements vscode.Disposable {
         // mark as changed, so that next `onConfigure` will be executed
         this._optionChanged = true;
     }
-    
+
 
     // on package target
     async onPackage(target?: string) {
@@ -720,6 +720,28 @@ export class XMake implements vscode.Disposable {
         await this._terminal.execv("uninstall", command, args);
     }
 
+    async onDebug(target?: string) {
+
+        // this plugin enabled?
+        if (!this._enabled) {
+            return;
+        }
+
+        let targetName = this._option.get<string>("target");
+        if (!targetName) {
+            let getDefaultTargetPathScript = path.join(__dirname, `../../assets/default_target.lua`);
+            if (fs.existsSync(getDefaultTargetPathScript)) {
+                let result = (await process.iorunv(config.executable, ["l", getDefaultTargetPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+                if (result) {
+                    targetName = result.split('__end__')[0].trim();
+                }
+            }
+        }
+
+        const name = `Debug: ${targetName}`;
+        await vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], { name: name, type: 'xmake', request: 'launch', target: targetName });
+    }
+
     // on macro begin
     async onMacroBegin(target?: string) {
         if (this._enabled) {
@@ -773,9 +795,9 @@ export class XMake implements vscode.Disposable {
         // select projects
         let items: vscode.QuickPickItem[] = [];
         vscode.workspace.workspaceFolders.forEach(workspaceFolder => {
-            items.push({label: workspaceFolder.name, description: workspaceFolder.uri.fsPath});
+            items.push({ label: workspaceFolder.name, description: workspaceFolder.uri.fsPath });
         });
-        const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+        const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
         if (chosen && chosen.label !== this._option.get<string>("project")) {
 
             // update project
@@ -799,15 +821,15 @@ export class XMake implements vscode.Disposable {
 
         // select platform
         let items: vscode.QuickPickItem[] = [];
-        items.push({label: "linux", description: "The Linux Platform"});
-        items.push({label: "macosx", description: "The MacOS Platform"});
-        items.push({label: "windows", description: "The Windows Platform"});
-        items.push({label: "android", description: "The Android Platform"});
-        items.push({label: "iphoneos", description: "The iPhoneOS Platform"});
-        items.push({label: "watchos", description: "The WatchOS Platform"});
-        items.push({label: "mingw", description: "The MingW Platform"});
-        items.push({label: "cross", description: "The Cross Platform"});
-        const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+        items.push({ label: "linux", description: "The Linux Platform" });
+        items.push({ label: "macosx", description: "The MacOS Platform" });
+        items.push({ label: "windows", description: "The Windows Platform" });
+        items.push({ label: "android", description: "The Android Platform" });
+        items.push({ label: "iphoneos", description: "The iPhoneOS Platform" });
+        items.push({ label: "watchos", description: "The WatchOS Platform" });
+        items.push({ label: "mingw", description: "The MingW Platform" });
+        items.push({ label: "cross", description: "The Cross Platform" });
+        const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
         if (chosen && chosen.label !== this._option.get<string>("plat")) {
 
             // update platform
@@ -818,12 +840,12 @@ export class XMake implements vscode.Disposable {
             // update architecture
             let plat = chosen.label;
             let arch = "";
-            const host = {win32: 'windows', darwin: 'macosx', linux: 'linux'}[os.platform()];
+            const host = { win32: 'windows', darwin: 'macosx', linux: 'linux' }[os.platform()];
             if (plat == host) {
-                arch = (plat == "windows"? "x86" : {x64: 'x86_64', x86: 'i386'}[os.arch()]);
+                arch = (plat == "windows" ? "x86" : { x64: 'x86_64', x86: 'i386' }[os.arch()]);
             }
             else {
-                arch = {windows: "x86", macosx: "x86_64", linux: "x86_64", mingw: "x86_64", iphoneos: "arm64", watchos: "armv7k", android: "arm64-v8a"}[plat];
+                arch = { windows: "x86", macosx: "x86_64", linux: "x86_64", mingw: "x86_64", iphoneos: "arm64", watchos: "armv7k", android: "arm64-v8a" }[plat];
             }
             if (arch && arch != "") {
                 this._option.set("arch", arch);
@@ -851,12 +873,12 @@ export class XMake implements vscode.Disposable {
 
         // select toolchain
         let items: vscode.QuickPickItem[] = [];
-        items.push({label: "toolchain", description:"default toolchain for each platform or arch"})
-        for (var i = 0; i < tools.length; i++){
-            items.push({label: tools[i][0], description:tools[i][1]});
+        items.push({ label: "toolchain", description: "default toolchain for each platform or arch" })
+        for (var i = 0; i < tools.length; i++) {
+            items.push({ label: tools[i][0], description: tools[i][1] });
         }
 
-        const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+        const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
         if (chosen && chosen.label !== this._option.get<string>("toolchain")) {
             // update compiler
             this._option.set("toolchain", chosen.label);
@@ -868,10 +890,10 @@ export class XMake implements vscode.Disposable {
     // set target architecture
     async setTargetArch(target?: string) {
 
-         // this plugin enabled?
-         if (!this._enabled) {
-             return
-         }
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
 
         // select architecture
         let items: vscode.QuickPickItem[] = [];
@@ -880,14 +902,14 @@ export class XMake implements vscode.Disposable {
         // select archs
         let getArchListScript = path.join(__dirname, `../../assets/archs.lua`);
         if (fs.existsSync(getArchListScript) && fs.existsSync(getArchListScript)) {
-            let result = (await process.iorunv(config.executable, ["l", getArchListScript, plat], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            let result = (await process.iorunv(config.executable, ["l", getArchListScript, plat], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (result) {
                 let items: vscode.QuickPickItem[] = [];
                 result = result.split("__end__")[0].trim();
                 result.split("\n").forEach(element => {
-                    items.push({label: element.trim(), description: "The " + element.trim() + " architecture"});
+                    items.push({ label: element.trim(), description: "The " + element.trim() + " architecture" });
                 });
-                const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+                const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
                 if (chosen && chosen.label !== this._option.get<string>("arch")) {
                     this._option.set("arch", chosen.label);
                     this._status.arch = chosen.label;
@@ -908,14 +930,14 @@ export class XMake implements vscode.Disposable {
         // select mode
         let getModeListScript = path.join(__dirname, `../../assets/modes.lua`);
         if (fs.existsSync(getModeListScript) && fs.existsSync(getModeListScript)) {
-            let result = (await process.iorunv(config.executable, ["l", getModeListScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            let result = (await process.iorunv(config.executable, ["l", getModeListScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (result) {
                 let items: vscode.QuickPickItem[] = [];
                 result = result.split("__end__")[0].trim();
                 result.split("\n").forEach(element => {
-                    items.push({label: element.trim(), description: "The " + element.trim() + " mode"});
+                    items.push({ label: element.trim(), description: "The " + element.trim() + " mode" });
                 });
-                const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+                const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
                 if (chosen && chosen.label !== this._option.get<string>("mode")) {
                     this._option.set("mode", chosen.label);
                     this._status.mode = chosen.label;
@@ -937,7 +959,7 @@ export class XMake implements vscode.Disposable {
         let targets = "";
         let getTargetsPathScript = path.join(__dirname, `../../assets/targets.lua`);
         if (fs.existsSync(getTargetsPathScript)) {
-            targets = (await process.iorunv(config.executable, ["l", getTargetsPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+            targets = (await process.iorunv(config.executable, ["l", getTargetsPathScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (targets) {
                 targets = targets.split("__end__")[0].trim();
             }
@@ -945,16 +967,16 @@ export class XMake implements vscode.Disposable {
 
         // select target
         let items: vscode.QuickPickItem[] = [];
-        items.push({label: "default", description: "All Default Targets"});
-        items.push({label: "all", description: "All Targets"});
+        items.push({ label: "default", description: "All Default Targets" });
+        items.push({ label: "all", description: "All Targets" });
         if (targets) {
             targets.split('\n').forEach(element => {
                 element = element.trim();
                 if (element.length > 0)
-                    items.push({label: element, description: "The Project Target: " + element});
+                    items.push({ label: element, description: "The Project Target: " + element });
             });
         }
-        const chosen: vscode.QuickPickItem|undefined = await vscode.window.showQuickPick(items);
+        const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
         if (chosen && chosen.label !== this._option.get<string>("target")) {
             this._option.set("target", chosen.label);
             this._status.target = chosen.label;

@@ -41,6 +41,7 @@
     "onCommand:xmake.onPackage",
     "onCommand:xmake.onInstall",
     "onCommand:xmake.onUninstall",
+    "onCommand:xmake.onDebug",
     "onCommand:xmake.onMacroBegin",
     "onCommand:xmake.onMacroEnd",
     "onCommand:xmake.onMacroRun",
@@ -140,6 +141,11 @@
       {
         "command": "xmake.onPackage",
         "title": "Package",
+        "category": "XMake"
+      },
+      {
+        "command": "xmake.onDebug",
+        "title": "Debug",
         "category": "XMake"
       },
       {
@@ -302,6 +308,9 @@
         {
           "command": "xmake.onPackage"
         }, 
+        {
+          "command": "xmake.onDebug"
+        },
         {
           "command": "xmake.onInstall"
         },
