@@ -51,11 +51,6 @@ async function getInformations(targetName: string): Promise<TargetInformations> 
             targetInformations = targetInformations.split("__end__")[0].trim();
             targetInformations = targetInformations.split('\n')[0].trim();
         }
-        // if (targetRunEnvs) {
-        //     targetRunEnvs = JSON.parse(targetRunEnvs);
-        // } else {
-        //     targetRunEnvs = null;
-        // }
         return JSON.parse(targetInformations);
     }
 
@@ -85,8 +80,8 @@ async function findGdbPath(): Promise<string> {
  */
 function convertEnvsToCppTools(envs) {
     let cppToolsEnvs = []
-    for(const key in envs) {
-        cppToolsEnvs.push({name: key, value: envs[key]});
+    for (const key in envs) {
+        cppToolsEnvs.push({ name: key, value: envs[key] });
     }
     return cppToolsEnvs;
 }
@@ -104,7 +99,7 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
     }
 
     private getTerminalCppTools(terminal: Terminal): string {
-        switch(terminal) {
+        switch (terminal) {
             case 'console':
                 return 'internalConsole';
                 break;
@@ -132,9 +127,14 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
      */
     public async resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration> {
         const targetInformations = await getInformations(config.target);
-        
+
         // Set the program path
         config.program = targetInformations.path;
+
+        // Set process name for an attach request
+        if (config.request == 'attach') {
+            config.processName = `${config.target}.exe`
+        }
 
         //If cwd is empty, set the run directory as cwd
         if (!('cwd' in config)) {
@@ -144,22 +144,24 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         // Get xmake env and merge it with config envs
         let xmakeEnvs = targetInformations.envs;
 
-        if(settings.envBehaviour === 'override') {
+        if (settings.envBehaviour === 'override') {
             config.env = { ...xmakeEnvs, ...config.env };
-        } else if(settings.envBehaviour === 'merge' && config.env !== undefined) {
-            for(const key in xmakeEnvs) {
+        } else if (settings.envBehaviour === 'merge' && config.env !== undefined) {
+            // Merge behaviour between xmake envs and launch.json envs
+            for (const key in xmakeEnvs) {
                 // If the key exist in xmake envs
-                if(key in config.env) {
+                if (key in config.env) {
                     let sep = ':'
-                    if(os.platform() == "win32") {          
-                        sep = ';'   
+                    if (os.platform() == "win32") {
+                        sep = ';'
                     }
                     // Concat the two envs
-                    xmakeEnvs[key] +=  sep + config.env[key];
+                    xmakeEnvs[key] += sep + config.env[key];
                     config.env[key] = xmakeEnvs[key];
                 }
             }
         } else {
+            // Copy xmake envs to config envs
             config.env = xmakeEnvs;
         }
 
@@ -177,8 +179,9 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         if (settings.debuggerBackend == "codelldb") {
             config.type = 'lldb';
             config.stopOnEntry = config.stopAtEntry;
-            if(config.terminal == 'newExternal') {
-                config.terminal = 'external'; // Code LLDB doesn't support newExternal
+            // Code LLDB doesn't support newExternal
+            if (config.terminal == 'newExternal') {
+                config.terminal = 'external';
             }
         }
         // Set MIMode for macos
@@ -206,17 +209,17 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
                 }
             ]
         };
-        config = { ...config, ...setupCommands};
+        config = { ...config, ...setupCommands };
 
-        return config; 
+        return config;
     }
 }
 
 export function initDebugger(context: vscode.ExtensionContext, option: Option) {
     const extension = vscode.extensions.getExtension("ms-vscode.cpptools");
     if (!extension) {
-       log.error("Cpp tools is not installed");
-       return;
+        log.error("Cpp tools is not installed");
+        return;
     }
     extension.activate();
     const provider = new XmakeConfigurationProvider(option);

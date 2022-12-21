@@ -442,12 +442,14 @@
                 "enum": [
                   "integrated",
                   "external",
-                  "console"
+                  "console",
+                  "newExternal"
                 ],
                 "enumDescriptions": [
                   "Use integrated terminal in VSCode.",
                   "Use external terminal window.",
-                  "Use VScode Debug Console for stdout and stderr. Stdin will be unavailable."
+                  "Use VScode Debug Console for stdout and stderr. Stdin will be unavailable.",
+                  "Use external terminal window for console application, nothing for the others (only with cpptools). "
                 ],
                 "default": "integrated"
               },

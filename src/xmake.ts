@@ -739,7 +739,8 @@ export class XMake implements vscode.Disposable {
         }
 
         const name = `Debug: ${targetName}`;
-        await vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], { name: name, type: 'xmake', request: 'launch', target: targetName });
+        const debugConfig = { name: name, type: 'xmake', request: 'launch', target: targetName, terminal: 'integrated', stopAtEntry: true};
+        await vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], debugConfig);
     }
 
     // on macro begin
