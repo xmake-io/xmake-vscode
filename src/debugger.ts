@@ -143,7 +143,6 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
 
         // Get xmake env and merge it with config envs
         let xmakeEnvs = targetInformations.envs;
-
         if (settings.envBehaviour === 'override') {
             config.env = { ...xmakeEnvs, ...config.env };
         } else if (settings.envBehaviour === 'merge' && config.env !== undefined) {
@@ -216,12 +215,23 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
 }
 
 export function initDebugger(context: vscode.ExtensionContext, option: Option) {
-    const extension = vscode.extensions.getExtension("ms-vscode.cpptools");
-    if (!extension) {
-        log.error("Cpp tools is not installed");
+    const cpptools = vscode.extensions.getExtension("ms-vscode.cpptools");
+    const codelldb = vscode.extensions.getExtension("vadimcn.vscode-lldb");
+
+    if (!cpptools && !codelldb) {
+        log.error("Neither CppTools or Code LLDB is installed");
+        vscode.window.showErrorMessage("Neither CppTools or Code LLDB is installed. Install one of this extension to debug");
         return;
     }
-    extension.activate();
+
+    if(!codelldb && settings.debuggerBackend == 'codelldb') {
+        vscode.window.showErrorMessage("Code LLDB is not installed. Install it first to use the debugger.");
+    }
+
+    // Activate the two extensions
+    cpptools?.activate();
+    codelldb?.activate()
+
     const provider = new XmakeConfigurationProvider(option);
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('xmake', provider));
 }
