@@ -4,8 +4,7 @@
 import * as vscode from 'vscode';
 import * as proc from 'child_process';
 import * as fs from 'fs';
-import * as convertor  from './bytes2string';
-import {log} from './log';
+import { log } from './log';
 
 // the execution result interface
 export interface IExecutionResult {
@@ -20,8 +19,23 @@ export interface IExecutionHandle {
     process: proc.ChildProcess;
 }
 
+//convert bytes to string
+function bytesToString(bytes: Uint8Array): string {
+
+    const os = require('os');
+    const iconv = require("iconv-lite");
+
+    const isWin = os.platform() === 'win32';
+    var charset = 'utf8';
+    if (isWin) {
+        charset = 'gbk';
+    }
+
+    return iconv.decode(bytes, charset).toString("utf8");
+}
+
 // add environment variables
-export function addenv(...env: {[key: string]: string}[]) {
+export function addenv(...env: { [key: string]: string }[]) {
     return env.reduce((acc, vars) => {
         if (process.platform === 'win32') {
             const norm_vars = Object.getOwnPropertyNames(vars).reduce<Object>(
@@ -37,14 +51,14 @@ export function addenv(...env: {[key: string]: string}[]) {
 }
 
 // run shell program with arguments and return output content
-export function iorunv(program: string, args: string[], env: {[key: string]: string} = {}, workingDirectory?: string): Promise<IExecutionResult> {
+export function iorunv(program: string, args: string[], env: { [key: string]: string } = {}, workingDirectory?: string): Promise<IExecutionResult> {
 
     // trace
     log.verbose('os.execv: ' + [program].concat(args).map(a => a.replace('"', '\"')).map(a => /[ \n\r\f;\t]/.test(a) ? `"${a}"` : a).join(' '));
 
     // return exenution result promise
     return new Promise<IExecutionResult>((resolve, reject) => {
-        const child = proc.spawn(program, args, {env: addenv(process.env, env), cwd: workingDirectory});
+        const child = proc.spawn(program, args, { env: addenv(process.env, env), cwd: workingDirectory });
         child.on('error', (err) => {
             reject(err);
         });
@@ -58,7 +72,7 @@ export function iorunv(program: string, args: string[], env: {[key: string]: str
 
         child.stdout.on('data', (data: Uint8Array) => {
             // stdout_acc += data.toString();
-            stdout_acc += convertor.bytes2string(data);
+            stdout_acc += bytesToString(data);
         });
 
         child.stdout.on('end', () => {
@@ -70,7 +84,7 @@ export function iorunv(program: string, args: string[], env: {[key: string]: str
 
         child.stderr.on('data', (data: Uint8Array) => {
             // stderr_acc += data.toString();
-            stderr_acc += convertor.bytes2string(data);
+            stderr_acc += bytesToString(data);
         });
 
         child.stdout.on('end', () => {
@@ -91,33 +105,33 @@ export function iorunv(program: string, args: string[], env: {[key: string]: str
     });
 }
 // execute shell program with arguments and without output
-export function runv(program: string, args: string[], env: {[key: string]: string} = {}, workingDirectory?: string): Promise<IExecutionResult> {
+export function runv(program: string, args: string[], env: { [key: string]: string } = {}, workingDirectory?: string): Promise<IExecutionResult> {
     return execv(program, args, env, workingDirectory, null);
 }
 
 // execute shell program with arguments and echo output
-export function execv(program: string, args: string[], env: {[key: string]: string} = {}, workingDirectory?: string, outputChannel: vscode.OutputChannel|null = null): Promise<IExecutionResult> {
+export function execv(program: string, args: string[], env: { [key: string]: string } = {}, workingDirectory?: string, outputChannel: vscode.OutputChannel | null = null): Promise<IExecutionResult> {
 
     // trace
     log.verbose('os.execv: ' + [program].concat(args).map(a => a.replace('"', '\"')).map(a => /[ \n\r\f;\t]/.test(a) ? `"${a}"` : a).join(' '));
 
     // execute process
-    const pipe = proc.spawn(program, args, {env: addenv(process.env, env), cwd: workingDirectory});
+    const pipe = proc.spawn(program, args, { env: addenv(process.env, env), cwd: workingDirectory });
 
     // handle stdout and stderr stream
-    const acc = {stdout: '', stderr: ''};
-    for (const [acckey, stream] of [['stdout', pipe.stdout], ['stderr', pipe.stderr]] as [string,  NodeJS.ReadableStream][]) {
+    const acc = { stdout: '', stderr: '' };
+    for (const [acckey, stream] of [['stdout', pipe.stdout], ['stderr', pipe.stderr]] as [string, NodeJS.ReadableStream][]) {
 
         let backlog = '';
         stream.on('data', (data: Uint8Array) => {
 
             // save data to acc
             // acc[acckey] += data.toString();
-            acc[acckey] += convertor.bytes2string(data);
+            acc[acckey] += bytesToString(data);
 
             // append data ot backlog
             // backlog += data.toString();
-            backlog += convertor.bytes2string(data);
+            backlog += bytesToString(data);
 
             // got a \n? emit one or more 'line' events
             let n = backlog.indexOf('\n');
@@ -134,7 +148,7 @@ export function execv(program: string, args: string[], env: {[key: string]: stri
                 stream.emit('line', backlog.replace(/\r+$/, ''));
                 if (outputChannel) {
                     outputChannel.appendLine(backlog.replace(/\r+$/, ''));
-                 }
+                }
             }
         });
 
@@ -152,7 +166,7 @@ export function execv(program: string, args: string[], env: {[key: string]: stri
         pipe.on('error', reject);
         pipe.on('close', (retval: number) => {
             log.verbose(`${program} exited with return code ${retval}`);
-            resolve({retval, stdout: acc.stdout, stderr: acc.stderr});
+            resolve({ retval, stdout: acc.stdout, stderr: acc.stderr });
         })
     });
 }
