@@ -751,12 +751,12 @@ export class XMakeExplorer implements vscode.Disposable {
         //     vscode.commands.executeCommand("xmake.onRun");
         // });
 
-        // vscode.commands.registerCommand('xmakeExplorer.run', (item: XMakeExplorerItem) => {
-        //     if(item.info.type == XMakeExplorerItemType.TARGET){
-        //         vscode.commands.executeCommand("xmake.setTarget", item.info.target);
-        //         vscode.commands.executeCommand("xmake.onRun", item.info.target);
-        //     }
-        // });
+        vscode.commands.registerCommand('xmakeExplorer.run', (item: XMakeExplorerItem) => {
+            if(item.info.type == XMakeExplorerItemType.TARGET){
+                vscode.commands.executeCommand("xmake.setTarget", item.info.target);
+                vscode.commands.executeCommand("xmake.onRun", item.info.target);
+            }
+        });
 
         vscode.commands.registerCommand('xmakeExplorer.debug', (item: XMakeExplorerItem) => {
             if(item.info.type == XMakeExplorerItemType.TARGET) {

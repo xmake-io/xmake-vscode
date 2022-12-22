@@ -83,6 +83,10 @@ export class Config {
         return results
     }
 
+    get runMode(): string {
+        return this.get<string>("runMode");
+    }
+
     get debuggerBackend(): string {
         return this.get<string>("debuggerBackend");
     }

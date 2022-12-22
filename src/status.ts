@@ -26,6 +26,9 @@ export class Status implements vscode.Disposable {
     // the target button
     private readonly _targetButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.1);
 
+    // the run button
+    private readonly _runButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.0);
+
     // the debug button
     private readonly _debugButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.9);
 
@@ -74,6 +77,11 @@ export class Status implements vscode.Disposable {
         this._targetButton.text = `default`;
         this._targetButton.tooltip = "Set the default target";
 
+        // init run button
+        this._runButton.command = 'xmake.onRun';
+        this._runButton.text = `$(play)`;
+        this._runButton.tooltip = "Run the given target";
+
         // init debug button
         this._debugButton.command = 'xmake.onDebug';
         this._debugButton.text = `$(bug)`;
@@ -107,6 +115,7 @@ export class Status implements vscode.Disposable {
         this._modeButton,
         this._buildButton,
         this._targetButton,
+        this._runButton,
         this._debugButton,
         this._macroRecordButton,
         this._macroPlaybackButton,
@@ -123,6 +132,7 @@ export class Status implements vscode.Disposable {
         this._modeButton,
         this._buildButton,
         this._targetButton,
+        this._runButton,
         this._debugButton,
         this._macroRecordButton,
         this._macroPlaybackButton,

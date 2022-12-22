@@ -641,6 +641,35 @@ export class XMake implements vscode.Disposable {
         this._optionChanged = true;
     }
 
+    async onRun(target?: string) {
+        // this plugin enabled?
+        if (!this._enabled) {
+            return;
+        }
+
+        // get target name
+        let targetName = this._option.get<string>("target");
+        if (!targetName) {
+            let getDefaultTargetPathScript = path.join(__dirname, `../../assets/default_target.lua`);
+            if (fs.existsSync(getDefaultTargetPathScript)) {
+                let result = (await process.iorunv(config.executable, ["l", getDefaultTargetPathScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
+                if (result) {
+                    targetName = result.split('__end__')[0].trim();
+                }
+            }
+        }
+
+        const runMode = config.get<string>("runMode");
+        if (runMode == "buildRun") {
+            return this.onBuild(target)
+        }
+
+        // Configure and run it
+        await this.onConfigure(target);
+        const name = `Debug: ${targetName}`;
+        const debugConfig = { name: name, type: 'xmake', request: 'launch', target: targetName, terminal: 'integrated', noDebug: true };
+        await vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], debugConfig);
+    }
 
     // on package target
     async onPackage(target?: string) {
@@ -731,15 +760,17 @@ export class XMake implements vscode.Disposable {
         if (!targetName) {
             let getDefaultTargetPathScript = path.join(__dirname, `../../assets/default_target.lua`);
             if (fs.existsSync(getDefaultTargetPathScript)) {
-                let result = (await process.iorunv(config.executable, ["l", getDefaultTargetPathScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
+                let result = (await process.iorunv(config.executable, ["l", getDefaultTargetPathScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
                 if (result) {
                     targetName = result.split('__end__')[0].trim();
                 }
             }
         }
 
+        await this.onConfigure(target);
+
         const name = `Debug: ${targetName}`;
-        const debugConfig = { name: name, type: 'xmake', request: 'launch', target: targetName, terminal: 'integrated', stopAtEntry: true};
+        const debugConfig = { name: name, type: 'xmake', request: 'launch', target: targetName, terminal: 'integrated', stopAtEntry: true };
         await vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], debugConfig);
     }
 
