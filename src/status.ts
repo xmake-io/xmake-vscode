@@ -79,7 +79,7 @@ export class Status implements vscode.Disposable {
 
         // init run button
         this._runButton.command = 'xmake.onRun';
-        this._runButton.text = `$(triangle-right)`;
+        this._runButton.text = `$(play)`;
         this._runButton.tooltip = "Run the given target";
 
         // init debug button
