@@ -4,8 +4,20 @@
 import * as vscode from 'vscode';
 import * as proc from 'child_process';
 import * as fs from 'fs';
-import * as convertor  from './bytes2string';
+import * as os from 'os';
+import * as iconv from 'iconv-lite';
 import {log} from './log';
+
+//convert bytes to string
+function bytesToString(bytes: Uint8Array): string {
+    
+    const isWin = os.platform() === 'win32';
+    var charset = 'utf8';
+    if(isWin) {
+        charset = 'gbk';
+    }
+    return iconv.decode(Buffer.from(bytes), charset).toString();
+}
 
 // the execution result interface
 export interface IExecutionResult {
@@ -58,7 +70,7 @@ export function iorunv(program: string, args: string[], env: {[key: string]: str
 
         child.stdout.on('data', (data: Uint8Array) => {
             // stdout_acc += data.toString();
-            stdout_acc += convertor.bytes2string(data);
+            stdout_acc += bytesToString(data);
         });
 
         child.stdout.on('end', () => {
@@ -70,7 +82,7 @@ export function iorunv(program: string, args: string[], env: {[key: string]: str
 
         child.stderr.on('data', (data: Uint8Array) => {
             // stderr_acc += data.toString();
-            stderr_acc += convertor.bytes2string(data);
+            stderr_acc += bytesToString(data);
         });
 
         child.stdout.on('end', () => {
@@ -113,11 +125,11 @@ export function execv(program: string, args: string[], env: {[key: string]: stri
 
             // save data to acc
             // acc[acckey] += data.toString();
-            acc[acckey] += convertor.bytes2string(data);
+            acc[acckey] += bytesToString(data);
 
             // append data ot backlog
             // backlog += data.toString();
-            backlog += convertor.bytes2string(data);
+            backlog += bytesToString(data);
 
             // got a \n? emit one or more 'line' events
             let n = backlog.indexOf('\n');
