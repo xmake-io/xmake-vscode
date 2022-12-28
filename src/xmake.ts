@@ -15,6 +15,7 @@ import {Debugger} from './debugger';
 import {Completion} from './completion';
 import {XmakeTaskProvider} from './task';
 import {XMakeExplorer} from './explorer';
+import { initDebugger } from './debugger';
 import * as process from './process';
 import * as utils from './utils';
 
@@ -842,7 +843,7 @@ export class XMake implements vscode.Disposable {
          * https://github.com/Microsoft/vscode-cpptools
          * https://github.com/vadimcn/vscode-lldb
          */
-        var extension = null;
+        let extension = null;
         if (os.platform() == "darwin" || config.debugConfigType == "codelldb") {
             extension = vscode.extensions.getExtension("vadimcn.vscode-lldb");
         }
@@ -877,57 +878,14 @@ export class XMake implements vscode.Disposable {
         }
 
         // get target name
-        var targetName = this._option.get<string>("target");
+        let targetName = this._option.get<string>("target");
         if (!targetName) targetName = "default";
 
-        // get target program
-        var targetProgram = null;
-        let getTargetPathScript = path.join(__dirname, `../../assets/targetpath.lua`);
-        if (fs.existsSync(getTargetPathScript)) {
-            targetProgram = (await process.iorunv(config.executable, ["l", getTargetPathScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
-            if (targetProgram) {
-                targetProgram = targetProgram.split("__end__")[0].trim();
-                targetProgram = targetProgram.split('\n')[0].trim();
-            }
-        }
-
-        // get target run directory
-        var targetRunDir = null;
-        let getTargetRunDirScript = path.join(__dirname, `../../assets/target_rundir.lua`);
-        if (fs.existsSync(getTargetRunDirScript)) {
-            targetRunDir = (await process.iorunv(config.executable, ["l", getTargetRunDirScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
-            if (targetRunDir) {
-                targetRunDir = targetRunDir.split("__end__")[0].trim();
-                targetRunDir = targetRunDir.split('\n')[0].trim();
-            }
-        }
-
-        // get target run envs
-        var targetRunEnvs = null;
-        let getTargetRunEnvsScript = path.join(__dirname, `../../assets/target_runenvs.lua`);
-        if (fs.existsSync(getTargetRunEnvsScript)) {
-            targetRunEnvs = (await process.iorunv(config.executable, ["l", getTargetRunEnvsScript, targetName], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
-            if (targetRunEnvs) {
-                targetRunEnvs = targetRunEnvs.split("__end__")[0].trim();
-                targetRunEnvs = targetRunEnvs.split('\n')[0].trim();
-            }
-            if (targetRunEnvs) {
-                targetRunEnvs = JSON.parse(targetRunEnvs);
-            } else {
-                targetRunEnvs = null;
-            }
-        }
-
-        // get platform
-        var plat = this._option.get<string>("plat");
-        if (!plat) plat = "default";
 
         // start debugging
-        if (targetProgram && fs.existsSync(targetProgram)) {
-            this._debugger.startDebugging(targetName, targetProgram, targetRunDir, targetRunEnvs, plat);
-        } else {
-            await vscode.window.showErrorMessage('The target program not found!');
-        }
+        const name = `Debug: ${targetName}`;
+        const debugConfig = { name: name, type: 'xmake', request: 'launch', target: targetName, stopAtEntry: true };
+        await vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], debugConfig);
     }
 
     // on macro begin
