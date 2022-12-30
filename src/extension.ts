@@ -35,6 +35,7 @@ export async function activate(context: vscode.ExtensionContext) {
         'onInstall',
         'onUninstall',
         'onDebug',
+        'onLaunchDebug',
         'onMacroBegin',
         'onMacroEnd',
         'onMacroRun',

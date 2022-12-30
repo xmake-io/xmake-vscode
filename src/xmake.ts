@@ -12,6 +12,7 @@ import { Status } from './status';
 import { Option } from './option';
 import { ProblemList } from './problem';
 import { Debugger } from './debugger';
+import { initDebugger } from './launchDebugger';
 import { Completion } from './completion';
 import { XmakeTaskProvider } from './task';
 import { XMakeExplorer } from './explorer';
@@ -311,6 +312,8 @@ export class XMake implements vscode.Disposable {
 
         // enable this plugin
         this._enabled = true;
+
+        initDebugger(this._context, this._option);
 
         vscode.commands.executeCommand('setContext', 'xmakeEnabled', true);
     }
@@ -928,6 +931,63 @@ export class XMake implements vscode.Disposable {
         } else {
             await vscode.window.showErrorMessage('The target program not found!');
         }
+    }
+
+    // on launch debug target
+    async onLaunchDebug(target?: string) {
+         // this plugin enabled?
+         if (!this._enabled) {
+            return;
+        }
+
+        /* cpptools or codelldb externsions not found?
+         *
+         * @see
+         * https://github.com/Microsoft/vscode-cpptools
+         * https://github.com/vadimcn/vscode-lldb
+         */
+        let extension = null;
+        if (os.platform() == "darwin" || config.debugConfigType == "codelldb") {
+            extension = vscode.extensions.getExtension("vadimcn.vscode-lldb");
+        }
+        if (!extension) {
+            extension = vscode.extensions.getExtension("ms-vscode.cpptools");
+        }
+        if (!extension) {
+
+            // get target name
+            const targetName = this._option.get<string>("target");
+
+            // make command
+            let command = `${config.executable} r -d`;
+            if (targetName && targetName != "default")
+                command += ` ${targetName}`;
+
+            // configure and debug it
+            await this.onConfigure(target);
+            await this._terminal.exec("debug", command);
+            return;
+        }
+
+        // active cpptools/codelldb externsions
+        if (!extension.isActive) {
+            extension.activate();
+        }
+
+        // option changed?
+        if (this._optionChanged) {
+            await vscode.window.showErrorMessage('Configuration have been changed, please rebuild program first!');
+            return;
+        }
+
+        // get target name
+        let targetName = this._option.get<string>("target");
+        if (!targetName) targetName = "default";
+
+        // start debugging
+        const name = `Debug: ${targetName}`;
+        const debugConfig = { name: name, type: 'xmake', request: 'launch', target: targetName, stopAtEntry: true };
+        await vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], debugConfig);
     }
 
     // on macro begin
