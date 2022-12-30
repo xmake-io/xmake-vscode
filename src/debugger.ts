@@ -137,7 +137,6 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
 
         // Configure debugger type
         // On windows, use vs debugger if it's not mingw
-        // default type if not set yet
         config.type = 'cppdbg';
         if (os.platform() == 'win32' && this.getPlat() != 'mingw') {
             config.type = 'cppvsdbg';
