@@ -149,6 +149,7 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
             config.stopOnEntry = config.stopAtEntry;
             // CodeLLDB use program key for search a running procces
             if (config.request == 'attach') {
+                config.stopOnEntry = false;
                 config.program = `${targetInformations.name}.exe`;
             }
         }
