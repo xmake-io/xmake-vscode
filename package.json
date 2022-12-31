@@ -33,6 +33,7 @@
     "onCommand:xmake.onCreateProject",
     "onCommand:xmake.onNewFiles",
     "onCommand:xmake.onConfigure",
+    "onCommand:xmake.onForceConfigure",
     "onCommand:xmake.onCleanConfigure",
     "onCommand:xmake.onBuild",
     "onCommand:xmake.onRebuild",
@@ -119,7 +120,7 @@
         "category": "XMake"
       },
       {
-        "command": "xmake.onConfigure",
+        "command": "xmake.onForceConfigure",
         "title": "Configure",
         "category": "XMake"
       },
@@ -314,6 +315,9 @@
         },
         {
           "command": "xmake.onConfigure"
+        },
+        {
+          "command": "xmake.onForceConfigure"
         },
         {
           "command": "xmake.onCleanConfigure"
