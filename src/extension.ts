@@ -24,6 +24,7 @@ export async function activate(context: vscode.ExtensionContext) {
         'onCreateProject',
         'onNewFiles',
         'onConfigure',
+        'onForceConfigure',
         'onCleanConfigure',
         'onBuild',
         'onRebuild',
