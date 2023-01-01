@@ -97,6 +97,10 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         this.option = option;
     }
 
+    private getTarget(): string {
+        return this.option.get<string>("target");
+    }
+
     private getPlat(): string {
         return this.option.get<string>("plat");
     }
@@ -130,10 +134,14 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
      */
     public async resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: XmakeDebugConfiguration, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration> {
 
+        // If target is not set, resolve it with the status
         if (!config.target) {
-            return vscode.window.showInformationMessage("Target is not set").then(_ => {
-                return undefined;	// Abort launch
-            });
+            let targetName = this.getTarget();
+            if (!targetName) targetName = "default";
+
+            config.target = targetName;
+            config.name = `Debug target: ${config.target}`;
+            config.request = "launch";
         }
 
         const targetInformations = await getInformations(config.target);
