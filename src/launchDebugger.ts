@@ -12,13 +12,13 @@ import { config as settings } from './config';
 import { log } from './log';
 import { Option } from './option';
 
-interface DebugConfiguration extends vscode.DebugConfiguration {
+interface XmakeDebugConfiguration extends vscode.DebugConfiguration {
     type: string;
     target: string;
     cwd?: string;
     stopAtEntry?: boolean;
     args?: Array<string> | string;
-    env;
+    env?;
 }
 
 interface TargetInformations {
@@ -26,6 +26,19 @@ interface TargetInformations {
     path: string;
     name: string;
     envs;
+}
+
+async function getTargets(): Promise<Array<string>> {
+    let targets = "";
+    let getTargetsPathScript = path.join(__dirname, `../../assets/targets.lua`);
+    if (fs.existsSync(getTargetsPathScript)) {
+        targets = (await process.iorunv(settings.executable, ["l", getTargetsPathScript], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
+        if (targets) {
+            targets = targets.split("__end__")[0].trim();
+        }
+    }
+
+    return targets.split('\n');
 }
 
 /**
@@ -84,18 +97,53 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         this.option = option;
     }
 
+    private getTarget(): string {
+        return this.option.get<string>("target");
+    }
+
     private getPlat(): string {
         return this.option.get<string>("plat");
     }
 
     /**
-     *  Resolve the xmake debug configuration.
+     * Provides {@link XmakeDebugConfiguration debug configuration} to the debug service. If more than one debug configuration provider is
+     * registered for the same type, debug configurations are concatenated in arbitrary order.
+     *
+     * @param folder The workspace folder for which the configurations are used or `undefined` for a folderless setup.
+     * @param token A cancellation token.
+     * @return An array of {@link XmakeDebugConfiguration debug configurations}.
+     */
+    async provideDebugConfigurations(folder?: vscode.WorkspaceFolder, token?: vscode.CancellationToken): Promise<XmakeDebugConfiguration[]> {
+        const targets = await getTargets();
+        const configs = [];
+
+        // Insert all the target into the array
+        for (const target of targets) {
+            configs.push({ name: `Debug target: ${target}`, type: "xmake", target: target, request: "launch" });
+        }
+
+        return configs;
+    }
+
+    /**
+     * Resolve the xmake debug configuration.
      * @param folder current folder path. Will be used if cwd in launch.json is not set
      * @param config the actual xmake debug config
      * @param token 
      * @returns the modified config to cpptols or codelldb
      */
-    public async resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: DebugConfiguration, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration> {
+    public async resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: XmakeDebugConfiguration, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration> {
+
+        // If target is not set, resolve it with the status
+        if (!config.target) {
+            let targetName = this.getTarget();
+            if (!targetName) targetName = "default";
+
+            config.target = targetName;
+            config.name = `Debug target: ${config.target}`;
+            config.request = "launch";
+        }
+
         const targetInformations = await getInformations(config.target);
 
         // Set the program path
@@ -111,12 +159,12 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         }
 
         //If cwd is empty, set the run directory as cwd
-        if (!('cwd' in config)) {
+        if (!config.cwd) {
             config.cwd = targetInformations.rundir;
         }
 
         // If args is empty, set it from config
-        if (!('args' in config)) {
+        if (!config.args) {
             let args = [];
 
             if (config.target in settings.debuggingTargetsArguments)
@@ -203,5 +251,5 @@ export function initDebugger(context: vscode.ExtensionContext, option: Option) {
     codelldb?.activate()
 
     const provider = new XmakeConfigurationProvider(option);
-    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('xmake', provider));
+    context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('xmake', provider, vscode.DebugConfigurationProviderTriggerKind.Dynamic));
 }
