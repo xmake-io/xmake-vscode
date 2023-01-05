@@ -12,12 +12,21 @@ import { config as settings } from './config';
 import { log } from './log';
 import { Option } from './option';
 
+/**
+ * integrated: Use integrated terminal in VSCode
+ * external: Use external terminal window
+ * console: Use VScode Debug Console for stdout and stderr. Stdin will be unavailable
+ * newExternal: Use external terminal window for console application, nothing for the others (only with cpptools)
+ */
+type Terminal = "integrated" | "external" | "console" | "newExternal";
+
 interface XmakeDebugConfiguration extends vscode.DebugConfiguration {
     type: string;
     target: string;
     cwd?: string;
     stopAtEntry?: boolean;
     args?: Array<string> | string;
+    terminal?: Terminal;
     env?;
 }
 
@@ -105,6 +114,26 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         return this.option.get<string>("plat");
     }
 
+    private getTerminalCppTools(terminal: Terminal): string {
+        switch (terminal) {
+            case 'console':
+                return 'internalConsole';
+                break;
+            case 'integrated':
+                return 'integratedTerminal';
+                break;
+            case 'external':
+                return 'externalTerminal';
+                break;
+            case 'newExternal':
+                return 'newExternalWindow';
+                break;
+            default:
+                return 'internalConsole';
+                break;
+        }
+    }
+
     /**
      * Provides {@link XmakeDebugConfiguration debug configuration} to the debug service. If more than one debug configuration provider is
      * registered for the same type, debug configurations are concatenated in arbitrary order.
@@ -179,9 +208,28 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
             config.args = args;
         }
 
-        // Set the envs for codelldb and cpptools
-        config.env = targetInformations.envs;
-        config.environment = convertEnvsToCppTools(targetInformations.envs);
+        // Get xmake env and merge it with config envs
+        const sep = os.platform() == "win32" ? ';' : ':'
+        let xmakeEnvs = targetInformations.envs;
+        if (settings.envBehaviour === 'override') {
+            config.env = { ...xmakeEnvs, ...config.env };
+        } else if (settings.envBehaviour === 'merge' && config.env !== undefined) {
+            // Merge behaviour between xmake envs and launch.json envs
+            for (const key in xmakeEnvs) {
+                // If the key exist in debug envs
+                if (key in config.env) {
+                    // Concat the two envs
+                    xmakeEnvs[key] += sep + config.env[key];
+                    config.env[key] = xmakeEnvs[key];
+                }
+            }
+        } else {
+            // Copy xmake envs to config envs
+            config.env = xmakeEnvs;
+        }
+
+        // Set the env for cpptools
+        config.environment = convertEnvsToCppTools(config.env);
 
         // Configure debugger type
         // On windows, use vs debugger if it's not mingw
@@ -194,6 +242,11 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         if (settings.debugConfigType == "codelldb") {
             config.type = 'lldb';
             config.stopOnEntry = config.stopAtEntry;
+            // Code LLDB doesn't support newExternal
+            if (config.terminal == 'newExternal') {
+                config.terminal = 'external';
+            }
+
             // CodeLLDB use program key for search a running procces
             if (config.request == 'attach') {
                 config.stopOnEntry = false;
@@ -211,6 +264,9 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
             config.MIMode = "gdb";
             config.miDebuggerPath = await findGdbPath();
         }
+
+        // Set the console for cpptools
+        config.console = this.getTerminalCppTools(config.terminal);
 
         // Merge pretty printing
         const setupCommands = {

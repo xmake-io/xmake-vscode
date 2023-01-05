@@ -476,6 +476,32 @@
                   "string"
                 ],
                 "default": []
+              },
+              "terminal": {
+                "type": "string",
+                "enum": [
+                  "integrated",
+                  "external",
+                  "console",
+                  "newExternal"
+                ],
+                "enumDescriptions": [
+                  "Use integrated terminal in VSCode.",
+                  "Use external terminal window.",
+                  "Use VScode Debug Console for stdout and stderr. Stdin will be unavailable.",
+                  "Use external terminal window for console application, nothing for the others (only with cpptools). "
+                ],
+                "default": "integrated"
+              },
+              "env": {
+                "description": "Additional environment variables.",
+                "type": "object",
+                "patternProperties": {
+                  ".*": {
+                    "type": "string"
+                  }
+                },
+                "default": {}
               }
             }
           },
@@ -506,6 +532,32 @@
                   "string"
                 ],
                 "default": []
+              },
+              "terminal": {
+                "type": "string",
+                "enum": [
+                  "integrated",
+                  "external",
+                  "console",
+                  "newExternal"
+                ],
+                "enumDescriptions": [
+                  "Use integrated terminal in VSCode.",
+                  "Use external terminal window.",
+                  "Use VScode Debug Console for stdout and stderr. Stdin will be unavailable.",
+                  "Use external terminal window for console application, nothing for the others (only with cpptools). "
+                ],
+                "default": "integrated"
+              },
+              "env": {
+                "description": "Additional environment variables.",
+                "type": "object",
+                "patternProperties": {
+                  ".*": {
+                    "type": "string"
+                  }
+                },
+                "default": {}
               }
             }
           }
@@ -647,6 +699,21 @@
           "type": "object",
           "default": {},
           "description": "The Custom Debugging Configurations"
+        },
+        "xmake.envBehaviour": {
+          "type": "string",
+          "default": "merge",
+          "enum": [
+            "erase",
+            "merge",
+            "override"
+          ],
+          "description": "Environment behaviour between launch.json and xmake envs",
+          "enumDescriptions": [
+            "XMake envs will erase launch.json envs",
+            "This will concat launch.json envs and xmake envs",
+            "Launch configurations will override xmake envs"
+          ]
         }
       }
     },
