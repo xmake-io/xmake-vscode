@@ -130,6 +130,7 @@ Debug via launch configurations is accessible only with Run->Start Debugging (no
 |**type**           |string| *Required.* Set to `xmake`.
 |**request**        |string| *Required.* Session initiation method:`launch` or `attach`.
 |**target**         |string| *Required.* XMake target.
+|env                |object| 	Additional environment variables. `{"PATH" : "some/path"}`
 |args               |string ❘ [string]| Command line parameters. If not defined args are taken from `debuggingTargetsArguments` config.
 |cwd                |string| If not defined xmake will use the target directory. 
 |stopAtEntry        |boolean| If set to true, the debugger should stop at the entry-point of the target (ignored on attach). Default value is false.
