@@ -100,6 +100,10 @@ export class Config {
     get customDebugConfig(): {} {
         return this.get<{}>("customDebugConfig");
     }
+
+    get envBehaviour(): string {
+        return this.get<string>("envBehaviour");
+    }
 }
 
 // init the global config

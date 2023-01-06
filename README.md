@@ -1,7 +1,7 @@
 <div align="center">
   <a href="http://xmake.io">
     <img width="200" heigth="200" src="https://github.com/xmake-io/xmake-vscode/raw/master/res/logo256.png">
-  </a>  
+  </a>
 
   <h1>xmake-vscode</h1>
 
@@ -40,9 +40,9 @@
   <p>A XMake integration in Visual Studio Code</p>
 </div>
 
-## Introduction 
+## Introduction
 
-A XMake integration in Visual Studio Code. 
+A XMake integration in Visual Studio Code.
 
 You need install [xmake](https://github.com/xmake-io/xmake) first and a project with `xmake.lua`.
 
@@ -72,23 +72,23 @@ Please see [xmake-github](https://github.com/xmake-io/xmake) and [website](http:
 ## StatusBar
 
 ![statusbar](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/statusbar.png)
- 
+
 ## Commands
 
 <img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/commands.png" width="60%" />
- 
+
 ## Configuration
 
 <img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/configure.gif" width="60%" />
- 
+
 ## Build
 
 <img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/build.gif" width="60%" />
-  
+
 ## Run and Debug
 
 <img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/debug.gif" width="60%" />
- 
+
 ## Record and Playback
 
 <img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/record.gif" width="60%" />
@@ -122,7 +122,7 @@ Please see [IntelliSense for cross-compiling](https://code.visualstudio.com/docs
 
 ## Debugging
 
-Debug via launch configurations is accessible only with Run->Start Debugging (not F5 keybinding) or via Launch Debug command.
+Debug via launch configurations (launch.json) is accessible only with Run->Start Debugging (not F5 keybinding) or via Launch Debug command.
 
 |attribute          |type  |         |
 |-------------------|------|---------|
@@ -130,11 +130,14 @@ Debug via launch configurations is accessible only with Run->Start Debugging (no
 |**type**           |string| *Required.* Set to `xmake`.
 |**request**        |string| *Required.* Session initiation method:`launch` or `attach`.
 |**target**         |string| *Required.* XMake target.
+|env                |object| 	Additional environment variables. `{"PATH" : "some/path"}`
 |args               |string ❘ [string]| Command line parameters. If not defined args are taken from `debuggingTargetsArguments` config.
-|cwd                |string| If not defined xmake will use the target directory. 
+|cwd                |string| If not defined xmake will use the target directory.
 |stopAtEntry        |boolean| If set to true, the debugger should stop at the entry-point of the target (ignored on attach). Default value is false.
+|terminal           |string| Destination of stdio streams: <ul><li>`console` for Debug Console</li><li>`integrated` (default) for VSCode integrated terminal</li><li>`external` for a new terminal window</li><li>`newExternal` for a new terminal window but only with cli application (only cpptools / with lldb it will be converted to `external`)</li></ul>|
 
 Example:
+
 ```json
 {
     "configurations": [
@@ -149,7 +152,21 @@ Example:
 }
 ```
 
+### Envs behaviour
+
+You can choose the behaviour between xmake envs and envs that are defined in `launch.json`
+For an xmake envs that are like this `{"PATH: "path/from/xmake"}` and in `launch.json`
+`{"PATH": "path/from/config}`.
+
+* With `xmake.envBehaviour` set to `merge`, the result is `{"PATH": "path/from/xmake;path/from/config"}`.
+* With `xmake.envBehaviour` set to `erase`, the result is `{"PATH": "path/from/xmake}`
+* And with `xmake.envBehaviour` set to `override`, the result is: `{"PATH": "path/from/config}`.
+
+XMake envs will only be replaced for the same key, if another xmake env key is present, it will be present in the final result.
+
 ## Global Configuration
+
+We can configure them in settings.json
 
 ```json
 {
@@ -212,4 +229,4 @@ Example:
     }
 }
 ```
- 
+
