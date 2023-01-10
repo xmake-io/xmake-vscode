@@ -84,12 +84,12 @@ export class Config {
     }
 
     // the running targets arguments
-    get runningTargetsArguments(): {} {
+    get runningTargetsArguments(): { [key: string]: [string] } {
         return this.get<{}>("runningTargetsArguments");
     }
 
     // the debugging targets arguments
-    get debuggingTargetsArguments(): {} {
+    get debuggingTargetsArguments(): { [key: string]: [string] } {
         return this.get<{}>("debuggingTargetsArguments");
     }
 

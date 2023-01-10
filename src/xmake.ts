@@ -135,13 +135,13 @@ export class XMake implements vscode.Disposable {
         const arch = ("arch" in cacheJson && cacheJson["arch"] != "") ? cacheJson["arch"] : (plat == "windows" ? "x86" : { x64: 'x86_64', x86: 'i386' }[os.arch()]);
         if (arch) {
             this._option.set("arch", arch);
-            this._status.arch = arch;
+            this._status.arch = arch as string;
         }
 
         // init build mode
         const mode = ("mode" in cacheJson && cacheJson["mode"] != "") ? cacheJson["mode"] : "debug";
         this._option.set("mode", mode);
-        this._status.mode = mode;
+        this._status.mode = mode as string;
 
         // init defaualt toolchain
         const toolchain = "toolchain";
