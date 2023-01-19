@@ -188,7 +188,7 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
             let current = root;
 
             // Create the group hierarchy
-            const groups = target.group != "" ? target.group.trim().split("/", 1) : [];
+            const groups = target.group != "" ? target.group.trim().split("/") : [];
             if (groups.length > 0) {
                 const currentGroup: string[] = new Array();
                 for (let group of groups) {
