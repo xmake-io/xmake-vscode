@@ -56,13 +56,16 @@ export class XMake implements vscode.Disposable {
 
     // the config file watcher
     private _configFileSystemWatcher: vscode.FileSystemWatcher;
+    private _configFileUpdateLastTime = Date.now();
 
     // the project file watcher
     private _projectFileSystemWatcher: vscode.FileSystemWatcher;
+    private _projectFileUpdateLastTime = Date.now();
 
     // the xmake task provider
     private _xmakeTaskProvider: vscode.Disposable | undefined;
 
+    // the xmake explorer
     private _xmakeExplorer: XMakeExplorer;
 
     // the constructor
@@ -203,12 +206,19 @@ export class XMake implements vscode.Disposable {
     // on Config File Updated
     async onConfigFileUpdated(affectedPath: vscode.Uri) {
 
-        // trace
-        log.verbose("onConfigFileUpdated: " + affectedPath.fsPath);
+        /* avoid frequent trigger events
+         * https://github.com/xmake-io/xmake-vscode/issues/78
+        */
+        let now = Date.now();
+        if (now - this._configFileUpdateLastTime < 1000) {
+            return ;
+        }
+        this._configFileUpdateLastTime = now;
 
         // update configure cache
         let filePath = affectedPath.fsPath;
         if (filePath.includes("xmake.conf")) {
+            log.verbose("onConfigFileUpdated: " + affectedPath.fsPath);
             this.loadCache();
             this._xmakeExplorer.refresh();
         }
@@ -217,15 +227,19 @@ export class XMake implements vscode.Disposable {
     // on Project File Updated
     async onProjectFileUpdated(affectedPath: vscode.Uri) {
 
-        // trace
-        log.verbose("onProjectFileUpdated: " + affectedPath.fsPath);
-
-        // wait some times
-        await utils.sleep(2000);
+        /* avoid frequent trigger events
+         * https://github.com/xmake-io/xmake-vscode/issues/78
+        */
+        let now = Date.now();
+        if (now - this._projectFileUpdateLastTime < 10000) {
+            return ;
+        }
+        this._projectFileUpdateLastTime = now;
 
         // update project cache
         let filePath = affectedPath.fsPath;
-        if (filePath.includes("xmake.lua")) {
+        if (filePath.includes("xmake.lua") && !filePath.includes(".xmake")) {
+            log.verbose("onProjectFileUpdated: " + affectedPath.fsPath);
             this.loadCache();
             this.updateIntellisense();
             this._xmakeExplorer.refresh();
@@ -234,16 +248,9 @@ export class XMake implements vscode.Disposable {
 
     // on Log File Updated
     async onLogFileUpdated(affectedPath: vscode.Uri) {
-
-        // trace
-        log.verbose("onLogFileUpdated: " + affectedPath.fsPath);
-
-        // wait some times
-        await utils.sleep(2000);
-
-        // update problems
         let filePath = affectedPath.fsPath;
         if (filePath.includes("vscode-build.log")) {
+            log.verbose("onLogFileUpdated: " + affectedPath.fsPath);
             this._problems.diagnose(filePath);
         }
     }
