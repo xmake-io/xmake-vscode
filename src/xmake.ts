@@ -493,9 +493,13 @@ export class XMake implements vscode.Disposable {
             if (config.WDKDirectory != "") {
                 args.push(`--wdk=${config.WDKDirectory}`);
             }
-            if (config.buildDirectory != "" && config.buildDirectory != path.join(utils.getProjectRoot(), "build")) {
-                args.push("-o");
-                args.push(config.buildDirectory);
+            if (config.buildDirectory != "") {
+                // https://github.com/xmake-io/xmake/issues/3449
+                let buildDirectory = path.normalize(config.buildDirectory);
+                if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
+                    args.push("-o");
+                    args.push(buildDirectory);
+                }
             }
             if (config.additionalConfigArguments) {
                 for (let arg of config.additionalConfigArguments) {
@@ -546,9 +550,12 @@ export class XMake implements vscode.Disposable {
         if (config.WDKDirectory != "") {
             args.push(`--wdk=${config.WDKDirectory}`);
         }
-        if (config.buildDirectory != "" && config.buildDirectory != path.join(utils.getProjectRoot(), "build")) {
-            args.push("-o");
-            args.push(config.buildDirectory);
+        if (config.buildDirectory != "") {
+            let buildDirectory = path.normalize(config.buildDirectory);
+            if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
+                args.push("-o");
+                args.push(buildDirectory);
+            }
         }
         if (config.additionalConfigArguments) {
             for (let arg of config.additionalConfigArguments) {
@@ -578,9 +585,12 @@ export class XMake implements vscode.Disposable {
         // make command
         let command = config.executable;
         var args = ["f", "-c"];
-        if (config.buildDirectory != "" && config.buildDirectory != path.join(utils.getProjectRoot(), "build")) {
-            args.push("-o");
-            args.push(config.buildDirectory);
+        if (config.buildDirectory != "") {
+            let buildDirectory = path.normalize(config.buildDirectory);
+            if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
+                args.push("-o");
+                args.push(buildDirectory);
+            }
         }
         if (config.additionalConfigArguments) {
             for (let arg of config.additionalConfigArguments) {
