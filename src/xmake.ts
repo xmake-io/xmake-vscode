@@ -458,15 +458,17 @@ export class XMake implements vscode.Disposable {
         this._xmakeExplorer.refresh();
     }
 
-    // configure method
-    async configureMethod(force, clean) : Promise<boolean>{
+    // on configure project
+    async onConfigure(target?: string): Promise<boolean> {
+
         // this plugin enabled?
         if (!this._enabled) {
             return false;
         }
 
-        // option changed or force?
-        if ((force || this._optionChanged)){
+        // option changed?
+        if (this._optionChanged) {
+
             // get the target platform
             let plat = this._option.get<string>("plat");
 
@@ -507,14 +509,10 @@ export class XMake implements vscode.Disposable {
             if (toolchain != "toolchain") {
                 args.push("--toolchain=" + toolchain);
             }
-            if (clean) {
-                // clean configure it
-                args.push("-c")
-                await this._terminal.execv("clean config", command, args);   
-            } else {
-                // configure it
-                await this._terminal.execv("config", command, args);   
-            }
+
+            // configure it
+            await this._terminal.execv("config", command, args);
+
             // mark as not changed
             this._optionChanged = false;
             return true;
@@ -522,19 +520,89 @@ export class XMake implements vscode.Disposable {
         return false;
     }
 
-    // on configure project
-    async onConfigure(target?: string): Promise<boolean> {
-        return this.configureMethod(false, false);
-    }
-
-    // on manually force configure project
     async onForceConfigure(target?: string): Promise<boolean> {
-        return this.configureMethod(true, false);
+
+        // this plugin enabled?
+        if (!this._enabled) {
+            return false;
+        }
+        // get the target platform
+        let plat = this._option.get<string>("plat");
+
+        // get the target architecture
+        let arch = this._option.get<string>("arch");
+
+        // get the build mode
+        let mode = this._option.get<string>("mode");
+
+        // get the toolchain
+        let toolchain = this._option.get<string>("toolchain");
+
+        // make command
+        let command = config.executable
+        var args = ["f", "-p", `${plat}`, "-a", `${arch}`, "-m", `${mode}`];
+        if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
+            args.push(`--ndk=${config.androidNDKDirectory}`);
+        }
+        if (config.QtDirectory != "") {
+            args.push(`--qt=${config.QtDirectory}`);
+        }
+        if (config.WDKDirectory != "") {
+            args.push(`--wdk=${config.WDKDirectory}`);
+        }
+        if (config.buildDirectory != "") {
+            let buildDirectory = path.normalize(config.buildDirectory);
+            if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
+                args.push("-o");
+                args.push(buildDirectory);
+            }
+        }
+        if (config.additionalConfigArguments) {
+            for (let arg of config.additionalConfigArguments) {
+                args.push(arg);
+            }
+        }
+        if (toolchain != "toolchain") {
+            args.push("--toolchain=" + toolchain);
+        }
+
+        // configure it
+        await this._terminal.execv("config", command, args);
+
+        // mark as not changed
+        this._optionChanged = false;
+        return true;
     }
 
     // on clean configure project
     async onCleanConfigure(target?: string) {
-        return this.configureMethod(true, true);
+
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+
+        // make command
+        let command = config.executable;
+        var args = ["f", "-c"];
+        if (config.buildDirectory != "") {
+            let buildDirectory = path.normalize(config.buildDirectory);
+            if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
+                args.push("-o");
+                args.push(buildDirectory);
+            }
+        }
+        if (config.additionalConfigArguments) {
+            for (let arg of config.additionalConfigArguments) {
+                args.push(arg);
+            }
+        }
+
+        // configure it
+        await this._terminal.execv("clean config", command, args);
+
+        // mark as not changed
+        this._optionChanged = false;
     }
 
     // on build project
