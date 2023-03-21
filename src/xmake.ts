@@ -56,16 +56,13 @@ export class XMake implements vscode.Disposable {
 
     // the config file watcher
     private _configFileSystemWatcher: vscode.FileSystemWatcher;
-    private _configFileUpdateLastTime = Date.now();
 
     // the project file watcher
     private _projectFileSystemWatcher: vscode.FileSystemWatcher;
-    private _projectFileUpdateLastTime = Date.now();
 
     // the xmake task provider
     private _xmakeTaskProvider: vscode.Disposable | undefined;
 
-    // the xmake explorer
     private _xmakeExplorer: XMakeExplorer;
 
     // the constructor
@@ -138,13 +135,13 @@ export class XMake implements vscode.Disposable {
         const arch = ("arch" in cacheJson && cacheJson["arch"] != "") ? cacheJson["arch"] : (plat == "windows" ? "x86" : { x64: 'x86_64', x86: 'i386' }[os.arch()]);
         if (arch) {
             this._option.set("arch", arch);
-            this._status.arch = arch as string;
+            this._status.arch = arch;
         }
 
         // init build mode
         const mode = ("mode" in cacheJson && cacheJson["mode"] != "") ? cacheJson["mode"] : "debug";
         this._option.set("mode", mode);
-        this._status.mode = mode as string;
+        this._status.mode = mode;
 
         // init defaualt toolchain
         const toolchain = "toolchain";
@@ -206,19 +203,12 @@ export class XMake implements vscode.Disposable {
     // on Config File Updated
     async onConfigFileUpdated(affectedPath: vscode.Uri) {
 
-        /* avoid frequent trigger events
-         * https://github.com/xmake-io/xmake-vscode/issues/78
-        */
-        let now = Date.now();
-        if (now - this._configFileUpdateLastTime < 1000) {
-            return ;
-        }
-        this._configFileUpdateLastTime = now;
+        // trace
+        log.verbose("onConfigFileUpdated: " + affectedPath.fsPath);
 
         // update configure cache
         let filePath = affectedPath.fsPath;
         if (filePath.includes("xmake.conf")) {
-            log.verbose("onConfigFileUpdated: " + affectedPath.fsPath);
             this.loadCache();
             this._xmakeExplorer.refresh();
         }
@@ -227,19 +217,15 @@ export class XMake implements vscode.Disposable {
     // on Project File Updated
     async onProjectFileUpdated(affectedPath: vscode.Uri) {
 
-        /* avoid frequent trigger events
-         * https://github.com/xmake-io/xmake-vscode/issues/78
-        */
-        let now = Date.now();
-        if (now - this._projectFileUpdateLastTime < 10000) {
-            return ;
-        }
-        this._projectFileUpdateLastTime = now;
+        // trace
+        log.verbose("onProjectFileUpdated: " + affectedPath.fsPath);
+
+        // wait some times
+        await utils.sleep(2000);
 
         // update project cache
         let filePath = affectedPath.fsPath;
-        if (filePath.includes("xmake.lua") && !filePath.includes(".xmake")) {
-            log.verbose("onProjectFileUpdated: " + affectedPath.fsPath);
+        if (filePath.includes("xmake.lua")) {
             this.loadCache();
             this.updateIntellisense();
             this._xmakeExplorer.refresh();
@@ -248,9 +234,16 @@ export class XMake implements vscode.Disposable {
 
     // on Log File Updated
     async onLogFileUpdated(affectedPath: vscode.Uri) {
+
+        // trace
+        log.verbose("onLogFileUpdated: " + affectedPath.fsPath);
+
+        // wait some times
+        await utils.sleep(2000);
+
+        // update problems
         let filePath = affectedPath.fsPath;
         if (filePath.includes("vscode-build.log")) {
-            log.verbose("onLogFileUpdated: " + affectedPath.fsPath);
             this._problems.diagnose(filePath);
         }
     }
@@ -457,17 +450,15 @@ export class XMake implements vscode.Disposable {
 
         this._xmakeExplorer.refresh();
     }
-
-    // on configure project
-    async onConfigure(target?: string): Promise<boolean> {
-
+    async onConfigureMethod(force): Promise<boolean> {
+        
         // this plugin enabled?
         if (!this._enabled) {
             return false;
         }
 
         // option changed?
-        if (this._optionChanged) {
+        if (force || this._optionChanged) {
 
             // get the target platform
             let plat = this._option.get<string>("plat");
@@ -493,13 +484,9 @@ export class XMake implements vscode.Disposable {
             if (config.WDKDirectory != "") {
                 args.push(`--wdk=${config.WDKDirectory}`);
             }
-            if (config.buildDirectory != "") {
-                // https://github.com/xmake-io/xmake/issues/3449
-                let buildDirectory = path.normalize(config.buildDirectory);
-                if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
-                    args.push("-o");
-                    args.push(buildDirectory);
-                }
+            if (config.buildDirectory != "" && config.buildDirectory != path.join(utils.getProjectRoot(), "build")) {
+                args.push("-o");
+                args.push(config.buildDirectory);
             }
             if (config.additionalConfigArguments) {
                 for (let arg of config.additionalConfigArguments) {
@@ -509,7 +496,10 @@ export class XMake implements vscode.Disposable {
             if (toolchain != "toolchain") {
                 args.push("--toolchain=" + toolchain);
             }
-
+            // clean last config
+            if (force) {
+                args.push("-c");
+            }
             // configure it
             await this._terminal.execv("config", command, args);
 
@@ -519,59 +509,13 @@ export class XMake implements vscode.Disposable {
         }
         return false;
     }
+    // on configure project
+    async onConfigure(target?: string): Promise<boolean> {
+        return this.onConfigureMethod(false);
+    }
 
     async onForceConfigure(target?: string): Promise<boolean> {
-
-        // this plugin enabled?
-        if (!this._enabled) {
-            return false;
-        }
-        // get the target platform
-        let plat = this._option.get<string>("plat");
-
-        // get the target architecture
-        let arch = this._option.get<string>("arch");
-
-        // get the build mode
-        let mode = this._option.get<string>("mode");
-
-        // get the toolchain
-        let toolchain = this._option.get<string>("toolchain");
-
-        // make command
-        let command = config.executable
-        var args = ["f", "-p", `${plat}`, "-a", `${arch}`, "-m", `${mode}`];
-        if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
-            args.push(`--ndk=${config.androidNDKDirectory}`);
-        }
-        if (config.QtDirectory != "") {
-            args.push(`--qt=${config.QtDirectory}`);
-        }
-        if (config.WDKDirectory != "") {
-            args.push(`--wdk=${config.WDKDirectory}`);
-        }
-        if (config.buildDirectory != "") {
-            let buildDirectory = path.normalize(config.buildDirectory);
-            if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
-                args.push("-o");
-                args.push(buildDirectory);
-            }
-        }
-        if (config.additionalConfigArguments) {
-            for (let arg of config.additionalConfigArguments) {
-                args.push(arg);
-            }
-        }
-        if (toolchain != "toolchain") {
-            args.push("--toolchain=" + toolchain);
-        }
-
-        // configure it
-        await this._terminal.execv("config", command, args);
-
-        // mark as not changed
-        this._optionChanged = false;
-        return true;
+        return this.onConfigureMethod(true);
     }
 
     // on clean configure project
@@ -585,12 +529,9 @@ export class XMake implements vscode.Disposable {
         // make command
         let command = config.executable;
         var args = ["f", "-c"];
-        if (config.buildDirectory != "") {
-            let buildDirectory = path.normalize(config.buildDirectory);
-            if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
-                args.push("-o");
-                args.push(buildDirectory);
-            }
+        if (config.buildDirectory != "" && config.buildDirectory != path.join(utils.getProjectRoot(), "build")) {
+            args.push("-o");
+            args.push(config.buildDirectory);
         }
         if (config.additionalConfigArguments) {
             for (let arg of config.additionalConfigArguments) {
