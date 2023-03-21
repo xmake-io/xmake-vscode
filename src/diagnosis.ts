@@ -5,9 +5,6 @@ import * as vscode from 'vscode';
 
 const MAX_CHARACTER_NUM = 255;
 
-// handle line break within single quote
-const lineBreakRegex = /(\r\n)(?=([^'\\]*(\\.|'([^'\\]*\\.)*[^'\\]*'))*[^']*$)/;
-
 // e.g. error: .\\include\\xmake.lua:26: global 'add_cflags' is not callable (a nil value)
 const luaOutputRegex = /^([^:]+):\s([^:]+):(\d+):\s(.+)$/;
 
@@ -20,7 +17,7 @@ export function isEligible(filePath: string | undefined): boolean {
 
 export function parse(output: string): vscode.Diagnostic[] {
     const collection: vscode.Diagnostic[] = [];
-    output.split(lineBreakRegex).forEach(outputLine => {
+    output.split("\r\n").forEach(outputLine => {
         if (outputLine) {
             let level = "";
             let file = "";
