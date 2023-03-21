@@ -1,4 +1,5 @@
 import("core.base.json")
+import("core.project.project")
 import("core.tool.toolchain")
 
 function main()
