@@ -114,6 +114,9 @@ export class XMake implements vscode.Disposable {
         if (this._xmakeExplorer) {
             this._xmakeExplorer.dispose();
         }
+        if (this._xmakeDiagnosticCollection) {
+            this._xmakeDiagnosticCollection.dispose();
+        }
     }
 
     // load cache
