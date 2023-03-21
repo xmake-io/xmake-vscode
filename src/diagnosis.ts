@@ -2,13 +2,15 @@
 
 // imports
 import * as vscode from 'vscode';
+import * as os from 'os';
+import { log } from './log';
 
 const MAX_CHARACTER_NUM = 255;
 
-// e.g. error: .\\include\\xmake.lua:26: global 'add_cflags' is not callable (a nil value)
+// e.g. error: .\\xmake.lua:26: global 'add_cflags' is not callable (a nil value)
 const luaOutputRegex = /^([^:]+):\s([^:]+):(\d+):\s(.+)$/;
 
-// e.g. .\\include\\xmake.lua:24: warning: cl: unknown c compiler flag '-ox'
+// e.g. .\\xmake.lua:24: warning: cl: unknown c compiler flag '-ox'
 const xmakeOutputRegex = /^([^:]+):(\d+):\s([^:]+):\s(.+)$/;
 
 export function isEligible(filePath: string | undefined): boolean {
@@ -17,7 +19,8 @@ export function isEligible(filePath: string | undefined): boolean {
 
 export function parse(output: string): vscode.Diagnostic[] {
     const collection: vscode.Diagnostic[] = [];
-    output.split("\r\n").forEach(outputLine => {
+    output.split(os.EOL).forEach(outputLine => {
+        log.verbose("parse Diagnosis: " + outputLine);
         if (outputLine) {
             let level = "";
             let file = "";
