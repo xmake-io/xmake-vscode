@@ -152,26 +152,15 @@ Example:
 }
 ```
 
-### Configurations related to debugging
-
-#### Debugger extension
-
-You can choose the debugger extension with `xmake.debugConfigType`, set it to:
-
-* `default` for cpptools debugger
-* `codelldb` for lldb debugger
-
-#### Envs behaviour
+### Envs behaviour
 
 You can choose the behaviour between xmake envs and envs that are defined in `launch.json`
 For an xmake envs that are like this `{"PATH: "path/from/xmake"}` and in `launch.json`
-`{"PATH": "path/from/config"}`.
+`{"PATH": "path/from/config}`.
 
-Default is `merge`.
-
-* With `xmake.envBehaviour` set to `merge`, the result is: `{"PATH": "path/from/xmake;path/from/config"}`.
-* With `xmake.envBehaviour` set to `erase`, the result is: `{"PATH": "path/from/xmake"}`
-* And with `xmake.envBehaviour` set to `override`, the result is: `{"PATH": "path/from/config"}`.
+* With `xmake.envBehaviour` set to `merge`, the result is `{"PATH": "path/from/xmake;path/from/config"}`.
+* With `xmake.envBehaviour` set to `erase`, the result is `{"PATH": "path/from/xmake}`
+* And with `xmake.envBehaviour` set to `override`, the result is: `{"PATH": "path/from/config}`.
 
 XMake envs will only be replaced for the same key, if another xmake env key is present, it will be present in the final result.
 
