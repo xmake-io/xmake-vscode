@@ -18,6 +18,7 @@ import { XmakeTaskProvider } from './task';
 import { XMakeExplorer } from './explorer';
 import * as process from './process';
 import * as utils from './utils';
+import * as diagnosis from './diagnosis';
 
 // the option arguments
 export interface OptionArguments extends vscode.QuickPickItem {
@@ -67,6 +68,8 @@ export class XMake implements vscode.Disposable {
 
     // the xmake explorer
     private _xmakeExplorer: XMakeExplorer;
+
+    private _xmakeDiagnosticCollection: vscode.DiagnosticCollection;
 
     // the constructor
     constructor(context: vscode.ExtensionContext) {
@@ -161,6 +164,18 @@ export class XMake implements vscode.Disposable {
         }
     }
 
+    // update Diagnosis
+    async updateDiagnosis(affectedPath: vscode.Uri|undefined) {
+        if (!diagnosis.isEligible(affectedPath?.fsPath)) {
+            return;
+        }
+
+        log.verbose("updating Diagnosis ..");
+        const result = await process.runv(config.executable, ["check", "-F", affectedPath.fsPath], { "COLORTERM": "nocolor" }, config.workingDirectory);
+        const diags = diagnosis.parse(result.stdout);
+        this._xmakeDiagnosticCollection.set(affectedPath, diags);
+    }
+
     // init watcher
     async initWatcher() {
 
@@ -191,6 +206,18 @@ export class XMake implements vscode.Disposable {
                 this._xmakeExplorer.refresh();
             })
         );
+
+        // update Diagnosis when file is opened
+        this._context.subscriptions.push(
+            vscode.window.onDidChangeActiveTextEditor((e: vscode.TextEditor | undefined) => {
+                this.updateDiagnosis(e?.document.uri);
+            })
+        );
+
+        // initial opened file
+        if (vscode.window.activeTextEditor) {
+            this.updateDiagnosis(vscode.window.activeTextEditor.document.uri);
+        }
     }
 
     // refresh folder
@@ -244,6 +271,8 @@ export class XMake implements vscode.Disposable {
             this.updateIntellisense();
             this._xmakeExplorer.refresh();
         }
+
+        this.updateDiagnosis(affectedPath);
     }
 
     // on Log File Updated
@@ -305,6 +334,9 @@ export class XMake implements vscode.Disposable {
 
         // init option
         this._option = new Option();
+
+        // init diagnostic collection
+        this._xmakeDiagnosticCollection = vscode.languages.createDiagnosticCollection("xmake");
 
         // load cached configure
         this.loadCache();
