@@ -457,17 +457,14 @@ export class XMake implements vscode.Disposable {
 
         this._xmakeExplorer.refresh();
     }
-
-    // on configure project
-    async onConfigure(target?: string): Promise<boolean> {
-
+    async configure(force): Promise<boolean> {
         // this plugin enabled?
         if (!this._enabled) {
             return false;
         }
 
         // option changed?
-        if (this._optionChanged) {
+        if (force || this._optionChanged) {
 
             // get the target platform
             let plat = this._option.get<string>("plat");
@@ -509,6 +506,9 @@ export class XMake implements vscode.Disposable {
             if (toolchain != "toolchain") {
                 args.push("--toolchain=" + toolchain);
             }
+            if (force) {
+                args.push("-c");
+            }
 
             // configure it
             await this._terminal.execv("config", command, args);
@@ -519,59 +519,13 @@ export class XMake implements vscode.Disposable {
         }
         return false;
     }
+    // on configure project
+    async onConfigure(target?: string): Promise<boolean> {
+        return this.configure(false);
+    }
 
     async onForceConfigure(target?: string): Promise<boolean> {
-
-        // this plugin enabled?
-        if (!this._enabled) {
-            return false;
-        }
-        // get the target platform
-        let plat = this._option.get<string>("plat");
-
-        // get the target architecture
-        let arch = this._option.get<string>("arch");
-
-        // get the build mode
-        let mode = this._option.get<string>("mode");
-
-        // get the toolchain
-        let toolchain = this._option.get<string>("toolchain");
-
-        // make command
-        let command = config.executable
-        var args = ["f", "-p", `${plat}`, "-a", `${arch}`, "-m", `${mode}`];
-        if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
-            args.push(`--ndk=${config.androidNDKDirectory}`);
-        }
-        if (config.QtDirectory != "") {
-            args.push(`--qt=${config.QtDirectory}`);
-        }
-        if (config.WDKDirectory != "") {
-            args.push(`--wdk=${config.WDKDirectory}`);
-        }
-        if (config.buildDirectory != "") {
-            let buildDirectory = path.normalize(config.buildDirectory);
-            if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
-                args.push("-o");
-                args.push(buildDirectory);
-            }
-        }
-        if (config.additionalConfigArguments) {
-            for (let arg of config.additionalConfigArguments) {
-                args.push(arg);
-            }
-        }
-        if (toolchain != "toolchain") {
-            args.push("--toolchain=" + toolchain);
-        }
-
-        // configure it
-        await this._terminal.execv("config", command, args);
-
-        // mark as not changed
-        this._optionChanged = false;
-        return true;
+        return this.configure(true);
     }
 
     // on clean configure project
