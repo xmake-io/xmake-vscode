@@ -17,12 +17,16 @@ function isInternalFile(filePath: string): boolean {
     return filePath.startsWith("@programdir");
 }
 
+export interface IDiagnosisResult {
+    [file: string]: vscode.Diagnostic[];
+}
+
 export function isEligible(filePath: string | undefined): boolean {
     return filePath && filePath.includes("xmake.lua") && !filePath.includes(".xmake");
 }
 
-export function parse(output: string): vscode.Diagnostic[] {
-    const collection: vscode.Diagnostic[] = [];
+export function parse(output: string): IDiagnosisResult {
+    const result: IDiagnosisResult = {};
     output.split(os.EOL).forEach(outputLine => {
         log.verbose("parse Diagnosis: " + outputLine);
         if (outputLine) {
@@ -64,10 +68,14 @@ export function parse(output: string): vscode.Diagnostic[] {
                     severity
                 );
                 diag.source = 'xmake';
-                collection.push(diag);
+                if (!(file in result)) {
+                    result[file] = [];
+                }
+
+                result[file].push(diag);
             }
         }
     });
 
-    return collection;
+    return result;
 }

@@ -176,7 +176,21 @@ export class XMake implements vscode.Disposable {
         log.verbose("updating Diagnosis ..");
         const result = await process.runv(config.executable, ["check", "-F", affectedPath.fsPath], { "COLORTERM": "nocolor" }, config.workingDirectory);
         const diags = diagnosis.parse(result.stdout ?? result.stderr);
-        this._xmakeDiagnosticCollection.set(affectedPath, diags);
+        for (const file in diags) {
+            const uri = vscode.Uri.file(path.join(config.workingDirectory, file));
+            this._xmakeDiagnosticCollection.set(uri, diags[file]);
+        }
+    }
+
+    async deleteDiagnosis(affectedPath: vscode.Uri|undefined) {
+        if (!diagnosis.isEligible(affectedPath?.fsPath)) {
+            return;
+        }
+
+        log.verbose("deleting Diagnosis ..");
+        if (this._xmakeDiagnosticCollection.has(affectedPath)) {
+            this._xmakeDiagnosticCollection.delete(affectedPath);
+        }
     }
 
     // init watcher
@@ -197,6 +211,7 @@ export class XMake implements vscode.Disposable {
         this._projectFileSystemWatcher = vscode.workspace.createFileSystemWatcher("**/xmake.lua");
         this._projectFileSystemWatcher.onDidCreate(this.onProjectFileUpdated.bind(this));
         this._projectFileSystemWatcher.onDidChange(this.onProjectFileUpdated.bind(this));
+        this._projectFileSystemWatcher.onDidDelete(this.onProjectFileDeleted.bind(this));
 
         this._context.subscriptions.push(
             vscode.workspace.onDidCreateFiles((e: vscode.FileCreateEvent) => {
@@ -276,6 +291,11 @@ export class XMake implements vscode.Disposable {
         }
 
         this.updateDiagnosis(affectedPath);
+    }
+
+    // on Project File Deleted
+    async onProjectFileDeleted(affectedPath: vscode.Uri) {
+        this.deleteDiagnosis(affectedPath);
     }
 
     // on Log File Updated
