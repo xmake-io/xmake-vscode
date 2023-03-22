@@ -49,8 +49,9 @@ export function parse(output: string): vscode.Diagnostic[] {
                 severity = vscode.DiagnosticSeverity.Warning;
             }
 
-            if (severity == vscode.DiagnosticSeverity.Error ||
-                severity == vscode.DiagnosticSeverity.Warning) {
+            if (isEligible(file) &&
+                (severity == vscode.DiagnosticSeverity.Error ||
+                 severity == vscode.DiagnosticSeverity.Warning)) {
                 let diag = new vscode.Diagnostic(
                     new vscode.Range(
                         new vscode.Position(line - 1, 0), new vscode.Position(line - 1, MAX_CHARACTER_NUM),
