@@ -169,6 +169,7 @@ export class XMake implements vscode.Disposable {
 
     // update Diagnosis
     async updateDiagnosis(affectedPath: vscode.Uri|undefined) {
+        if (!config.enableSyntaxCheck) return;
         if (!diagnosis.isEligible(affectedPath?.fsPath)) {
             return;
         }

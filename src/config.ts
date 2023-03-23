@@ -104,6 +104,10 @@ export class Config {
     get envBehaviour(): string {
         return this.get<string>("envBehaviour");
     }
+
+    get enableSyntaxCheck(): boolean {
+        return this.get<boolean>("enableSyntaxCheck");
+    }
 }
 
 // init the global config
