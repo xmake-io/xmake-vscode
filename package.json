@@ -714,6 +714,11 @@
             "This will concat launch.json envs and xmake envs",
             "Launch configurations will override xmake envs"
           ]
+        },
+        "xmake.enableSyntaxCheck": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable lua syntax check"
         }
       }
     },
