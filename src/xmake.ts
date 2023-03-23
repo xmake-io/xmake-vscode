@@ -175,7 +175,7 @@ export class XMake implements vscode.Disposable {
         }
 
         log.verbose("updating Diagnosis ..");
-        const result = await process.runv(config.executable, ["check", "-F", affectedPath.fsPath], { "COLORTERM": "nocolor" }, config.workingDirectory);
+        const result = await process.runv(config.executable, ["check"], { "COLORTERM": "nocolor" }, config.workingDirectory);
         const diags = diagnosis.parse(result.stdout ?? result.stderr);
         for (const file in diags) {
             const uri = vscode.Uri.file(path.join(config.workingDirectory, file));
