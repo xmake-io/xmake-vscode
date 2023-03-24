@@ -61,7 +61,7 @@ export class XMake implements vscode.Disposable {
 
     // the project file watcher
     private _projectFileSystemWatcher: vscode.FileSystemWatcher;
-    private _projectFileUpdateLastTime = Date.now();
+    private _projectFileUpdateTimer: NodeJS.Timer | undefined;
 
     // the xmake task provider
     private _xmakeTaskProvider: vscode.Disposable | undefined;
@@ -168,7 +168,7 @@ export class XMake implements vscode.Disposable {
     }
 
     // update Diagnosis
-    async updateDiagnosis(affectedPath: vscode.Uri|undefined) {
+    async updateDiagnosis(affectedPath: vscode.Uri | undefined) {
         if (!config.enableSyntaxCheck) return;
         if (!diagnosis.isEligible(affectedPath?.fsPath)) {
             return;
@@ -177,6 +177,11 @@ export class XMake implements vscode.Disposable {
         log.verbose("updating Diagnosis ..");
         const result = await process.runv(config.executable, ["check"], { "COLORTERM": "nocolor" }, config.workingDirectory);
         const diags = diagnosis.parse(result.stdout ?? result.stderr);
+        // clear if no errors
+        if (Object.keys(diags).length === 0) {
+            this._xmakeDiagnosticCollection.clear();
+            return;
+        }
         for (const file in diags) {
             const uri = vscode.Uri.file(path.join(config.workingDirectory, file));
             this._xmakeDiagnosticCollection.set(uri, diags[file]);
@@ -276,22 +281,19 @@ export class XMake implements vscode.Disposable {
         /* avoid frequent trigger events
          * https://github.com/xmake-io/xmake-vscode/issues/78
         */
-        let now = Date.now();
-        if (now - this._projectFileUpdateLastTime < 10000) {
-            return ;
-        }
-        this._projectFileUpdateLastTime = now;
-
-        // update project cache
-        let filePath = affectedPath.fsPath;
-        if (filePath.includes("xmake.lua") && !filePath.includes(".xmake")) {
-            log.verbose("onProjectFileUpdated: " + affectedPath.fsPath);
-            this.loadCache();
-            this.updateIntellisense();
-            this._xmakeExplorer.refresh();
-        }
-
         this.updateDiagnosis(affectedPath);
+
+        clearTimeout(this._projectFileUpdateTimer);
+        this._projectFileUpdateTimer = setTimeout(() => {
+            // update project cache
+            let filePath = affectedPath.fsPath;
+            if (filePath.includes("xmake.lua") && !filePath.includes(".xmake")) {
+                log.verbose("onProjectFileUpdated: " + affectedPath.fsPath);
+                this.loadCache();
+                this.updateIntellisense();
+                this._xmakeExplorer.refresh();
+            }
+        }, 2000);
     }
 
     // on Project File Deleted
