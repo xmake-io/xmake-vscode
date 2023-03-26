@@ -281,10 +281,10 @@ export class XMake implements vscode.Disposable {
         /* avoid frequent trigger events
          * https://github.com/xmake-io/xmake-vscode/issues/78
         */
-        this.updateDiagnosis(affectedPath);
 
         clearTimeout(this._projectFileUpdateTimer);
         this._projectFileUpdateTimer = setTimeout(() => {
+            this.updateDiagnosis(affectedPath);
             // update project cache
             let filePath = affectedPath.fsPath;
             if (filePath.includes("xmake.lua") && !filePath.includes(".xmake")) {
