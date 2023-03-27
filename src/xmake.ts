@@ -280,6 +280,7 @@ export class XMake implements vscode.Disposable {
             this._xmakeExplorer.refresh();
         }
 
+        // update diagnosis info
         this.updateDiagnosis(affectedPath);
     }
 
