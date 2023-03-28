@@ -266,7 +266,7 @@ export class XMake implements vscode.Disposable {
          * https://github.com/xmake-io/xmake-vscode/issues/78
         */
         let now = Date.now();
-        if (now - this._projectFileUpdateLastTime < 3000) {
+        if (now - this._projectFileUpdateLastTime < 2000) {
             return ;
         }
         this._projectFileUpdateLastTime = now;
