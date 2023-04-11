@@ -119,6 +119,22 @@ export class XMake implements vscode.Disposable {
         }
     }
 
+    // get default arch from platform
+    public getDefaultArch(plat: string): string {
+        let arch = "";
+        const host = { win32: 'windows', darwin: 'macosx', linux: 'linux' }[os.platform()];
+        if (plat == host) {
+            if (plat == "windows") {
+                arch = { x64: 'x64', x86: 'x86', arm64: 'arm64' }[os.arch()];
+            } else {
+                arch = { x64: 'x86_64', x86: 'i386', arm64: 'arm64', aarch64: "arm64" }[os.arch()];
+            }
+        } else {
+            arch = { windows: "x64", macosx: "x86_64", linux: "x86_64", mingw: "x86_64", iphoneos: "arm64", watchos: "armv7k", android: "arm64-v8a" }[plat];
+        }
+        return arch;
+    }
+
     // load cache
     async loadCache() {
 
@@ -141,7 +157,7 @@ export class XMake implements vscode.Disposable {
         }
 
         // init architecture
-        const arch = ("arch" in cacheJson && cacheJson["arch"] != "") ? cacheJson["arch"] : (plat == "windows" ? "x86" : { x64: 'x86_64', x86: 'i386' }[os.arch()]);
+        const arch = ("arch" in cacheJson && cacheJson["arch"] != "") ? cacheJson["arch"] : this.getDefaultArch(plat);
         if (arch) {
             this._option.set("arch", arch);
             this._status.arch = arch as string;
@@ -1150,14 +1166,7 @@ export class XMake implements vscode.Disposable {
 
             // update architecture
             let plat = chosen.label;
-            let arch = "";
-            const host = { win32: 'windows', darwin: 'macosx', linux: 'linux' }[os.platform()];
-            if (plat == host) {
-                arch = (plat == "windows" ? "x86" : { x64: 'x86_64', x86: 'i386' }[os.arch()]);
-            }
-            else {
-                arch = { windows: "x86", macosx: "x86_64", linux: "x86_64", mingw: "x86_64", iphoneos: "arm64", watchos: "armv7k", android: "arm64-v8a" }[plat];
-            }
+            let arch = this.getDefaultArch(plat);
             if (arch && arch != "") {
                 this._option.set("arch", arch);
                 this._status.arch = arch;
