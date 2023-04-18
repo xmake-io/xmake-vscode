@@ -37,6 +37,7 @@
     "onCommand:xmake.onForceConfigure",
     "onCommand:xmake.onCleanConfigure",
     "onCommand:xmake.onBuild",
+    "onCommand:xmake.onBuildAll",
     "onCommand:xmake.onRebuild",
     "onCommand:xmake.onClean",
     "onCommand:xmake.onCleanAll",
@@ -133,6 +134,11 @@
       {
         "command": "xmake.onBuild",
         "title": "Build",
+        "category": "XMake"
+      },
+      {
+        "command": "xmake.onBuildAll",
+        "title": "BuildAll",
         "category": "XMake"
       },
       {
@@ -325,6 +331,9 @@
         },
         {
           "command": "xmake.onBuild"
+        },
+        {
+          "command": "xmake.onBuildAll"
         },
         {
           "command": "xmake.onRebuild"

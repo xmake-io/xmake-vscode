@@ -651,6 +651,28 @@ export class XMake implements vscode.Disposable {
         await this.onConfigure(target);
         await this._terminal.execv("build", command, args);
     }
+    async onBuildAll(target?: string) {
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+
+        // add build level to command
+        let args = [];
+        const buildLevel = config.get<string>("buildLevel");
+        let command = config.executable;
+        if (buildLevel == "verbose") {
+            args.push("-v");
+        } else if (buildLevel == "warning") {
+            args.push("-w");
+        } else if (buildLevel == "debug") {
+            args.push("-vD");
+        }
+
+        // configure and build it
+        await this.onConfigure(target);
+        await this._terminal.execv("build", command, args);
+    }
 
     // on rebuild project
     async onRebuild(target?: string) {
