@@ -563,9 +563,7 @@ export class XMake implements vscode.Disposable {
             if (toolchain != "toolchain") {
                 args.push("--toolchain=" + toolchain);
             }
-            if (force) {
-                args.push("-c");
-            }
+            args.push("-c");
 
             // configure it
             await this._terminal.execv("config", command, args);
