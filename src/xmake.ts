@@ -576,11 +576,13 @@ export class XMake implements vscode.Disposable {
         }
         return false;
     }
+
     // on configure project
     async onConfigure(target?: string): Promise<boolean> {
         return this.configure(false);
     }
 
+    // on force configure project
     async onForceConfigure(target?: string): Promise<boolean> {
         return this.configure(true);
     }
