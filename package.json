@@ -578,7 +578,7 @@
             "name": "Debug XMake target",
             "target": "target name",
             "cwd": "${workspaceFolder}",
-            "stopOnEntry": true
+            "stopAtEntry": true
           }
         ],
         "configurationSnippets": [
