@@ -33,7 +33,6 @@
     "workspaceContains:xmake.lua",
     "onCommand:xmake.onCreateProject",
     "onCommand:xmake.onNewFiles",
-    "onCommand:xmake.onConfigure",
     "onCommand:xmake.onForceConfigure",
     "onCommand:xmake.onCleanConfigure",
     "onCommand:xmake.onBuild",
@@ -319,9 +318,6 @@
         },
         {
           "command": "xmake.onNewFiles"
-        },
-        {
-          "command": "xmake.onConfigure"
         },
         {
           "command": "xmake.onForceConfigure"

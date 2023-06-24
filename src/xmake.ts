@@ -671,6 +671,7 @@ export class XMake implements vscode.Disposable {
             args.push("-vD");
         }
         args.push("--all");
+
         // configure and build it
         await this.onConfigure(target);
         await this._terminal.execv("build", command, args);
