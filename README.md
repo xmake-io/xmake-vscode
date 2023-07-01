@@ -104,11 +104,13 @@ xmake-vscode will generate `.vscode/compile_commands.json` file, so you need onl
 for example (`.vscode/c_cpp_properties.json`):
 
 ```json
-  "configurations": [
-    {
-      "compileCommands": ".vscode/compile_commands.json",
-    }
-  ],
+{
+    "configurations": [
+        {
+            "compileCommands": ".vscode/compile_commands.json"
+        }
+    ],
+    "version": 4
 }
 ```
 
