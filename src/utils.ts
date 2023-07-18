@@ -26,13 +26,11 @@ export function replaceAll(str: string, needle: string, what: string) {
 
 // replace variables
 export function replaceVars(str: string): string {
-    var {document, selection} = vscode.window.activeTextEditor
-
+    
     // init replacements
     const replacements = [
         ['${workspaceRoot}', getProjectRoot()],
-        ['${workspaceRootFolderName}', path.basename(getProjectRoot() || '.')],
-        ['${workspaceFolder}', vscode.workspace.getWorkspaceFolder(document.uri).uri.fsPath || '.']
+        ['${workspaceRootFolderName}', path.basename(getProjectRoot() || '.')]
     ] as [string, string][];
 
     // replace all variables
