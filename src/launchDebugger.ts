@@ -56,6 +56,8 @@ async function getTargets(): Promise<Array<string>> {
  * @returns TargetInformations
  */
 async function getInformations(targetName: string): Promise<TargetInformations> {
+    // below line fix #215
+    targetName = targetName.endsWith("\r") ? targetName.slice(0, -1) : targetName;
     let getTargetInformationsScript = path.join(__dirname, `../../assets/target_informations.lua`);
     if (fs.existsSync(getTargetInformationsScript)) {
         let targetInformations = (await process.iorunv(settings.executable, ["l", getTargetInformationsScript, targetName], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
