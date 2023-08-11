@@ -1308,9 +1308,6 @@ export class XMake implements vscode.Disposable {
             if (targets) {
                 targets = targets.split("__end__")[0].trim();
             }
-            if (targets) {
-                targets = JSON.parse(targets);
-            }
         }
 
         // select target
@@ -1318,11 +1315,14 @@ export class XMake implements vscode.Disposable {
         items.push({ label: "default", description: "All Default Targets" });
         items.push({ label: "all", description: "All Targets" });
         if (targets) {
-            targets.forEach(element => {
-                element = element.trim();
-                if (element.length > 0)
-                    items.push({ label: element, description: "The Project Target: " + element });
-            });
+            let targetlist = JSON.parse(targets);
+            if (targetlist) {
+                targetlist.forEach(element => {
+                    element = element.trim();
+                    if (element.length > 0)
+                        items.push({ label: element, description: "The Project Target: " + element });
+                });
+            }
         }
         const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
         if (chosen && chosen.label !== this._option.get<string>("target")) {
