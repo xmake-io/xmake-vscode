@@ -1308,6 +1308,9 @@ export class XMake implements vscode.Disposable {
             if (targets) {
                 targets = targets.split("__end__")[0].trim();
             }
+            if (targets) {
+                targets = JSON.parse(targets);
+            }
         }
 
         // select target
@@ -1315,7 +1318,7 @@ export class XMake implements vscode.Disposable {
         items.push({ label: "default", description: "All Default Targets" });
         items.push({ label: "all", description: "All Targets" });
         if (targets) {
-            targets.split('\n').forEach(element => {
+            targets.forEach(element => {
                 element = element.trim();
                 if (element.length > 0)
                     items.push({ label: element, description: "The Project Target: " + element });
