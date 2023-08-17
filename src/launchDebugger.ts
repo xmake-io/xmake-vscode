@@ -56,8 +56,6 @@ async function getTargets(): Promise<Array<string>> {
  * @returns TargetInformations
  */
 async function getInformations(targetName: string): Promise<TargetInformations> {
-    // below line fix #215
-    targetName = targetName.endsWith("\r") ? targetName.slice(0, -1) : targetName;
     let getTargetInformationsScript = path.join(__dirname, `../../assets/target_informations.lua`);
     if (fs.existsSync(getTargetInformationsScript)) {
         let targetInformations = (await process.iorunv(settings.executable, ["l", getTargetInformationsScript, targetName], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
@@ -145,7 +143,8 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
      * @return An array of {@link XmakeDebugConfiguration debug configurations}.
      */
     async provideDebugConfigurations(folder?: vscode.WorkspaceFolder, token?: vscode.CancellationToken): Promise<XmakeDebugConfiguration[]> {
-        const targets = await getTargets();
+        const targetsArrayString = await getTargets();
+        const targets = JSON.parse(targetsArrayString[0]);
         const configs = [];
 
         // Insert all the target into the array
