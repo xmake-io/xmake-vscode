@@ -1,6 +1,7 @@
 -- imports
 import("core.project.config")
 import("core.project.project")
+import("core.base.json")
 
 -- main entry
 function main ()
@@ -10,13 +11,15 @@ function main ()
 
     -- print targets
     local names = {}
-    for name, _ in pairs((project.targets())) do 
+    for name, _ in pairs((project.targets())) do
         table.insert(names, name)
-    end 
-    table.sort(names)
-    for _, name in ipairs(names) do
-        print(name) 
     end
+    table.sort(names)
+    if json.mark_as_array then
+        json.mark_as_array(names)
+    end
+    local localjson =  json.encode(names)
+    print(localjson)
 
     -- print end tag to ignore other deprecated/warnings infos
     print("__end__")
