@@ -46,8 +46,10 @@ async function getTargets(): Promise<Array<string>> {
             targets = targets.split("__end__")[0].trim();
         }
     }
-
-    return targets.split('\n');
+    if (targets) {
+        return JSON.parse(targets);
+    }
+    return [];
 }
 
 /**
