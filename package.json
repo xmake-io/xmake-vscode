@@ -84,6 +84,11 @@
         "configuration": "./languages/xmake-configuration.json"
       }
     ],
+    "breakpoints": [
+        {
+            "language": "xmake"
+        }
+    ],
     "grammars": [
       {
         "language": "xmake",
