@@ -2,7 +2,6 @@
 import("core.project.config")
 import("core.project.project")
 
--- main entry
 function main (targetname)
 
     -- load config
@@ -27,8 +26,12 @@ function main (targetname)
     end
 
     -- get target path
-    if target then 
-        print(path.join(os.projectdir(), target:targetfile())) 
+    if target then
+        local targetfile = target:targetfile()
+        if not path.is_absolute(targetfile) then
+            targetfile = path.absolute(targetfile, os.projectdir())
+        end
+        print(targetfile)
     end
 
     -- print end tag to ignore other deprecated/warnings infos
