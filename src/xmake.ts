@@ -643,10 +643,10 @@ export class XMake implements vscode.Disposable {
         }
 
         // add build target to command
-        if (targetName && targetName != "default") {
-            args.push(targetName);
-        } else if (targetName == "all") {
+        if (targetName && targetName == "all") {
             args.push("-a");
+        } else if (targetName && targetName != "default") {
+            args.push(targetName);
         }
 
         // configure and build it
