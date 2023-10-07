@@ -678,7 +678,10 @@
           "description": "The compile_commands.json file directory"
         },
         "xmake.additionalConfigArguments": {
-          "type": "string[]",
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
           "default": [],
           "description": "The Additional Config Arguments, .e.g [\"--cc=gcc\", \"--myopt=xxx\"]"
         },
