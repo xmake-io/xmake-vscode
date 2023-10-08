@@ -7,6 +7,33 @@ if not runenvs then
     import("private.action.run.make_runenvs")
 end
 
+-- config target
+function _config_target(target)
+    local oldenvs = os.addenvs(target:pkgenvs())
+    for _, rule in ipairs(target:orderules()) do
+        local on_config = rule:script("config")
+        if on_config then
+            on_config(target)
+        end
+    end
+    local on_config = target:script("config")
+    if on_config then
+        on_config(target)
+    end
+    if oldenvs then
+        os.setenvs(oldenvs)
+    end
+end
+
+-- config targets
+function _config_targets()
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_enabled() then
+            _config_target(target)
+        end
+    end
+end
+
 -- recursively target add env
 function _add_target_pkgenvs(target, envs, targets_added)
     if targets_added[target:name()] then
@@ -33,6 +60,7 @@ function main (targetname)
     if not os.isfile(os.projectfile()) then
         return
     end
+    _config_targets()
 
     -- get target
     local target = nil
