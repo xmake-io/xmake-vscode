@@ -119,10 +119,38 @@ export class XMake implements vscode.Disposable {
         }
     }
 
+    private async runListingScript(script: string, ...args): Promise<string[] | undefined> {
+        if (fs.existsSync(script)) {
+            let result = (await process.iorunv(config.executable, ["l", script, ...args], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
+            if (result) {
+                result = result.split("__end__")[0].trim();
+                return result.split("\n");
+            } else {
+                log.error(`runListingScript: script \`${script}\` return empty`);
+            }
+        } else {
+            log.error(`runListingScript: script \`${script}\` not found`);
+        }
+    }
+
+    private async listArchs(plat: string): Promise<string[]> {
+        let getArchsScript = path.join(__dirname, `../../assets/archs.lua`);
+        return await this.runListingScript(getArchsScript, plat);
+    }
+
+    private async listPlats(): Promise<string[]> {
+        let getPlatsScript = path.join(__dirname, `../../assets/plats.lua`);
+        return await this.runListingScript(getPlatsScript);
+    }
+
     // get default arch from platform
-    public getDefaultArch(plat: string): string {
+    public async getDefaultArch(plat: string): Promise<string> {
         let arch = "";
         const host = { win32: 'windows', darwin: 'macosx', linux: 'linux' }[os.platform()];
+        const default_archs = {
+            windows: "x86_64", macosx: "x86_64", linux: "x86_64", mingw: "x86_64",
+            iphoneos: "arm64", watchos: "armv7k", android: "arm64-v8a", wasm: "wasm32"
+        };
         if (plat == host) {
             if (plat == "windows") {
                 arch = { x64: 'x64', x86: 'x86', arm64: 'arm64' }[os.arch()];
@@ -130,7 +158,16 @@ export class XMake implements vscode.Disposable {
                 arch = { x64: 'x86_64', x86: 'i386', arm64: 'arm64', aarch64: "arm64" }[os.arch()];
             }
         } else {
-            arch = { windows: "x64", macosx: "x86_64", linux: "x86_64", mingw: "x86_64", iphoneos: "arm64", watchos: "armv7k", android: "arm64-v8a" }[plat];
+            if (plat in default_archs) {
+                arch = default_archs[plat];
+            } else {
+                const available_archs = await this.listArchs(plat);
+                if (available_archs.length > 0) {
+                    arch = available_archs[0];
+                } else {
+                    log.error(`getDefaultArch: default arch not found for platform \`${plat}\``);
+                }
+            }
         }
         return arch;
     }
@@ -157,7 +194,7 @@ export class XMake implements vscode.Disposable {
         }
 
         // init architecture
-        const arch = ("arch" in cacheJson && cacheJson["arch"] != "") ? cacheJson["arch"] : this.getDefaultArch(plat);
+        const arch = ("arch" in cacheJson && cacheJson["arch"] != "") ? cacheJson["arch"] : await this.getDefaultArch(plat);
         if (arch) {
             this._option.set("arch", arch);
             this._status.arch = arch as string;
@@ -184,7 +221,7 @@ export class XMake implements vscode.Disposable {
     }
 
     // update Diagnosis
-    async updateDiagnosis(affectedPath: vscode.Uri|undefined) {
+    async updateDiagnosis(affectedPath: vscode.Uri | undefined) {
         if (!config.enableSyntaxCheck) return;
         if (!diagnosis.isEligible(affectedPath?.fsPath)) {
             return;
@@ -262,7 +299,7 @@ export class XMake implements vscode.Disposable {
         */
         let now = Date.now();
         if (now - this._configFileUpdateLastTime < 1000) {
-            return ;
+            return;
         }
         this._configFileUpdateLastTime = now;
 
@@ -283,7 +320,7 @@ export class XMake implements vscode.Disposable {
         */
         let now = Date.now();
         if (now - this._projectFileUpdateLastTime < 2000) {
-            return ;
+            return;
         }
         this._projectFileUpdateLastTime = now;
 
@@ -1039,8 +1076,8 @@ export class XMake implements vscode.Disposable {
 
     // on launch debug target
     async onLaunchDebug(target?: string) {
-         // this plugin enabled?
-         if (!this._enabled) {
+        // this plugin enabled?
+        if (!this._enabled) {
             return;
         }
 
@@ -1173,28 +1210,26 @@ export class XMake implements vscode.Disposable {
 
         // select platform
         let items: vscode.QuickPickItem[] = [];
-        items.push({ label: "linux", description: "The Linux Platform" });
-        items.push({ label: "macosx", description: "The MacOS Platform" });
-        items.push({ label: "windows", description: "The Windows Platform" });
-        items.push({ label: "android", description: "The Android Platform" });
-        items.push({ label: "iphoneos", description: "The iPhoneOS Platform" });
-        items.push({ label: "watchos", description: "The WatchOS Platform" });
-        items.push({ label: "mingw", description: "The MingW Platform" });
-        items.push({ label: "cross", description: "The Cross Platform" });
-        const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
-        if (chosen && chosen.label !== this._option.get<string>("plat")) {
 
-            // update platform
-            this._option.set("plat", chosen.label);
-            this._status.plat = chosen.label;
-            this._optionChanged = true;
+        const plats = await this.listPlats();
+        if (plats) {
+            plats.forEach(element => {
+                items.push({ label: element.trim(), description: "The " + element.trim() + " Platform" });
+            });
+            const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
+            if (chosen && chosen.label !== this._option.get<string>("plat")) {
+                // update platform
+                this._option.set("plat", chosen.label);
+                this._status.plat = chosen.label;
+                this._optionChanged = true;
 
-            // update architecture
-            let plat = chosen.label;
-            let arch = this.getDefaultArch(plat);
-            if (arch && arch != "") {
-                this._option.set("arch", arch);
-                this._status.arch = arch;
+                // update architecture
+                let plat = chosen.label;
+                let arch = await this.getDefaultArch(plat);
+                if (arch && arch != "") {
+                    this._option.set("arch", arch);
+                    this._status.arch = arch;
+                }
             }
         }
     }
@@ -1245,21 +1280,16 @@ export class XMake implements vscode.Disposable {
         let plat = this._option.get<string>("plat");
 
         // select archs
-        let getArchListScript = path.join(__dirname, `../../assets/archs.lua`);
-        if (fs.existsSync(getArchListScript) && fs.existsSync(getArchListScript)) {
-            let result = (await process.iorunv(config.executable, ["l", getArchListScript, plat], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
-            if (result) {
-                let items: vscode.QuickPickItem[] = [];
-                result = result.split("__end__")[0].trim();
-                result.split("\n").forEach(element => {
-                    items.push({ label: element.trim(), description: "The " + element.trim() + " architecture" });
-                });
-                const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
-                if (chosen && chosen.label !== this._option.get<string>("arch")) {
-                    this._option.set("arch", chosen.label);
-                    this._status.arch = chosen.label;
-                    this._optionChanged = true;
-                }
+        let archs = await this.listArchs(plat);
+        if (archs) {
+            archs.forEach(element => {
+                items.push({ label: element.trim(), description: "The " + element.trim() + " architecture" });
+            });
+            const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
+            if (chosen && chosen.label !== this._option.get<string>("arch")) {
+                this._option.set("arch", chosen.label);
+                this._status.arch = chosen.label;
+                this._optionChanged = true;
             }
         }
     }
