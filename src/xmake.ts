@@ -468,10 +468,6 @@ export class XMake implements vscode.Disposable {
 
         // open project directory first!
         if (!utils.getProjectRoot()) {
-            if (!!(await vscode.window.showErrorMessage('no opened folder!',
-                'Open a xmake project directory first!'))) {
-                vscode.commands.executeCommand('vscode.openFolder');
-            }
             return;
         }
 
@@ -480,18 +476,11 @@ export class XMake implements vscode.Disposable {
 
         // check xmake
         if (0 != (await process.runv(config.executable, ["--version"], { "COLORTERM": "nocolor" }, config.workingDirectory)).retval) {
-            if (!!(await vscode.window.showErrorMessage('xmake not found!',
-                'Access https://xmake.io to download and install xmake first!'))) {
-            }
             return;
         }
 
         // valid xmake project?
         if (!fs.existsSync(path.join(config.workingDirectory, "xmake.lua"))) {
-            if (!!(await vscode.window.showErrorMessage('xmake.lua not found!',
-                'Create a new xmake project'))) {
-                await this.createProject();
-            }
             return;
         }
 
@@ -513,9 +502,7 @@ export class XMake implements vscode.Disposable {
 
     // on create project
     async onCreateProject(target?: string) {
-        if (this._enabled) {
-            this.createProject();
-        }
+        this.createProject();
     }
 
     // on new files
