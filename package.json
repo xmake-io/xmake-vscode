@@ -677,6 +677,11 @@
           "default": ".vscode",
           "description": "The compile_commands.json file directory"
         },
+        "xmake.compileCommandsBackend": {
+          "type": "string",
+          "default": "clangd",
+          "description": "Set the LSP backend for compile_commands"
+        },
         "xmake.additionalConfigArguments": {
           "type": "array",
           "items": {
