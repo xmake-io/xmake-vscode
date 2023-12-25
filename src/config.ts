@@ -68,6 +68,11 @@ export class Config {
         return utils.replaceVars(this.get<string>("compileCommandsDirectory"));
     }
 
+    // the compile_commands.json lsp backend
+    get compileCommandsBackend(): string {
+        return utils.replaceVars(this.get<string>("compileCommandsBackend"));
+    }
+
     // the additional config arguments
     get additionalConfigArguments(): string[] {
         let values = this.get("additionalConfigArguments");

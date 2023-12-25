@@ -31,11 +31,12 @@ function _config_targets()
 end
 
 -- main entry
-function main(compileCommandsDirectory)
+function main(compileCommandsDirectory, compileCommandsBackend)
 
     -- generate compile_commands.json
     -- @note we can only load configuration because we watched onFileChanged(xmake.conf)
     os.setenv("XMAKE_IN_PROJECT_GENERATOR", "true")
+    os.setenv("XMAKE_GENERATOR_COMPDB_LSP", compileCommandsBackend)
     config.load()
     _config_targets()
     compile_commands.make(compileCommandsDirectory or ".vscode")
