@@ -99,27 +99,6 @@ Please see [xmake-github](https://github.com/xmake-io/xmake) and [website](http:
 
 ## IntelliSense
 
-xmake-vscode will generate `.vscode/compile_commands.json` file, so you need only add it to `.vscode/c_cpp_properties.json` to enable IntelliSense.
-
-for example (`.vscode/c_cpp_properties.json`):
-
-```json
-{
-    "configurations": [
-        {
-            "compileCommands": ".vscode/compile_commands.json"
-        }
-    ],
-    "version": 4
-}
-```
-
-### How can I generate c_cpp_properties.json?
-
-These configuration settings are stored in your project's c_cpp_properties.json file. To edit this file, in VS Code, select C/C++: Edit Configurations (UI) from the Command Palette (⇧⌘P):
-
-Please see [IntelliSense for cross-compiling](https://code.visualstudio.com/docs/cpp/configure-intellisense-crosscompilation)
-
 ![](https://code.visualstudio.com/assets/docs/cpp/cpp/command-palette.png)
 
 ## Debugging
