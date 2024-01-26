@@ -619,12 +619,11 @@
         },
         "xmake.buildLevel": {
           "type": "string",
-          "default": "warning",
-          "description": "The Build Output Level: normal/verbose/warning/debug",
+          "default": "normal",
+          "description": "The Build Output Level: normal/verbose/debug",
           "enum": [
             "verbose",
             "normal",
-            "warning",
             "debug"
           ]
         },

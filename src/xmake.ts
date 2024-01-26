@@ -660,8 +660,6 @@ export class XMake implements vscode.Disposable {
         }
         if (buildLevel == "verbose") {
             args.push("-v");
-        } else if (buildLevel == "warning") {
-            args.push("-w");
         } else if (buildLevel == "debug") {
             args.push("-vD");
         }
@@ -689,8 +687,6 @@ export class XMake implements vscode.Disposable {
         let command = config.executable;
         if (buildLevel == "verbose") {
             args.push("-v");
-        } else if (buildLevel == "warning") {
-            args.push("-w");
         } else if (buildLevel == "debug") {
             args.push("-vD");
         }
@@ -715,8 +711,6 @@ export class XMake implements vscode.Disposable {
         let command = config.executable;
         if (buildLevel == "verbose") {
             args.push("-v");
-        } else if (buildLevel == "warning") {
-            args.push("-w");
         } else if (buildLevel == "debug") {
             args.push("-vD");
         }
