@@ -247,7 +247,7 @@ export class XMake implements vscode.Disposable {
         this._logFileSystemWatcher.onDidDelete(this.onLogFileDeleted.bind(this));
 
         // init config file system watcher
-        this._configFileSystemWatcher = vscode.workspace.createFileSystemWatcher(".xmake/xmake.conf");
+        this._configFileSystemWatcher = vscode.workspace.createFileSystemWatcher(".xmake/**/xmake.conf");
         this._configFileSystemWatcher.onDidCreate(this.onConfigFileUpdated.bind(this));
         this._configFileSystemWatcher.onDidChange(this.onConfigFileUpdated.bind(this));
 
