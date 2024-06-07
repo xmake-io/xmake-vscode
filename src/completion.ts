@@ -2,9 +2,12 @@
 
 // imports
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import {xmakeCommands} from './commands';
 import {log} from './log';
-
+import * as path from 'path';
+import { config } from './config';
+import * as process from './process';
 
 // get lua keyword list
 function getLuaKeywordList(): Promise<string> {
@@ -15,12 +18,22 @@ function getLuaKeywordList(): Promise<string> {
 
 // get xmake command list
 function getXMakeCommandList(): Promise<string> {
-    return new Promise(function (resolve, reject) {
-
-        // the default xmake command list
+    return new Promise(async function (resolve, reject) {
+        /* wait for xmake 2.9.3
+        let getApisScript = path.join(__dirname, `../../assets/apis.lua`);
+        if (fs.existsSync(getApisScript)) {
+            let result = (await process.iorunv(config.executable, ["l", getApisScript], { "COLORTERM": "nocolor" },
+                config.workingDirectory)).stdout.trim();
+            if (result) {
+                result = result.split('__end__')[0].trim();
+                let resultJson = JSON.parse(result);
+                if (resultJson && resultJson.length > 0) {
+                    resolve(resultJson.join('\n'));
+                    return;
+                }
+            }
+        }*/
         const defaultCmds = xmakeCommands.join('\n');
-
-        // TODO: get commands from `xmake man --commands-list`
         resolve(defaultCmds);
     });
 }
