@@ -19,7 +19,6 @@ function getLuaKeywordList(): Promise<string> {
 // get xmake command list
 function getXMakeCommandList(): Promise<string> {
     return new Promise(async function (resolve, reject) {
-        /* wait for xmake 2.9.3
         let getApisScript = path.join(__dirname, `../../assets/apis.lua`);
         if (fs.existsSync(getApisScript)) {
             let result = (await process.iorunv(config.executable, ["l", getApisScript], { "COLORTERM": "nocolor" },
@@ -32,7 +31,7 @@ function getXMakeCommandList(): Promise<string> {
                     return;
                 }
             }
-        }*/
+        }
         const defaultCmds = xmakeCommands.join('\n');
         resolve(defaultCmds);
     });
