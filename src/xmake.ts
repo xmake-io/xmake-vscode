@@ -998,6 +998,12 @@ export class XMake implements vscode.Disposable {
             extension.activate();
         }
 
+        // build and run debugger?
+        const runMode = config.get<string>("runMode");
+        if (runMode == "buildRun") {
+            await this.onBuild(target);
+        }
+
         // option changed?
         if (this._optionChanged) {
             await vscode.window.showErrorMessage('Configuration have been changed, please rebuild program first!');
@@ -1097,6 +1103,12 @@ export class XMake implements vscode.Disposable {
         // active cpptools/codelldb externsions
         if (!extension.isActive) {
             extension.activate();
+        }
+
+        // build and run debugger?
+        const runMode = config.get<string>("runMode");
+        if (runMode == "buildRun") {
+            await this.onBuild(target);
         }
 
         // option changed?
