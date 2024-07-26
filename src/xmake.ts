@@ -256,6 +256,19 @@ export class XMake implements vscode.Disposable {
         this._projectFileSystemWatcher.onDidCreate(this.onProjectFileUpdated.bind(this));
         this._projectFileSystemWatcher.onDidChange(this.onProjectFileUpdated.bind(this));
 
+        const compileCommandsFile = path.join(config.compileCommandsDirectory, "compile_commands.json");
+        const compileCommandsWatcher = vscode.workspace.createFileSystemWatcher(compileCommandsFile);
+        compileCommandsWatcher.onDidCreate(() => {
+            const config = vscode.workspace.getConfiguration('C_Cpp');
+            config.update("default.compileCommands", compileCommandsFile, vscode.ConfigurationTarget.Workspace);
+        });
+        this._context.subscriptions.push(compileCommandsWatcher);
+
+        if (fs.existsSync(compileCommandsFile)) {
+            const config = vscode.workspace.getConfiguration('C_Cpp');
+            config.update("default.compileCommands", compileCommandsFile, vscode.ConfigurationTarget.Workspace);
+        }
+
         this._context.subscriptions.push(
             vscode.workspace.onDidCreateFiles((e: vscode.FileCreateEvent) => {
                 this._xmakeExplorer.refresh();
