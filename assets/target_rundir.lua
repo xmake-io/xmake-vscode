@@ -25,6 +25,9 @@ function main (targetname)
             end
         end
     end
+    
+    -- denote the start of vscode information to ignore anything logging to stdout before this point
+    print("__begin__")
 
     -- get run directory
     if target then

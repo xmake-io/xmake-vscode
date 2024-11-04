@@ -24,8 +24,7 @@ function getXMakeCommandList(): Promise<string> {
             let result = (await process.iorunv(config.executable, ["l", getApisScript], { "COLORTERM": "nocolor" },
                 config.workingDirectory)).stdout.trim();
             if (result) {
-                result = result.split('__end__')[0].trim();
-                let resultJson = JSON.parse(result);
+                let resultJson = process.getAnnotatedJSON(result)[0];
                 if (resultJson && resultJson.length > 0) {
                     resolve(resultJson.join('\n'));
                     return;

@@ -92,6 +92,9 @@ function main(targetname)
     infos["envs"] = _get_envs(target)
     infos["path"] = _get_path(target)
     infos["name"] = _get_name(target)
+    
+    -- denote the start of vscode information to ignore anything logging to stdout before this point
+    print("__begin__")
 
     print(json.encode(infos))
 

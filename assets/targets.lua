@@ -19,6 +19,9 @@ function main ()
         json.mark_as_array(names)
     end
     local localjson =  json.encode(names)
+
+    -- denote the start of vscode information to ignore anything logging to stdout before this point
+    print("__begin__")
     print(localjson)
 
     -- print end tag to ignore other deprecated/warnings infos
