@@ -37,5 +37,15 @@ export function replaceVars(str: string): string {
     return replacements.reduce((accdir, [needle, what]) => replaceAll(accdir, needle, what), str);
 }
 
+// simplistic function for just checking if a string can be parsed as json
+export function isJson(text?: string): boolean {
+    try {
+        JSON.parse(text);
+    } catch(e) {
+        return false;
+    }
+    return true;
+}
+
 // sleep some times
 export const sleep = ms => new Promise(res => setTimeout(res, ms));
