@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 import * as proc from 'child_process';
 import * as fs from 'fs';
 import * as convertor  from './bytes2string';
+import * as utils from './utils';
 import {log} from './log';
 
 // the execution result interface
@@ -155,4 +156,21 @@ export function execv(program: string, args: string[], env: {[key: string]: stri
             resolve({retval, stdout: acc.stdout, stderr: acc.stderr});
         })
     });
+}
+
+// Parse annotated output groups from a process where meaningful data is wrapped in
+// __begin__ and __end__.
+export function getAnnotatedOutput(result: string): Array<string>
+{
+    const regex = /__begin__(?<DATA>.*)__end__/gms;
+    let matches = [...result.matchAll(regex)];
+    return matches.map((m) => m.groups.DATA.trim());
+}
+
+// Get the blocks of json from process output wrapped in __begin__ and __end__
+export function getAnnotatedJSON(result: string): Array<any>
+{
+    return getAnnotatedOutput(result)
+        .filter(utils.isJson)
+        .map(o => JSON.parse(o));
 }
