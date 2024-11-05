@@ -104,6 +104,9 @@ function main (targetname)
     if json.mark_as_array then
         json.mark_as_array(envirnoments)
     end
+
+    -- denote the start of vscode information to ignore anything logging to stdout before this point
+    print("__begin__")
     if not empty then
         print(json.encode(envirnoments))
     else

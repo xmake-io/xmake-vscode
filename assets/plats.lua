@@ -5,6 +5,9 @@ import("core.platform.platform")
 function main ()
 
     local plats = platform.plats()
+    
+    -- denote the start of vscode information to ignore anything logging to stdout before this point
+    print("__begin__")
     if plats then
         for _, plat in ipairs(plats) do
             print(plat)

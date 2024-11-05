@@ -42,12 +42,9 @@ async function getDebuggableTargets(): Promise<Array<string>> {
     let getTargetsPathScript = path.join(__dirname, `../../assets/debuggable_targets.lua`);
     if (fs.existsSync(getTargetsPathScript)) {
         targets = (await process.iorunv(settings.executable, ["l", getTargetsPathScript], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
-        if (targets) {
-            targets = targets.split("__end__")[0].trim();
-        }
     }
     if (targets) {
-        return JSON.parse(targets);
+        return process.getAnnotatedJSON(targets)[0];
     }
     return [];
 }
@@ -62,10 +59,8 @@ async function getInformations(targetName: string): Promise<TargetInformations> 
     if (fs.existsSync(getTargetInformationsScript)) {
         let targetInformations = (await process.iorunv(settings.executable, ["l", getTargetInformationsScript, targetName], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
         if (targetInformations) {
-            targetInformations = targetInformations.split("__end__")[0].trim();
-            targetInformations = targetInformations.split('\n')[0].trim();
+            return process.getAnnotatedJSON(targetInformations)[0];
         }
-        return JSON.parse(targetInformations);
     }
 
     return null;
