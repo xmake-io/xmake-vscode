@@ -448,7 +448,7 @@ export class XMake implements vscode.Disposable {
                                 this._terminal = new Terminal();
                             }
 
-                            let args = ["create", "-t", chosen2.label, "-P", config.workingDirectory];
+                            let args = ["create", "-l", chosen.label, "-t", chosen2.label, "-P", config.workingDirectory];
                             await this._terminal.execv("create", config.executable, args, false);
 
                             // start plugin
