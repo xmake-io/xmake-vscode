@@ -172,6 +172,12 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
 
         const targetInformations = await getInformations(config.target);
 
+        // if target is a program full path,pass it.
+        if (fs.existsSync(config.target))
+        {
+            targetInformations.path = config.target;
+        }
+
         // Set the program path
         if (!(targetInformations.path && fs.existsSync(targetInformations.path))) {
             await vscode.window.showErrorMessage('The target program not found!');
