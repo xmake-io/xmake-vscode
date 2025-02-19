@@ -768,7 +768,8 @@
     "test": "npm run compile"
   },
   "dependencies": {
-    "encoding": "^0.1.13"
+    "encoding": "^0.1.13",
+    "vscode-variables": "~1.0.1"
   },
   "devDependencies": {
     "@types/node": "^16.10.4",

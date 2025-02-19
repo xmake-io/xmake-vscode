@@ -2,7 +2,7 @@
 
 // imports
 import * as vscode from 'vscode';
-import * as path from 'path';
+import vscodeVaraibles from 'vscode-variables';
 
 // get project root directory
 var projectRoot = null;
@@ -26,15 +26,8 @@ export function replaceAll(str: string, needle: string, what: string) {
 
 // replace variables
 export function replaceVars(str: string): string {
-    
     // init replacements
-    const replacements = [
-        ['${workspaceRoot}', getProjectRoot()],
-        ['${workspaceRootFolderName}', path.basename(getProjectRoot() || '.')]
-    ] as [string, string][];
-
-    // replace all variables
-    return replacements.reduce((accdir, [needle, what]) => replaceAll(accdir, needle, what), str);
+    return vscodeVaraibles(str);
 }
 
 // simplistic function for just checking if a string can be parsed as json
