@@ -2,8 +2,8 @@
 
 // imports
 import * as vscode from 'vscode';
-import {log} from './log';
-import {config} from './config';
+import { log } from './log';
+import { config } from './config';
 
 // the status class
 export class Status implements vscode.Disposable {
@@ -110,16 +110,16 @@ export class Status implements vscode.Disposable {
     public dispose() {
 
         for (const item of [this._projectButton,
-                            this._platButton,
-                            this._archButton,
-                            this._modeButton,
-                            this._buildButton,
-                            this._targetButton,
-                            this._runButton,
-                            this._debugButton,
-                            this._macroRecordButton,
-                            this._macroPlaybackButton,
-                            this._toolChainButton]) {
+        this._platButton,
+        this._archButton,
+        this._modeButton,
+        this._buildButton,
+        this._targetButton,
+        this._runButton,
+        this._debugButton,
+        this._macroRecordButton,
+        this._macroPlaybackButton,
+        this._toolChainButton]) {
             item.dispose();
         }
     }
@@ -127,16 +127,16 @@ export class Status implements vscode.Disposable {
     // update visibility
     private updateVisibility() {
         for (const item of [this._projectButton,
-                            this._platButton,
-                            this._archButton,
-                            this._modeButton,
-                            this._buildButton,
-                            this._targetButton,
-                            this._runButton,
-                            this._debugButton,
-                            this._macroRecordButton,
-                            this._macroPlaybackButton,
-                            this._toolChainButton]) {
+        this._platButton,
+        this._archButton,
+        this._modeButton,
+        this._buildButton,
+        this._targetButton,
+        this._runButton,
+        this._debugButton,
+        this._macroRecordButton,
+        this._macroPlaybackButton,
+        this._toolChainButton]) {
             if (this.visible && !!item.text) {
                 item.show();
             } else {
@@ -161,9 +161,19 @@ export class Status implements vscode.Disposable {
         this._projectButton.text = `XMake: ${value}`;
     }
 
+    // get the project root
+    public get project(): string {
+        return this._projectButton.text.replace('XMake: ', '');
+    }
+
     // set the target platform
     public set plat(value: string) {
         this._platButton.text = value;
+    }
+
+    // get the target platform
+    public get plat(): string {
+        return this._platButton.text;
     }
 
     // set the toolchain
@@ -171,9 +181,19 @@ export class Status implements vscode.Disposable {
         this._toolChainButton.text = value;
     }
 
+    // get the toolchain
+    public get toolchain(): string {
+        return this._toolChainButton.text;
+    }
+
     // set the target architecture
     public set arch(value: string) {
         this._archButton.text = value;
+    }
+
+    // get the target architecture
+    public get arch(): string {
+        return this._archButton.text;
     }
 
     // set the build mode
@@ -181,9 +201,19 @@ export class Status implements vscode.Disposable {
         this._modeButton.text = value;
     }
 
+    // get the build mode
+    public get mode(): string {
+        return this._modeButton.text;
+    }
+
     // set the default target
     public set target(value: string) {
         this._targetButton.text = value;
+    }
+
+    // get the default target
+    public get target(): string {
+        return this._targetButton.text;
     }
 
     // start to record

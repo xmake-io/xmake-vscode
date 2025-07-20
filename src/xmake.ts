@@ -16,6 +16,7 @@ import { initDebugger } from './launchDebugger';
 import { Completion } from './completion';
 import { XmakeTaskProvider } from './task';
 import { XMakeExplorer } from './explorer';
+import { XMakeConfigureView } from './configureView';
 import * as process from './process';
 import * as utils from './utils';
 import * as diagnosis from './diagnosis';
@@ -68,6 +69,9 @@ export class XMake implements vscode.Disposable {
 
     // the xmake explorer
     private _xmakeExplorer: XMakeExplorer;
+    
+    // the xmake configure view
+    private _xmakeConfigureView: XMakeConfigureView;
 
     private _xmakeDiagnosticCollection: vscode.DiagnosticCollection;
 
@@ -113,6 +117,9 @@ export class XMake implements vscode.Disposable {
         }
         if (this._xmakeExplorer) {
             this._xmakeExplorer.dispose();
+        }
+        if (this._xmakeConfigureView) {
+            this._xmakeConfigureView.dispose();
         }
         if (this._xmakeDiagnosticCollection) {
             this._xmakeDiagnosticCollection.dispose();
@@ -207,6 +214,8 @@ export class XMake implements vscode.Disposable {
         const toolchain = "toolchain";
         this._option.set("toolchain", toolchain);
         this._status.toolchain = toolchain;
+
+        this._xmakeConfigureView.refresh();
     }
 
     // update Intellisense
@@ -398,6 +407,9 @@ export class XMake implements vscode.Disposable {
         // init diagnostic collection
         this._xmakeDiagnosticCollection = vscode.languages.createDiagnosticCollection("xmake");
 
+        // init xmake configure view
+        this._xmakeConfigureView = new XMakeConfigureView(this._status);
+
         // load cached configure
         this.loadCache();
 
@@ -408,6 +420,8 @@ export class XMake implements vscode.Disposable {
         let projectName = path.basename(utils.getProjectRoot());
         this._option.set("project", projectName);
         this._status.project = projectName;
+
+        this._xmakeConfigureView.refresh();
 
         // enable this plugin
         this._enabled = true;
@@ -1219,6 +1233,8 @@ export class XMake implements vscode.Disposable {
                     this._option.set("arch", arch);
                     this._status.arch = arch;
                 }
+
+                this._xmakeConfigureView.refresh();
             }
         }
     }
@@ -1253,6 +1269,8 @@ export class XMake implements vscode.Disposable {
             this._option.set("toolchain", chosen.label);
             this._optionChanged = true;
             this._status.toolchain = chosen.label;
+
+            this._xmakeConfigureView.refresh();
         }
     }
 
@@ -1279,6 +1297,8 @@ export class XMake implements vscode.Disposable {
                 this._option.set("arch", chosen.label);
                 this._status.arch = chosen.label;
                 this._optionChanged = true;
+
+                this._xmakeConfigureView.refresh();
             }
         }
     }
@@ -1306,6 +1326,8 @@ export class XMake implements vscode.Disposable {
                     this._option.set("mode", chosen.label);
                     this._status.mode = chosen.label;
                     this._optionChanged = true;
+
+                    this._xmakeConfigureView.refresh();
                 }
             }
         }
@@ -1344,12 +1366,16 @@ export class XMake implements vscode.Disposable {
         if (chosen && chosen.label !== this._option.get<string>("target")) {
             this._option.set("target", chosen.label);
             this._status.target = chosen.label;
+
+            this._optionChanged = true;
         }
     }
 
     async setTarget(target?: string) {
         this._option.set("target", target);
         this._status.target = target;
+
+        this._xmakeConfigureView.refresh();
     }
 };
 

@@ -275,8 +275,7 @@
       {
         "command": "xmake.setTargetToolchain",
         "title": "toolchain",
-        "category": "XMake",
-        "enablement": "view == xmakeExplorer"
+        "category": "XMake"
       },
       {
         "command": "xmakeExplorer.rebuild",
@@ -750,6 +749,14 @@
     },
     "views": {
       "xmake-explorer": [
+        {
+          "type": "tree",
+          "id": "xmakeConfigureView",
+          "name": "Configure",
+          "icon": "res/logo-mono.svg",
+          "contextualTitle": "XMake Configure",
+          "when": "xmakeEnabled"
+        },
         {
           "type": "tree",
           "id": "xmakeExplorer",
