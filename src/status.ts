@@ -2,47 +2,58 @@
 
 // imports
 import * as vscode from 'vscode';
-import { log } from './log';
-import { config } from './config';
+import {log} from './log';
+import {config} from './config';
 
 // the status class
 export class Status implements vscode.Disposable {
 
     // the project button
-    private readonly _projectButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.6);
+    private readonly _projectButton = vscode.window.createStatusBarItem(
+        "Xmake Project", vscode.StatusBarAlignment.Left, 4.6);
 
     // the platform button
-    private readonly _platButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.5);
+    private readonly _platButton = vscode.window.createStatusBarItem(
+        "XMake Config: Platform", vscode.StatusBarAlignment.Left, 4.5);
 
     // the architecture button
-    private readonly _archButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.4);
+    private readonly _archButton = vscode.window.createStatusBarItem(
+        "Xmake Config: Arch", vscode.StatusBarAlignment.Left, 4.4);
 
     // the mode button
-    private readonly _modeButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.3);
+    private readonly _modeButton = vscode.window.createStatusBarItem(
+        "XMake Config: Mode", vscode.StatusBarAlignment.Left, 4.3);
 
     // the build button
-    private readonly _buildButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.2);
+    private readonly _buildButton = vscode.window.createStatusBarItem(
+        "Xmake Build", vscode.StatusBarAlignment.Left, 4.2);
 
     // the target button
-    private readonly _targetButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.1);
+    private readonly _targetButton = vscode.window.createStatusBarItem(
+        "XMake Config: Target", vscode.StatusBarAlignment.Left, 4.1);
 
     // the run button
-    private readonly _runButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.0);
+    private readonly _runButton = vscode.window.createStatusBarItem(
+        "XMake Run", vscode.StatusBarAlignment.Left, 4.0);
 
     // the debug button
-    private readonly _debugButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.9);
+    private readonly _debugButton = vscode.window.createStatusBarItem(
+        "XMake Debug", vscode.StatusBarAlignment.Left, 3.9);
 
     // the macro record button
-    private readonly _macroRecordButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.8);
+    private readonly _macroRecordButton = vscode.window.createStatusBarItem(
+        "XMake Macro: Record", vscode.StatusBarAlignment.Left, 3.8);
 
     // the macro playback button
-    private readonly _macroPlaybackButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 3.7);
+    private readonly _macroPlaybackButton = vscode.window.createStatusBarItem(
+        "XMake Macro: Play", vscode.StatusBarAlignment.Left, 3.7);
 
     // is visible?
     private _visible: boolean = true;
 
     // the toolchain
-    private readonly _toolChainButton = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 4.3);
+    private readonly _toolChainButton = vscode.window.createStatusBarItem(
+        "XMake Config: Toolchain", vscode.StatusBarAlignment.Left, 4.3);
 
     // the constructor
     constructor() {
@@ -102,6 +113,22 @@ export class Status implements vscode.Disposable {
         this._toolChainButton.text = `toolchain`;
         this._toolChainButton.tooltip = "change the toolchain";
 
+        for (let item of [
+            this._projectButton,
+            this._platButton,
+            this._archButton,
+            this._modeButton,
+            this._buildButton,
+            this._targetButton,
+            this._runButton,
+            this._debugButton,
+            this._macroRecordButton,
+            this._macroPlaybackButton,
+            this._toolChainButton
+        ]) {
+            item.name = item.id;
+        }
+
         // update visibility
         this.updateVisibility();
     }
@@ -109,34 +136,38 @@ export class Status implements vscode.Disposable {
     // dispose all objects
     public dispose() {
 
-        for (const item of [this._projectButton,
-        this._platButton,
-        this._archButton,
-        this._modeButton,
-        this._buildButton,
-        this._targetButton,
-        this._runButton,
-        this._debugButton,
-        this._macroRecordButton,
-        this._macroPlaybackButton,
-        this._toolChainButton]) {
+        for (const item of [
+            this._projectButton,
+            this._platButton,
+            this._archButton,
+            this._modeButton,
+            this._buildButton,
+            this._targetButton,
+            this._runButton,
+            this._debugButton,
+            this._macroRecordButton,
+            this._macroPlaybackButton,
+            this._toolChainButton
+        ]) {
             item.dispose();
         }
     }
 
     // update visibility
     private updateVisibility() {
-        for (const item of [this._projectButton,
-        this._platButton,
-        this._archButton,
-        this._modeButton,
-        this._buildButton,
-        this._targetButton,
-        this._runButton,
-        this._debugButton,
-        this._macroRecordButton,
-        this._macroPlaybackButton,
-        this._toolChainButton]) {
+        for (const item of [
+            this._projectButton,
+            this._platButton,
+            this._archButton,
+            this._modeButton,
+            this._buildButton,
+            this._targetButton,
+            this._runButton,
+            this._debugButton,
+            this._macroRecordButton,
+            this._macroPlaybackButton,
+            this._toolChainButton
+        ]) {
             if (this.visible && !!item.text) {
                 item.show();
             } else {
