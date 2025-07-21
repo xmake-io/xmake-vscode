@@ -1269,7 +1269,6 @@ export class XMake implements vscode.Disposable {
             this._option.set("toolchain", chosen.label);
             this._optionChanged = true;
             this._status.toolchain = chosen.label;
-
             this._xmakeConfigureView.refresh();
         }
     }
@@ -1297,7 +1296,6 @@ export class XMake implements vscode.Disposable {
                 this._option.set("arch", chosen.label);
                 this._status.arch = chosen.label;
                 this._optionChanged = true;
-
                 this._xmakeConfigureView.refresh();
             }
         }
@@ -1326,7 +1324,6 @@ export class XMake implements vscode.Disposable {
                     this._option.set("mode", chosen.label);
                     this._status.mode = chosen.label;
                     this._optionChanged = true;
-
                     this._xmakeConfigureView.refresh();
                 }
             }
@@ -1366,16 +1363,14 @@ export class XMake implements vscode.Disposable {
         if (chosen && chosen.label !== this._option.get<string>("target")) {
             this._option.set("target", chosen.label);
             this._status.target = chosen.label;
-
             this._optionChanged = true;
+            this._xmakeConfigureView.refresh();
         }
     }
 
     async setTarget(target?: string) {
         this._option.set("target", target);
         this._status.target = target;
-
         this._xmakeConfigureView.refresh();
     }
 };
-
