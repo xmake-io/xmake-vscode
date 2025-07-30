@@ -81,32 +81,52 @@ class XMakeExplorerItem extends vscode.TreeItem {
         switch (info.type) {
             case XMakeExplorerItemType.GROUP:
                 this.iconPath = {
-                    dark: path.join(...resDirPath, "dark", "symbol-misc.svg"),
-                    light: path.join(...resDirPath, "light", "symbol-misc.svg")
-                }
+                    dark: vscode.Uri.file(
+                        path.join(...resDirPath, "dark", "symbol-misc.svg")
+                    ),
+                    light: vscode.Uri.file(
+                        path.join(...resDirPath, "light", "symbol-misc.svg")
+                    ),
+                };
                 break;
             case XMakeExplorerItemType.TARGET:
                 if (info.kind === "binary")
                     this.iconPath = {
-                        dark: path.join(...resDirPath, "dark", "window.svg"),
-                        light: path.join(...resDirPath, "light", "window.svg")
-                    }
+                        dark: vscode.Uri.file(
+                            path.join(...resDirPath, "dark", "window.svg")
+                        ),
+                        light: vscode.Uri.file(
+                            path.join(...resDirPath, "light", "window.svg")
+                        ),
+                    };
                 else if (info.kind === "shared")
                     this.iconPath = {
-                        dark: path.join(...resDirPath, "dark", "gear.svg"),
-                        light: path.join(...resDirPath, "light", "gear.svg")
-                    }
+                        dark: vscode.Uri.file(
+                            path.join(...resDirPath, "dark", "gear.svg")
+                        ),
+                        light: vscode.Uri.file(
+                            path.join(...resDirPath, "light", "gear.svg")
+                        ),
+                    };
                 else if (info.kind == "static")
                     this.iconPath = {
-                        dark: path.join(...resDirPath, "dark", "library.svg"),
-                        light: path.join(...resDirPath, "light", "library.svg")
-                    }
+                        dark: vscode.Uri.file(
+                            path.join(...resDirPath, "dark", "library.svg")
+                        ),
+                        light: vscode.Uri.file(
+                            path.join(...resDirPath, "light", "library.svg")
+                        ),
+                    };
                 else {
                     // Icon for phony target
                     this.iconPath = {
-                        dark: path.join(...resDirPath, "dark", "archive.svg"),
-                        light: path.join(...resDirPath, "light", "archive.svg")
-                    }
+                        dark: vscode.Uri.file(
+                            path.join(...resDirPath, "dark", "archive.svg")
+                        ),
+                        light: vscode.Uri.file(
+                            path.join(...resDirPath, "light", "archive.svg")
+                        ),
+                    };
                 }
                 break;
             case XMakeExplorerItemType.DIRECTORY:
