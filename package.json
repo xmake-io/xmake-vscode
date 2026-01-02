@@ -772,7 +772,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "npx tsc -p ./",
     "watch": "npx tsc -watch -p ./",
-    "test": "npm run compile && npx jest",
+    "test": "npm run compile && node test/compile.test.js",
     "package": "npm run compile && npx vsce package",
     "clean": "rm -rf out node_modules"
   },

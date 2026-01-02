@@ -2,9 +2,9 @@ name: Test Plugin Build
 
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ dev ]
   pull_request:
-    branches: [ main, master, develop ]
+    branches: [ dev ]
 
 jobs:
   build-and-test:
