@@ -50,10 +50,10 @@ export class Terminal implements vscode.Disposable {
         return this._logfile;
     }
 
-    /* execute command string
+    /* execute command string and return execution result
      * @see https://code.visualstudio.com/api/extension-guides/task-provider
      */
-    public async exec(name: string, command: string, withlog: boolean = true) {
+    public async exec(name: string, command: string, withlog: boolean = true): Promise<Number> {
 
         var options = {"cwd": config.workingDirectory};
         if (withlog) {
@@ -72,16 +72,27 @@ export class Terminal implements vscode.Disposable {
 
         // only one task? execute it directly
         if (this._tasks.length == 1) {
-            vscode.tasks.executeTask(task).then(function (execution) {
-            }, function (reason) {
+            return new Promise<Number>((resolve) => {
+                vscode.tasks.executeTask(task).then(function (execution) {
+                    // listen for task completion
+                    const disposable = vscode.tasks.onDidEndTaskProcess((e) => {
+                        if (e.execution === execution) {
+                            disposable.dispose();
+                            resolve(e.exitCode ?? 0);
+                        }
+                    });
+                }, function (reason) {
+                    resolve(-1); // execution failed
+                });
             });
         }
+        return 0;
     }
 
-    /* execute command with arguments list
+    /* execute command with arguments list and return execution result
      * @see https://code.visualstudio.com/api/extension-guides/task-provider
      */
-    public async execv(name: string, command: string, args: string[], withlog: boolean = true) {
+    public async execv(name: string, command: string, args: string[], withlog: boolean = true): Promise<Number> {
 
         var options = {"cwd": config.workingDirectory};
         if (withlog) {
@@ -100,9 +111,20 @@ export class Terminal implements vscode.Disposable {
 
         // only one task? execute it directly
         if (this._tasks.length == 1) {
-            vscode.tasks.executeTask(task).then(function (execution) {
-            }, function (reason) {
+            return new Promise<Number>((resolve) => {
+                vscode.tasks.executeTask(task).then(function (execution) {
+                    // listen for task completion
+                    const disposable = vscode.tasks.onDidEndTaskProcess((e) => {
+                        if (e.execution === execution) {
+                            disposable.dispose();
+                            resolve(e.exitCode ?? 0);
+                        }
+                    });
+                }, function (reason) {
+                    resolve(-1); // execution failed
+                });
             });
         }
+        return 0;
     }
 }
