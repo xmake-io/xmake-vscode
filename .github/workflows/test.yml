@@ -79,3 +79,10 @@ jobs:
         name: xmake-vscode-${{ matrix.os }}.vsix
         path: "*.vsix"
         retention-days: 7
+        
+    - name: Upload platform-specific compiled output
+      uses: actions/upload-artifact@v4
+      with:
+        name: compiled-output-${{ matrix.os }}
+        path: out/
+        retention-days: 7
