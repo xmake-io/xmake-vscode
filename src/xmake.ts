@@ -1234,18 +1234,7 @@ export class XMake implements vscode.Disposable {
         if (targetProgram && fs.existsSync(targetProgram)) {
             this._debugger.startDebugging(targetName, targetProgram, targetRunDir, targetRunEnvs, plat);
         } else {
-            const errorMsg = `The target program not found! 
-Target: ${targetName || 'default'}
-Expected path: ${targetProgram || 'unknown'}
-Working directory: ${config.workingDirectory}
-Build directory: ${config.buildDirectory}
-
-Please ensure:
-1. The project has been built (run "xmake build" first)
-2. The target name is correct
-3. The build configuration is valid`;
-            
-            await vscode.window.showErrorMessage(errorMsg);
+            await vscode.window.showErrorMessage("The target program not found! Please build the project first.");
         }
     }
 

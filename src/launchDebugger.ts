@@ -192,18 +192,7 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
 
         // Set the program path
         if (!(targetInformations.path && fs.existsSync(targetInformations.path))) {
-            const errorMsg = `The target program not found! 
-Target: ${config.target || 'default'}
-Expected path: ${targetInformations.path || 'unknown'}
-Working directory: ${config.workingDirectory}
-Build directory: ${config.buildDirectory}
-
-Please ensure:
-1. The project has been built (run "xmake build" first)
-2. The target name is correct
-3. The build configuration is valid`;
-            
-            await vscode.window.showErrorMessage(errorMsg);
+            await vscode.window.showErrorMessage("The target program not found! Please build the project first.");
             return { name: "Error: Target not found", type: "cppdbg", request: "launch" }; // Return a fake config
         }
         config.program = targetInformations.path;
