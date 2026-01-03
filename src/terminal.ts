@@ -53,7 +53,7 @@ export class Terminal implements vscode.Disposable {
     /* execute command string and return execution result
      * @see https://code.visualstudio.com/api/extension-guides/task-provider
      */
-    public async exec(name: string, command: string, withlog: boolean = true): Promise<Number> {
+    public async exec(name: string, command: string, withlog: boolean = true): Promise<number> {
 
         var options = {"cwd": config.workingDirectory};
         if (withlog) {
@@ -72,7 +72,7 @@ export class Terminal implements vscode.Disposable {
 
         // only one task? execute it directly
         if (this._tasks.length == 1) {
-            return new Promise<Number>((resolve) => {
+            return new Promise<number>((resolve) => {
                 vscode.tasks.executeTask(task).then(function (execution) {
                     // listen for task completion
                     const disposable = vscode.tasks.onDidEndTaskProcess((e) => {
@@ -92,7 +92,7 @@ export class Terminal implements vscode.Disposable {
     /* execute command with arguments list and return execution result
      * @see https://code.visualstudio.com/api/extension-guides/task-provider
      */
-    public async execv(name: string, command: string, args: string[], withlog: boolean = true): Promise<Number> {
+    public async execv(name: string, command: string, args: string[], withlog: boolean = true): Promise<number> {
 
         var options = {"cwd": config.workingDirectory};
         if (withlog) {
@@ -111,7 +111,7 @@ export class Terminal implements vscode.Disposable {
 
         // only one task? execute it directly
         if (this._tasks.length == 1) {
-            return new Promise<Number>((resolve) => {
+            return new Promise<number>((resolve) => {
                 vscode.tasks.executeTask(task).then(function (execution) {
                     // listen for task completion
                     const disposable = vscode.tasks.onDidEndTaskProcess((e) => {
