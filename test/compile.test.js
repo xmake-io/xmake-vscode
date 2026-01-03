@@ -73,7 +73,11 @@ function runTests() {
         const terminalPath = path.join(outDir, 'terminal.js');
         const terminalContent = fs.readFileSync(terminalPath, 'utf8');
         
-        if (terminalContent.includes('Promise<Number>') && terminalContent.includes('onDidEndTaskProcess')) {
+        const hasPromise = terminalContent.includes('return new Promise((resolve) =>');
+        const hasEvent = terminalContent.includes('onDidEndTaskProcess');
+        const hasExitCode = terminalContent.includes('e.exitCode') && terminalContent.includes('resolve');
+        
+        if (hasPromise && hasEvent && hasExitCode) {
             console.log('✅ terminal.js updated methods - OK');
         } else {
             console.error('❌ terminal.js missing updated methods');
