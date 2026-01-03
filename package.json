@@ -61,6 +61,15 @@
   ],
   "main": "./out/extension",
   "contributes": {
+    "icons": {
+      "xmake-build": {
+        "description": "XMake Build Icon",
+        "default": {
+          "fontPath": "res/xmake-icons.woff",
+          "fontCharacter": "\\f101"
+        }
+      }
+    },
     "keybindings": [
       {
         "key": "f5",

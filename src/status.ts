@@ -84,7 +84,7 @@ export class Status implements vscode.Disposable {
 
         // init build button, icons: https://octicons.github.com/
         this._buildButton.command = 'xmake.onBuild';
-        this._buildButton.text = `$(tools)`;
+        this._buildButton.text = `$(xmake-build)`;
         this._buildButton.tooltip = "Build the given target";
 
         // init target button

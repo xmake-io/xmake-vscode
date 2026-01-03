@@ -1,0 +1,19 @@
+@font-face {
+    font-family: "xmake-icons";
+    src: url("./xmake-icons.woff?e47221bdd59aa6095a1deedf0a2bd44a") format("woff");
+}
+
+i[class^="icon-"]:before, i[class*=" icon-"]:before {
+    font-family: xmake-icons !important;
+    font-style: normal;
+    font-weight: normal !important;
+    font-variant: normal;
+    text-transform: none;
+    line-height: 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.icon-xmake-build:before {
+    content: "\f101";
+}
