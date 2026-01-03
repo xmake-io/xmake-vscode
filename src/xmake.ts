@@ -552,6 +552,53 @@ export class XMake implements vscode.Disposable {
 
         this._xmakeExplorer.refresh();
     }
+    // get configure arguments
+    private getConfigureArgs(): string[] {
+        const plat = this._option.get<string>("plat");
+        const arch = this._option.get<string>("arch");
+        const mode = this._option.get<string>("mode");
+        const toolchain = this._option.get<string>("toolchain");
+        
+        let args = ["f", "-p", `${plat}`, "-a", `${arch}`, "-m", `${mode}`];
+        if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
+            args.push(`--ndk=${config.androidNDKDirectory}`);
+        }
+        if (config.QtDirectory != "") {
+            args.push(`--qt=${config.QtDirectory}`);
+        }
+        if (config.WDKDirectory != "") {
+            args.push(`--wdk=${config.WDKDirectory}`);
+        }
+        if (config.buildDirectory != "") {
+            const buildDirectory = path.normalize(config.buildDirectory);
+            if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
+                args.push("-o", buildDirectory);
+            }
+        }
+        if (config.additionalConfigArguments) {
+            args.push(...config.additionalConfigArguments);
+        }
+        if (toolchain != "toolchain") {
+            args.push("--toolchain=" + toolchain);
+        }
+        
+        return args;
+    }
+
+    // execute commands in sequence, stop if any command fails
+    private async execCommandsSequentially(name: string, commands: Array<{cmd: string, args: string[]}>): Promise<boolean> {
+        for (let i = 0; i < commands.length; i++) {
+            const {cmd, args} = commands[i];
+            const exitCode = await this._terminal.execv(`${name}_step${i + 1}`, cmd, args);
+            
+            if (exitCode !== 0) {
+                log.error(`${name} failed at step ${i + 1}: ${cmd} ${args.join(' ')} (exit code: ${exitCode})`);
+                return false;
+            }
+        }
+        return true;
+    }
+
     async configure(force): Promise<boolean> {
         // this plugin enabled?
         if (!this._enabled) {
@@ -560,53 +607,18 @@ export class XMake implements vscode.Disposable {
 
         // option changed?
         if (force || this._optionChanged) {
-
-            // get the target platform
-            let plat = this._option.get<string>("plat");
-
-            // get the target architecture
-            let arch = this._option.get<string>("arch");
-
-            // get the build mode
-            let mode = this._option.get<string>("mode");
-
-            // get the toolchain
-            let toolchain = this._option.get<string>("toolchain");
-
-            // make command
-            let command = config.executable
-            var args = ["f", "-p", `${plat}`, "-a", `${arch}`, "-m", `${mode}`];
-            if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
-                args.push(`--ndk=${config.androidNDKDirectory}`);
-            }
-            if (config.QtDirectory != "") {
-                args.push(`--qt=${config.QtDirectory}`);
-            }
-            if (config.WDKDirectory != "") {
-                args.push(`--wdk=${config.WDKDirectory}`);
-            }
-            if (config.buildDirectory != "") {
-                // https://github.com/xmake-io/xmake/issues/3449
-                let buildDirectory = path.normalize(config.buildDirectory);
-                if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
-                    args.push("-o");
-                    args.push(buildDirectory);
-                }
-            }
-            if (config.additionalConfigArguments) {
-                for (let arg of config.additionalConfigArguments) {
-                    args.push(arg);
-                }
-            }
-            if (toolchain != "toolchain") {
-                args.push("--toolchain=" + toolchain);
-            }
+            const args = this.getConfigureArgs();
             if (force) {
                 args.push("-c");
             }
 
-            // configure it
-            await this._terminal.execv("config", command, args);
+            // configure it using terminal.execv to get exit code
+            const exitCode = await this._terminal.execv("config", config.executable, args);
+            
+            if (exitCode !== 0) {
+                log.error(`Configure failed with exit code ${exitCode}`);
+                return false;
+            }
 
             // mark as not changed
             this._optionChanged = false;
@@ -637,7 +649,7 @@ export class XMake implements vscode.Disposable {
         let command = config.executable;
         var args = ["f", "-c"];
         if (config.buildDirectory != "") {
-            let buildDirectory = path.normalize(config.buildDirectory);
+            const buildDirectory = path.normalize(config.buildDirectory);
             if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
                 args.push("-o");
                 args.push(buildDirectory);
@@ -664,30 +676,39 @@ export class XMake implements vscode.Disposable {
             return
         }
 
-        // add build level to command
-        let args = [];
+        // build commands sequence
+        const commands = [];
+        
+        // first configure if needed
+        if (this._optionChanged) {
+            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+        }
+
+        // then build
+        let buildArgs = [];
         const targetName = this._option.get<string>("target");
         const buildLevel = config.get<string>("buildLevel");
-        let command = config.executable;
         if (targetName && targetName != "default") {
-            args.push("build");
+            buildArgs.push("build");
         }
         if (buildLevel == "verbose") {
-            args.push("-v");
+            buildArgs.push("-v");
         } else if (buildLevel == "debug") {
-            args.push("-vD");
+            buildArgs.push("-vD");
         }
-
-        // add build target to command
         if (targetName && targetName == "all") {
-            args.push("-a");
+            buildArgs.push("-a");
         } else if (targetName && targetName != "default") {
-            args.push(targetName);
+            buildArgs.push(targetName);
         }
+        
+        commands.push({cmd: config.executable, args: buildArgs});
 
-        // configure and build it
-        await this.onConfigure(target);
-        await this._terminal.execv("build", command, args);
+        // execute all commands
+        const success = await this.execCommandsSequentially("Build", commands);
+        if (success) {
+            this._optionChanged = false;
+        }
     }
     async onBuildAll(target?: string) {
         // this plugin enabled?
@@ -695,20 +716,31 @@ export class XMake implements vscode.Disposable {
             return
         }
 
-        // add build level to command
-        let args = [];
-        const buildLevel = config.get<string>("buildLevel");
-        let command = config.executable;
-        if (buildLevel == "verbose") {
-            args.push("-v");
-        } else if (buildLevel == "debug") {
-            args.push("-vD");
+        // build commands sequence
+        const commands = [];
+        
+        // first configure if needed
+        if (this._optionChanged) {
+            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
         }
-        args.push("--all");
 
-        // configure and build it
-        await this.onConfigure(target);
-        await this._terminal.execv("build", command, args);
+        // then build all
+        let buildArgs = [];
+        const buildLevel = config.get<string>("buildLevel");
+        if (buildLevel == "verbose") {
+            buildArgs.push("-v");
+        } else if (buildLevel == "debug") {
+            buildArgs.push("-vD");
+        }
+        buildArgs.push("--all");
+        
+        commands.push({cmd: config.executable, args: buildArgs});
+
+        // execute all commands
+        const success = await this.execCommandsSequentially("BuildAll", commands);
+        if (success) {
+            this._optionChanged = false;
+        }
     }
 
     // on rebuild project
@@ -738,8 +770,21 @@ export class XMake implements vscode.Disposable {
         }
 
         // configure and rebuild it
-        await this.onConfigure(target);
-        await this._terminal.execv("rebuild", command, args);
+        const commands = [];
+        
+        // first configure if needed
+        if (this._optionChanged) {
+            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+        }
+
+        // then rebuild
+        commands.push({cmd: config.executable, args: args});
+
+        // execute all commands
+        const success = await this.execCommandsSequentially("Rebuild", commands);
+        if (success) {
+            this._optionChanged = false;
+        }
     }
 
     // on clean target files
@@ -759,8 +804,25 @@ export class XMake implements vscode.Disposable {
             command += ` ${targetName}`;
 
         // configure and clean it
-        await this.onConfigure(target);
-        await this._terminal.exec("clean", command);
+        const commands = [];
+        
+        // first configure if needed
+        if (this._optionChanged) {
+            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+        }
+
+        // then clean
+        let cleanArgs = ["c"];
+        if (targetName && targetName != "default") {
+            cleanArgs.push(targetName);
+        }
+        commands.push({cmd: config.executable, args: cleanArgs});
+
+        // execute all commands
+        const success = await this.execCommandsSequentially("Clean", commands);
+        if (success) {
+            this._optionChanged = false;
+        }
     }
 
     // on clean all target files
@@ -780,11 +842,28 @@ export class XMake implements vscode.Disposable {
             command += ` ${targetName}`;
 
         // configure and clean all
-        await this.onConfigure(target);
-        await this._terminal.exec("clean all", command);
+        const commands = [];
+        
+        // first configure if needed
+        if (this._optionChanged) {
+            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+        }
 
-        // mark as changed, so that next `onConfigure` will be executed
-        this._optionChanged = true;
+        // then clean all
+        let cleanArgs = ["c", "-a"];
+        if (targetName && targetName != "default") {
+            cleanArgs.push(targetName);
+        }
+        commands.push({cmd: config.executable, args: cleanArgs});
+
+        // execute all commands
+        const success = await this.execCommandsSequentially("CleanAll", commands);
+        if (success) {
+            this._optionChanged = false;
+        } else {
+            // mark as changed, so that next `onConfigure` will be executed
+            this._optionChanged = true;
+        }
     }
 
     // repeated case of getting the default target
@@ -886,8 +965,21 @@ export class XMake implements vscode.Disposable {
         }
 
         // configure and run it
-        await this.onConfigure(target);
-        await this._terminal.execv("run", command, args);
+        const commands = [];
+        
+        // first configure if needed
+        if (this._optionChanged) {
+            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+        }
+
+        // then run
+        commands.push({cmd: config.executable, args: args});
+
+        // execute all commands
+        const success = await this.execCommandsSequentially("Run", commands);
+        if (success) {
+            this._optionChanged = false;
+        }
     }
 
     // on package target
@@ -910,8 +1002,27 @@ export class XMake implements vscode.Disposable {
         }
 
         // configure and package it
-        await this.onConfigure(target);
-        await this._terminal.exec("package", command);
+        const commands = [];
+        
+        // first configure if needed
+        if (this._optionChanged) {
+            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+        }
+
+        // then package
+        let packageArgs = ["p"];
+        if (targetName && targetName == "all") {
+            packageArgs.push("-a");
+        } else if (targetName && targetName != "default") {
+            packageArgs.push(targetName);
+        }
+        commands.push({cmd: config.executable, args: packageArgs});
+
+        // execute all commands
+        const success = await this.execCommandsSequentially("Package", commands);
+        if (success) {
+            this._optionChanged = false;
+        }
     }
 
     // on install target
@@ -939,8 +1050,30 @@ export class XMake implements vscode.Disposable {
         }
 
         // configure and install it
-        await this.onConfigure(target);
-        await this._terminal.execv("install", command, args);
+        const commands = [];
+        
+        // first configure if needed
+        if (this._optionChanged) {
+            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+        }
+
+        // then install
+        let installArgs = ["install"];
+        if (targetName && targetName == "all") {
+            installArgs.push("-a");
+        } else if (targetName && targetName != "default") {
+            installArgs.push(targetName);
+        }
+        if (config.installDirectory != "") {
+            installArgs.push("-o", config.installDirectory);
+        }
+        commands.push({cmd: config.executable, args: installArgs});
+
+        // execute all commands
+        const success = await this.execCommandsSequentially("Install", commands);
+        if (success) {
+            this._optionChanged = false;
+        }
     }
 
     // on uninstall target
@@ -965,8 +1098,28 @@ export class XMake implements vscode.Disposable {
         }
 
         // configure and uninstall it
-        await this.onConfigure(target);
-        await this._terminal.execv("uninstall", command, args);
+        const commands = [];
+        
+        // first configure if needed
+        if (this._optionChanged) {
+            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+        }
+
+        // then uninstall
+        let uninstallArgs = ["uninstall"];
+        if (targetName && targetName != "default") {
+            uninstallArgs.push(targetName);
+        }
+        if (config.installDirectory != "") {
+            uninstallArgs.push(`--installdir=${config.installDirectory}`);
+        }
+        commands.push({cmd: config.executable, args: uninstallArgs});
+
+        // execute all commands
+        const success = await this.execCommandsSequentially("Uninstall", commands);
+        if (success) {
+            this._optionChanged = false;
+        }
     }
 
     // on debug target
@@ -1227,8 +1380,8 @@ export class XMake implements vscode.Disposable {
                 this._optionChanged = true;
 
                 // update architecture
-                let plat = chosen.label;
-                let arch = await this.getDefaultArch(plat);
+                const plat = chosen.label;
+                const arch = await this.getDefaultArch(plat);
                 if (arch && arch != "") {
                     this._option.set("arch", arch);
                     this._status.arch = arch;
@@ -1283,7 +1436,7 @@ export class XMake implements vscode.Disposable {
 
         // select architecture
         let items: vscode.QuickPickItem[] = [];
-        let plat = this._option.get<string>("plat");
+        const plat = this._option.get<string>("plat");
 
         // select archs
         let archs = await this.listArchs(plat);

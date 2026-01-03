@@ -50,10 +50,10 @@ export class Terminal implements vscode.Disposable {
         return this._logfile;
     }
 
-    /* execute command string
+    /* execute command string and return execution result
      * @see https://code.visualstudio.com/api/extension-guides/task-provider
      */
-    public async exec(name: string, command: string, withlog: boolean = true) {
+    public async exec(name: string, command: string, withlog: boolean = true): Promise<number> {
 
         var options = {"cwd": config.workingDirectory};
         if (withlog) {
@@ -68,20 +68,14 @@ export class Terminal implements vscode.Disposable {
 
         const execution = new vscode.ShellExecution(command, options);
         const task = new vscode.Task(kind, vscode.TaskScope.Workspace, "xmake: " + name, "xmake", execution, undefined);
-        this._tasks.push(task);
-
-        // only one task? execute it directly
-        if (this._tasks.length == 1) {
-            vscode.tasks.executeTask(task).then(function (execution) {
-            }, function (reason) {
-            });
-        }
+        
+        return this.executeTask(task);
     }
 
-    /* execute command with arguments list
+    /* execute command with arguments list and return execution result
      * @see https://code.visualstudio.com/api/extension-guides/task-provider
      */
-    public async execv(name: string, command: string, args: string[], withlog: boolean = true) {
+    public async execv(name: string, command: string, args: string[], withlog: boolean = true): Promise<number> {
 
         var options = {"cwd": config.workingDirectory};
         if (withlog) {
@@ -96,13 +90,40 @@ export class Terminal implements vscode.Disposable {
 
         const execution = new vscode.ShellExecution(command, args, options);
         const task = new vscode.Task(kind, vscode.TaskScope.Workspace, "xmake: " + name, "xmake", execution, undefined);
-        this._tasks.push(task);
+        
+        return this.executeTask(task);
+    }
 
-        // only one task? execute it directly
-        if (this._tasks.length == 1) {
+    /* execute a task and return its exit code
+     * this method handles task queuing and promise resolution properly
+     */
+    private async executeTask(task: vscode.Task): Promise<number> {
+        this._tasks.push(task);
+        
+        const self = this; // preserve context
+        
+        return new Promise<number>((resolve) => {
             vscode.tasks.executeTask(task).then(function (execution) {
+                // listen for task completion
+                const disposable = vscode.tasks.onDidEndTaskProcess((e) => {
+                    if (e.execution === execution) {
+                        disposable.dispose();
+                        // remove task from queue
+                        const index = self._tasks.indexOf(task);
+                        if (index > -1) {
+                            self._tasks.splice(index, 1);
+                        }
+                        resolve(e.exitCode ?? 0);
+                    }
+                });
             }, function (reason) {
+                // remove task from queue on failure
+                const index = self._tasks.indexOf(task);
+                if (index > -1) {
+                    self._tasks.splice(index, 1);
+                }
+                resolve(-1); // execution failed
             });
-        }
+        });
     }
 }
