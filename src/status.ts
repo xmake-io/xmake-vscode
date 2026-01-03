@@ -10,46 +10,46 @@ export class Status implements vscode.Disposable {
 
     // the xmake button
     private readonly _xmakeButton = vscode.window.createStatusBarItem(
-        "Xmake", vscode.StatusBarAlignment.Left, 310);
+        "Xmake", vscode.StatusBarAlignment.Right, 3100);
 
     // the project button
     private readonly _projectButton = vscode.window.createStatusBarItem(
-        "Xmake Project", vscode.StatusBarAlignment.Left, 300);
+        "Xmake Project", vscode.StatusBarAlignment.Right, 3000);
 
     // the platform button
     private readonly _platButton = vscode.window.createStatusBarItem(
-        "Xmake Config: Platform", vscode.StatusBarAlignment.Left, 290);
+        "Xmake Config: Platform", vscode.StatusBarAlignment.Right, 2900);
 
     // the architecture button
     private readonly _archButton = vscode.window.createStatusBarItem(
-        "Xmake Config: Arch", vscode.StatusBarAlignment.Left, 280);
+        "Xmake Config: Arch", vscode.StatusBarAlignment.Right, 2800);
 
     // the mode button
     private readonly _modeButton = vscode.window.createStatusBarItem(
-        "Xmake Config: Mode", vscode.StatusBarAlignment.Left, 270);
+        "Xmake Config: Mode", vscode.StatusBarAlignment.Right, 2700);
 
     // the build button
     private readonly _buildButton = vscode.window.createStatusBarItem(
-        "Xmake Build", vscode.StatusBarAlignment.Left, 250);
+        "Xmake Build", vscode.StatusBarAlignment.Right, 2500);
 
     // the target button
     private readonly _targetButton = vscode.window.createStatusBarItem(
-        "Xmake Config: Target", vscode.StatusBarAlignment.Left, 240);
+        "Xmake Config: Target", vscode.StatusBarAlignment.Right, 2400);
 
     // the run button
     private readonly _runButton = vscode.window.createStatusBarItem(
-        "Xmake Run", vscode.StatusBarAlignment.Left, 230);
+        "Xmake Run", vscode.StatusBarAlignment.Right, 2300);
 
     // the debug button
     private readonly _debugButton = vscode.window.createStatusBarItem(
-        "Xmake Debug", vscode.StatusBarAlignment.Left, 220);
+        "Xmake Debug", vscode.StatusBarAlignment.Right, 2200);
 
     // is visible?
     private _visible: boolean = true;
 
     // the toolchain
     private readonly _toolChainButton = vscode.window.createStatusBarItem(
-        "Xmake Config: Toolchain", vscode.StatusBarAlignment.Left, 260);
+        "Xmake Config: Toolchain", vscode.StatusBarAlignment.Right, 2600);
 
     // the disposables
     private _disposables: vscode.Disposable[] = [];
