@@ -1181,8 +1181,7 @@ export class XMake implements vscode.Disposable {
 
         // option changed?
         if (this._optionChanged) {
-            await vscode.window.showErrorMessage('Configuration have been changed, please rebuild program first!');
-            return;
+             vscode.window.showWarningMessage('Configuration have been changed, please rebuild program first!');
         }
 
         // get target name
@@ -1296,8 +1295,7 @@ export class XMake implements vscode.Disposable {
 
         // option changed?
         if (this._optionChanged) {
-            await vscode.window.showErrorMessage('Configuration have been changed, please rebuild program first!');
-            return;
+           vscode.window.showWarningMessage('Configuration have been changed, please rebuild program first!');
         }
 
         // get target name
