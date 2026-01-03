@@ -77,36 +77,35 @@ class XMakeExplorerItem extends vscode.TreeItem {
         // Set the icon depending on the type
         // Each known file type is assigned a language specific icon
         // If the file type is recognized then the default file icon is assigned
-        const resDirPath = utils.getResourcePath();
 
         switch (info.type) {
             case XMakeExplorerItemType.GROUP:
                 this.iconPath = {
-                    dark: path.join(...resDirPath, "dark", "symbol-misc.svg"),
-                    light: path.join(...resDirPath, "light", "symbol-misc.svg")
+                    dark: utils.getResourcePath("dark/symbol-misc.svg"),
+                    light: utils.getResourcePath("light/symbol-misc.svg")
                 }
                 break;
             case XMakeExplorerItemType.TARGET:
                 if (info.kind === "binary")
                     this.iconPath = {
-                        dark: path.join(...resDirPath, "dark", "window.svg"),
-                        light: path.join(...resDirPath, "light", "window.svg")
+                        dark: utils.getResourcePath("dark/window.svg"),
+                        light: utils.getResourcePath("light/window.svg")
                     }
                 else if (info.kind === "shared")
                     this.iconPath = {
-                        dark: path.join(...resDirPath, "dark", "gear.svg"),
-                        light: path.join(...resDirPath, "light", "gear.svg")
+                        dark: utils.getResourcePath("dark/gear.svg"),
+                        light: utils.getResourcePath("light/gear.svg")
                     }
                 else if (info.kind == "static")
                     this.iconPath = {
-                        dark: path.join(...resDirPath, "dark", "library.svg"),
-                        light: path.join(...resDirPath, "light", "library.svg")
+                        dark: utils.getResourcePath("dark/library.svg"),
+                        light: utils.getResourcePath("light/library.svg")
                     }
                 else {
                     // Icon for phony target
                     this.iconPath = {
-                        dark: path.join(...resDirPath, "dark", "archive.svg"),
-                        light: path.join(...resDirPath, "light", "archive.svg")
+                        dark: utils.getResourcePath("dark/archive.svg"),
+                        light: utils.getResourcePath("light/archive.svg")
                     }
                 }
                 break;
