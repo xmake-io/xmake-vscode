@@ -62,11 +62,18 @@
   "main": "./out/extension",
   "contributes": {
     "icons": {
+      "xmake-logo": {
+        "description": "XMake Logo Icon",
+        "default": {
+          "fontPath": "res/xmake-icons.woff",
+          "fontCharacter": "\\f101"
+        }
+      },
       "xmake-build": {
         "description": "XMake Build Icon",
         "default": {
           "fontPath": "res/xmake-icons.woff",
-          "fontCharacter": "\\f101"
+          "fontCharacter": "\\f102"
         }
       }
     },

@@ -59,7 +59,7 @@ export class Status implements vscode.Disposable {
 
         // init xmake button
         this._xmakeButton.command = 'xmake.onShowExplorer';
-        this._xmakeButton.text = `Xmake`;
+        this._xmakeButton.text = `$(xmake-logo) Xmake`;
         this._xmakeButton.tooltip = "Show Xmake Explorer";
 
         // init project button

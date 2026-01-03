@@ -1,6 +1,6 @@
 @font-face {
     font-family: "xmake-icons";
-    src: url("./xmake-icons.woff?e47221bdd59aa6095a1deedf0a2bd44a") format("woff");
+    src: url("./xmake-icons.woff?026ad485fd20330843f33f54bbfd5819") format("woff");
 }
 
 i[class^="icon-"]:before, i[class*=" icon-"]:before {
@@ -14,6 +14,9 @@ i[class^="icon-"]:before, i[class*=" icon-"]:before {
     -moz-osx-font-smoothing: grayscale;
 }
 
-.icon-xmake-build:before {
+.icon-xmake-logo:before {
     content: "\f101";
+}
+.icon-xmake-build:before {
+    content: "\f102";
 }
