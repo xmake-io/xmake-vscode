@@ -10,50 +10,42 @@ export class Status implements vscode.Disposable {
 
     // the project button
     private readonly _projectButton = vscode.window.createStatusBarItem(
-        "Xmake Project", vscode.StatusBarAlignment.Left, 4.6);
+        "Xmake Project", vscode.StatusBarAlignment.Left, 30);
 
     // the platform button
     private readonly _platButton = vscode.window.createStatusBarItem(
-        "XMake Config: Platform", vscode.StatusBarAlignment.Left, 4.5);
+        "XMake Config: Platform", vscode.StatusBarAlignment.Left, 29);
 
     // the architecture button
     private readonly _archButton = vscode.window.createStatusBarItem(
-        "Xmake Config: Arch", vscode.StatusBarAlignment.Left, 4.4);
+        "Xmake Config: Arch", vscode.StatusBarAlignment.Left, 28);
 
     // the mode button
     private readonly _modeButton = vscode.window.createStatusBarItem(
-        "XMake Config: Mode", vscode.StatusBarAlignment.Left, 4.3);
+        "XMake Config: Mode", vscode.StatusBarAlignment.Left, 27);
 
     // the build button
     private readonly _buildButton = vscode.window.createStatusBarItem(
-        "Xmake Build", vscode.StatusBarAlignment.Left, 4.2);
+        "Xmake Build", vscode.StatusBarAlignment.Left, 25);
 
     // the target button
     private readonly _targetButton = vscode.window.createStatusBarItem(
-        "XMake Config: Target", vscode.StatusBarAlignment.Left, 4.1);
+        "XMake Config: Target", vscode.StatusBarAlignment.Left, 24);
 
     // the run button
     private readonly _runButton = vscode.window.createStatusBarItem(
-        "XMake Run", vscode.StatusBarAlignment.Left, 4.0);
+        "XMake Run", vscode.StatusBarAlignment.Left, 23);
 
     // the debug button
     private readonly _debugButton = vscode.window.createStatusBarItem(
-        "XMake Debug", vscode.StatusBarAlignment.Left, 3.9);
-
-    // the macro record button
-    private readonly _macroRecordButton = vscode.window.createStatusBarItem(
-        "XMake Macro: Record", vscode.StatusBarAlignment.Left, 3.8);
-
-    // the macro playback button
-    private readonly _macroPlaybackButton = vscode.window.createStatusBarItem(
-        "XMake Macro: Play", vscode.StatusBarAlignment.Left, 3.7);
+        "XMake Debug", vscode.StatusBarAlignment.Left, 22);
 
     // is visible?
     private _visible: boolean = true;
 
     // the toolchain
     private readonly _toolChainButton = vscode.window.createStatusBarItem(
-        "XMake Config: Toolchain", vscode.StatusBarAlignment.Left, 4.3);
+        "XMake Config: Toolchain", vscode.StatusBarAlignment.Left, 26);
 
     // the constructor
     constructor() {
@@ -98,16 +90,6 @@ export class Status implements vscode.Disposable {
         this._debugButton.text = `$(bug)`;
         this._debugButton.tooltip = "Debug the given target";
 
-        // init macro record button
-        this._macroRecordButton.command = 'xmake.onMacroBegin';
-        this._macroRecordButton.text = `$(primitive-square)`;
-        this._macroRecordButton.tooltip = "Record a anonymous macro";
-
-        // init macro playback button
-        this._macroPlaybackButton.command = 'xmake.onMacroRun';
-        this._macroPlaybackButton.text = `$(history)`;
-        this._macroPlaybackButton.tooltip = "Playback the last anonymous macro";
-
         // init toolchain button
         this._toolChainButton.command = 'xmake.setTargetToolchain';
         this._toolChainButton.text = `toolchain`;
@@ -122,8 +104,6 @@ export class Status implements vscode.Disposable {
             this._targetButton,
             this._runButton,
             this._debugButton,
-            this._macroRecordButton,
-            this._macroPlaybackButton,
             this._toolChainButton
         ]) {
             item.name = item.id;
@@ -145,8 +125,6 @@ export class Status implements vscode.Disposable {
             this._targetButton,
             this._runButton,
             this._debugButton,
-            this._macroRecordButton,
-            this._macroPlaybackButton,
             this._toolChainButton
         ]) {
             item.dispose();
@@ -164,8 +142,6 @@ export class Status implements vscode.Disposable {
             this._targetButton,
             this._runButton,
             this._debugButton,
-            this._macroRecordButton,
-            this._macroPlaybackButton,
             this._toolChainButton
         ]) {
             if (this.visible && !!item.text) {
@@ -249,13 +225,9 @@ export class Status implements vscode.Disposable {
 
     // start to record
     public startRecord() {
-        this._macroRecordButton.command = 'xmake.onMacroEnd';
-        this._macroRecordButton.text = `$(primitive-dot)`;
     }
 
     // stop to record
     public stopRecord() {
-        this._macroRecordButton.command = 'xmake.onMacroBegin';
-        this._macroRecordButton.text = `$(primitive-square)`;
     }
 }

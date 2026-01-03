@@ -1309,7 +1309,6 @@ export class XMake implements vscode.Disposable {
     async onMacroBegin(target?: string) {
         if (this._enabled) {
             await this._terminal.exec("macro begin", `${config.executable} m -b`);
-            this._status.startRecord();
         }
     }
 
@@ -1317,7 +1316,6 @@ export class XMake implements vscode.Disposable {
     async onMacroEnd(target?: string) {
         if (this._enabled) {
             await this._terminal.exec("macro end", `${config.executable} m -e`);
-            this._status.stopRecord();
         }
     }
 
