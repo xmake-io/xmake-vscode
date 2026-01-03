@@ -34,7 +34,7 @@ jobs:
       run: npm test
 
     - name: Package extension
-      run: npx vsce package
+      run: npm run package
 
     - name: Upload package as artifact
       if: matrix.node-version == '20.x'
@@ -71,7 +71,7 @@ jobs:
       run: npm run compile
 
     - name: Package extension on ${{ matrix.os }}
-      run: ./package.sh
+      run: npm run package
 
     - name: Upload platform-specific package
       uses: actions/upload-artifact@v4
