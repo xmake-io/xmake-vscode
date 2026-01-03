@@ -28,6 +28,10 @@ export class Status implements vscode.Disposable {
     private readonly _modeButton = vscode.window.createStatusBarItem(
         "Xmake Config: Mode", vscode.StatusBarAlignment.Right, 2700);
 
+    // the toolchain
+    private readonly _toolChainButton = vscode.window.createStatusBarItem(
+        "Xmake Config: Toolchain", vscode.StatusBarAlignment.Right, 2600);
+
     // the build button
     private readonly _buildButton = vscode.window.createStatusBarItem(
         "Xmake Build", vscode.StatusBarAlignment.Right, 2500);
@@ -46,10 +50,6 @@ export class Status implements vscode.Disposable {
 
     // is visible?
     private _visible: boolean = true;
-
-    // the toolchain
-    private readonly _toolChainButton = vscode.window.createStatusBarItem(
-        "Xmake Config: Toolchain", vscode.StatusBarAlignment.Right, 2600);
 
     // the disposables
     private _disposables: vscode.Disposable[] = [];
