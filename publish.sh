@@ -24,7 +24,7 @@ npm version $VERSION --no-git-tag-version
 
 # Publish the extension
 echo "📤 Publishing extension as version $VERSION..."
-vsce publish $VERSION
+vsce publish $VERSION && exit -1
 
 # Create and push git tag
 echo "🏷️  Creating git tag v$VERSION..."
