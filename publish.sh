@@ -18,13 +18,13 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
 fi
 
-# Update package.json version
+# Update package.json version directly
 echo "📝 Updating package.json version to $VERSION..."
-npm version $VERSION --no-git-tag-version
+sed -i '' "s/\"version\": \".*\"/\"version\": \"$VERSION\"/" package.json
 
 # Publish the extension
 echo "📤 Publishing extension as version $VERSION..."
-vsce publish $VERSION && exit -1
+vsce publish $VERSION
 
 # Create and push git tag
 echo "🏷️  Creating git tag v$VERSION..."
