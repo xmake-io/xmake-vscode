@@ -707,9 +707,11 @@
           "default": "default",
           "enum": [
             "default",
-            "codelldb"
+            "codelldb",
+            "lldb-dap",
+            "gdb-dap"
           ],
-          "description": "The Debugging Configuration Type, .e.g default|codelldb"
+          "description": "The Debugging Configuration Type, .e.g default|codelldb|lldb-dap|gdb-dap"
         },
         "xmake.customDebugConfig": {
           "type": "object",

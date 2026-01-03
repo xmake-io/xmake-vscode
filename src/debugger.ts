@@ -8,6 +8,7 @@ import * as os from 'os';
 import * as encoding from 'encoding';
 import * as process from './process';
 import { log } from './log';
+import * as utils from './utils';
 import { config } from './config';
 
 // the debugger class
@@ -27,7 +28,7 @@ export class Debugger implements vscode.Disposable {
     // find gdb path
     async findGdbPath() {
         var gdbPath = null;
-        let findGdbScript = path.join(__dirname, `../../assets/find_gdb.lua`);
+        let findGdbScript = utils.getAssetsScriptPath("find_gdb.lua");
         if (fs.existsSync(findGdbScript)) {
             gdbPath = (await process.iorunv(config.executable, ["l", findGdbScript], {"COLORTERM": "nocolor"}, config.workingDirectory)).stdout.trim();
             if (gdbPath) {
@@ -67,6 +68,18 @@ export class Debugger implements vscode.Disposable {
             codelldb = true;
         }
 
+        // uses lldb-dap debugger?
+        var lldbdap = false;
+        if (config.debugConfigType == "lldb-dap" && vscode.extensions.getExtension("llvm-vs-code-extensions.lldb-dap")) {
+            lldbdap = true;
+        }
+
+        // uses gdb-dap debugger?
+        var gdbdap = false;
+        if (config.debugConfigType == "gdb-dap" && vscode.extensions.getExtension("ms-vscode.cpptools")) {
+            gdbdap = true;
+        }
+
         // get target run directory
         if (!targetRunDir) {
             targetRunDir = path.dirname(targetProgram);
@@ -104,6 +117,54 @@ export class Debugger implements vscode.Disposable {
                 stopAtEntry: true,
                 cwd: targetRunDir,
                 env: envs,
+                externalConsole: false,
+            };
+        } else if (lldbdap) {
+            // LLDB DAP configuration
+            var envs = {};
+            for (let item of (targetRunEnvs as Array<Object>)) {
+                let map = item as Map<String, String>;
+                if (map) {
+                    let name = map["name"];
+                    let value = map["value"];
+                    if (name && value) {
+                        envs[name] = value;
+                    }
+                }
+            }
+            debugConfig = {
+                name: `launch: ${targetName}`,
+                type: 'lldb-dap',
+                request: 'launch',
+                program: targetProgram,
+                args: args,
+                stopAtEntry: true,
+                cwd: targetRunDir,
+                env: envs,
+                externalConsole: false,
+            };
+        } else if (gdbdap) {
+            // GDB DAP configuration
+            var gdbEnvs = [];
+            for (let item of (targetRunEnvs as Array<Object>)) {
+                let map = item as Map<String, String>;
+                if (map) {
+                    let name = map["name"];
+                    let value = map["value"];
+                    if (name && value) {
+                        gdbEnvs.push({name: name, value: value});
+                    }
+                }
+            }
+            debugConfig = {
+                name: `launch: ${targetName}`,
+                type: 'gdb',
+                request: 'launch',
+                program: targetProgram,
+                args: args,
+                stopAtEntry: true,
+                cwd: targetRunDir,
+                environment: gdbEnvs,
                 externalConsole: false,
             };
         } else {

@@ -140,12 +140,12 @@ export class XMake implements vscode.Disposable {
     }
 
     private async listArchs(plat: string): Promise<string[]> {
-        let getArchsScript = path.join(__dirname, `../../assets/archs.lua`);
+        let getArchsScript = utils.getAssetsScriptPath("archs.lua");
         return await this.runListingScript(getArchsScript, plat);
     }
 
     private async listPlats(): Promise<string[]> {
-        let getPlatsScript = path.join(__dirname, `../../assets/plats.lua`);
+        let getPlatsScript = utils.getAssetsScriptPath("plats.lua");
         return await this.runListingScript(getPlatsScript);
     }
 
@@ -183,7 +183,7 @@ export class XMake implements vscode.Disposable {
 
         // load config cache
         let cacheJson = {}
-        let getConfigPathScript = path.join(__dirname, `../../assets/config.lua`);
+        let getConfigPathScript = utils.getAssetsScriptPath("config.lua");
         if (fs.existsSync(getConfigPathScript)) {
             let configs = (await process.iorunv(config.executable, ["l", getConfigPathScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (configs) {
@@ -221,7 +221,7 @@ export class XMake implements vscode.Disposable {
     // update Intellisense
     async updateIntellisense() {
         log.verbose("updating Intellisense ..");
-        let updateIntellisenseScript = path.join(__dirname, `../../assets/update_intellisense.lua`);
+        let updateIntellisenseScript = utils.getAssetsScriptPath("update_intellisense.lua");
         if (fs.existsSync(updateIntellisenseScript)) {
             await process.runv(config.executable, ["l", updateIntellisenseScript, config.compileCommandsDirectory, config.compileCommandsBackend], { "COLORTERM": "nocolor" }, config.workingDirectory);
         }
@@ -435,8 +435,8 @@ export class XMake implements vscode.Disposable {
     async createProject() {
 
         // select language
-        let getLanguagesScript = path.join(__dirname, `../../assets/languages.lua`);
-        let gettemplatesScript = path.join(__dirname, `../../assets/templates.lua`);
+        let getLanguagesScript = utils.getAssetsScriptPath("languages.lua");
+        let gettemplatesScript = utils.getAssetsScriptPath("templates.lua");
         if (fs.existsSync(getLanguagesScript) && fs.existsSync(gettemplatesScript)) {
             let result = (await process.iorunv(config.executable, ["l", getLanguagesScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (result) {
@@ -527,7 +527,7 @@ export class XMake implements vscode.Disposable {
         }
 
         // select files
-        let getFilesListScript = path.join(__dirname, `../../assets/newfiles.lua`);
+        let getFilesListScript = utils.getAssetsScriptPath("newfiles.lua");
         if (fs.existsSync(getFilesListScript) && fs.existsSync(getFilesListScript)) {
             let result = (await process.iorunv(config.executable, ["l", getFilesListScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (result) {
@@ -537,7 +537,7 @@ export class XMake implements vscode.Disposable {
                 });
                 const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
                 if (chosen) {
-                    let filesdir = path.join(__dirname, "..", "..", "assets", "newfiles", chosen.label);
+                    let filesdir = utils.getTemplatePath(chosen.label);
                     if (fs.existsSync(filesdir)) {
 
                         // copy files
@@ -869,7 +869,7 @@ export class XMake implements vscode.Disposable {
     // repeated case of getting the default target
     async getDefaultTarget(): Promise<string|null>
     {
-        let getDefaultTargetPathScript = path.join(__dirname, `../../assets/default_target.lua`);
+        let getDefaultTargetPathScript = utils.getAssetsScriptPath("default_target.lua");
         if (fs.existsSync(getDefaultTargetPathScript)) {
             let result = (await process.iorunv(config.executable, ["l", getDefaultTargetPathScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (result) {
@@ -1130,14 +1130,18 @@ export class XMake implements vscode.Disposable {
             return;
         }
 
-        /* cpptools or codelldb externsions not found?
+        /* cpptools, codelldb, lldb-dap, or gdb-dap extensions not found?
          *
          * @see
          * https://github.com/Microsoft/vscode-cpptools
          * https://github.com/vadimcn/vscode-lldb
+         * https://github.com/llvm-vs-code-extensions/vscode-lldb-dap
          */
         var extension = null;
-        if (os.platform() == "darwin" || config.debugConfigType == "codelldb") {
+        if (config.debugConfigType == "lldb-dap") {
+            extension = vscode.extensions.getExtension("llvm-vs-code-extensions.lldb-dap");
+        }
+        if (!extension && (os.platform() == "darwin" || config.debugConfigType == "codelldb")) {
             extension = vscode.extensions.getExtension("vadimcn.vscode-lldb");
         }
         if (!extension) {
@@ -1182,17 +1186,27 @@ export class XMake implements vscode.Disposable {
 
         // get target program
         var targetProgram = null;
-        let getTargetPathScript = path.join(__dirname, `../../assets/targetpath.lua`);
+        let getTargetPathScript = utils.getAssetsScriptPath("targetpath.lua");
         if (fs.existsSync(getTargetPathScript)) {
-            targetProgram = (await process.iorunv(config.executable, ["l", getTargetPathScript, targetName], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
-            if (targetProgram) {
-                targetProgram = process.getAnnotatedOutput(targetProgram)[0].split('\n')[0].trim();
+            try {
+                const result = await process.iorunv(config.executable, ["l", getTargetPathScript, targetName], { "COLORTERM": "nocolor" }, config.workingDirectory);
+                const output = result.stdout.trim();
+                
+                if (output) {
+                    targetProgram = process.getAnnotatedOutput(output)[0].split('\n')[0].trim();
+                } else {
+                    log.error(`Target path script returned empty output for target: ${targetName}`);
+                }
+            } catch (error) {
+                log.error(`Error executing targetpath.lua: ${error}`);
             }
+        } else {
+            log.error(`targetpath.lua script not found at ${getTargetPathScript}`);
         }
 
         // get target run directory
         var targetRunDir = null;
-        let getTargetRunDirScript = path.join(__dirname, `../../assets/target_rundir.lua`);
+        let getTargetRunDirScript = utils.getAssetsScriptPath("target_rundir.lua");
         if (fs.existsSync(getTargetRunDirScript)) {
             targetRunDir = (await process.iorunv(config.executable, ["l", getTargetRunDirScript, targetName], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (targetRunDir) {
@@ -1202,7 +1216,7 @@ export class XMake implements vscode.Disposable {
 
         // get target run envs
         var targetRunEnvs = null;
-        let getTargetRunEnvsScript = path.join(__dirname, `../../assets/target_runenvs.lua`);
+        let getTargetRunEnvsScript = utils.getAssetsScriptPath("target_runenvs.lua");
         if (fs.existsSync(getTargetRunEnvsScript)) {
             targetRunEnvs = (await process.iorunv(config.executable, ["l", getTargetRunEnvsScript, targetName], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (targetRunEnvs) {
@@ -1220,7 +1234,7 @@ export class XMake implements vscode.Disposable {
         if (targetProgram && fs.existsSync(targetProgram)) {
             this._debugger.startDebugging(targetName, targetProgram, targetRunDir, targetRunEnvs, plat);
         } else {
-            await vscode.window.showErrorMessage('The target program not found!');
+            await vscode.window.showErrorMessage("The target program not found! Please build the project first.");
         }
     }
 
@@ -1231,14 +1245,18 @@ export class XMake implements vscode.Disposable {
             return;
         }
 
-        /* cpptools or codelldb externsions not found?
+        /* cpptools, codelldb, lldb-dap, or gdb-dap extensions not found?
          *
          * @see
          * https://github.com/Microsoft/vscode-cpptools
          * https://github.com/vadimcn/vscode-lldb
+         * https://github.com/llvm-vs-code-extensions/vscode-lldb-dap
          */
         let extension = null;
-        if (os.platform() == "darwin" || config.debugConfigType == "codelldb") {
+        if (config.debugConfigType == "lldb-dap") {
+            extension = vscode.extensions.getExtension("llvm-vs-code-extensions.lldb-dap");
+        }
+        if (!extension && (os.platform() == "darwin" || config.debugConfigType == "codelldb")) {
             extension = vscode.extensions.getExtension("vadimcn.vscode-lldb");
         }
         if (!extension) {
@@ -1401,7 +1419,7 @@ export class XMake implements vscode.Disposable {
         }
 
         var tools;
-        let getToolchainsPathScript = path.join(__dirname, `../../assets/toolchains.lua`);
+        let getToolchainsPathScript = utils.getAssetsScriptPath("toolchains.lua");
         if (fs.existsSync(getToolchainsPathScript)) {
             tools = JSON.parse((await process.iorunv(config.executable, ["l", getToolchainsPathScript, config.workingDirectory])).stdout.trim());
         }
@@ -1463,7 +1481,7 @@ export class XMake implements vscode.Disposable {
         }
 
         // select mode
-        let getModeListScript = path.join(__dirname, `../../assets/modes.lua`);
+        let getModeListScript = utils.getAssetsScriptPath("modes.lua");
         if (fs.existsSync(getModeListScript) && fs.existsSync(getModeListScript)) {
             let result = (await process.iorunv(config.executable, ["l", getModeListScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (result) {
@@ -1493,9 +1511,9 @@ export class XMake implements vscode.Disposable {
 
         // get target names
         let targets = "";
-        let getTargetsPathScript = path.join(__dirname, `../../assets/targets.lua`);
-        if (fs.existsSync(getTargetsPathScript)) {
-            targets = (await process.iorunv(config.executable, ["l", getTargetsPathScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
+        let getTargetInformationsScript = utils.getAssetsScriptPath("target_informations.lua");
+        if (fs.existsSync(getTargetInformationsScript)) {
+            targets = (await process.iorunv(config.executable, ["l", getTargetInformationsScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
         }
 
         // select target
