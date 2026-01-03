@@ -774,6 +774,8 @@
     "watch": "npx tsc -watch -p ./",
     "test": "npm run compile && node test/compile.test.js",
     "package": "npm run compile && vsce package --no-yarn",
+    "package-simple": "./package.sh",
+    "publish": "./publish.sh",
     "clean": "rimraf out node_modules"
   },
   "dependencies": {

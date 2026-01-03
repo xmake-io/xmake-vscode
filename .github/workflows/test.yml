@@ -71,7 +71,7 @@ jobs:
       run: npm run compile
 
     - name: Package extension on ${{ matrix.os }}
-      run: vsce package
+      run: ./package.sh
 
     - name: Upload platform-specific package
       uses: actions/upload-artifact@v4
