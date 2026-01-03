@@ -59,12 +59,10 @@ async function getInformations(targetName: string): Promise<TargetInformations> 
         try {
             const result = await process.iorunv(config.executable, ["l", getTargetInformationsScript, targetName], { "COLORTERM": "nocolor" }, config.workingDirectory);
             const targetInformations = result.stdout.trim();
-            log.verbose(`Target informations result: ${targetInformations}`);
             
             if (targetInformations) {
                 const parsed = process.getAnnotatedJSON(targetInformations);
                 if (parsed && parsed.length > 0) {
-                    log.verbose(`Parsed target info: ${JSON.stringify(parsed[0])}`);
                     return parsed[0];
                 }
             }

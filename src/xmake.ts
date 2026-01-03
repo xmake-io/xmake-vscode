@@ -1191,11 +1191,9 @@ export class XMake implements vscode.Disposable {
             try {
                 const result = await process.iorunv(config.executable, ["l", getTargetPathScript, targetName], { "COLORTERM": "nocolor" }, config.workingDirectory);
                 const output = result.stdout.trim();
-                log.verbose(`Target path script output: ${output}`);
                 
                 if (output) {
                     targetProgram = process.getAnnotatedOutput(output)[0].split('\n')[0].trim();
-                    log.verbose(`Parsed target program: ${targetProgram}`);
                 } else {
                     log.error(`Target path script returned empty output for target: ${targetName}`);
                 }
@@ -1203,11 +1201,7 @@ export class XMake implements vscode.Disposable {
                 log.error(`Error executing targetpath.lua: ${error}`);
             }
         } else {
-            const scriptPath = getTargetPathScript;
-            log.error(`targetpath.lua script not found at ${scriptPath}`);
-            log.error(`__dirname: ${__dirname}`);
-            log.error(`Resolved path: ${require('path').resolve(__dirname, '..', '..', 'assets', 'targetpath.lua')}`);
-            log.error(`Current working directory: ${config.workingDirectory}`);
+            log.error(`targetpath.lua script not found at ${getTargetPathScript}`);
         }
 
         // get target run directory
