@@ -774,7 +774,7 @@
     "watch": "npx tsc -watch -p ./",
     "test": "npm run compile && node test/compile.test.js",
     "package": "npm run compile && npx vsce package",
-    "clean": "rm -rf out node_modules"
+    "clean": "rimraf out node_modules"
   },
   "dependencies": {
     "encoding": "^0.1.13"
@@ -783,6 +783,7 @@
     "@types/node": "^16.10.4",
     "@types/vscode": "^1.58.0",
     "typescript": "^4.4.3",
-    "vsce": "^2.11.0"
+    "vsce": "^2.11.0",
+    "rimraf": "^3.0.2"
   }
 }

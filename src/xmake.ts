@@ -554,10 +554,10 @@ export class XMake implements vscode.Disposable {
     }
     // get configure arguments
     private getConfigureArgs(): string[] {
-        let plat = this._option.get<string>("plat");
-        let arch = this._option.get<string>("arch");
-        let mode = this._option.get<string>("mode");
-        let toolchain = this._option.get<string>("toolchain");
+        const plat = this._option.get<string>("plat");
+        const arch = this._option.get<string>("arch");
+        const mode = this._option.get<string>("mode");
+        const toolchain = this._option.get<string>("toolchain");
         
         let args = ["f", "-p", `${plat}`, "-a", `${arch}`, "-m", `${mode}`];
         if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
@@ -570,7 +570,7 @@ export class XMake implements vscode.Disposable {
             args.push(`--wdk=${config.WDKDirectory}`);
         }
         if (config.buildDirectory != "") {
-            let buildDirectory = path.normalize(config.buildDirectory);
+            const buildDirectory = path.normalize(config.buildDirectory);
             if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
                 args.push("-o", buildDirectory);
             }
@@ -649,7 +649,7 @@ export class XMake implements vscode.Disposable {
         let command = config.executable;
         var args = ["f", "-c"];
         if (config.buildDirectory != "") {
-            let buildDirectory = path.normalize(config.buildDirectory);
+            const buildDirectory = path.normalize(config.buildDirectory);
             if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
                 args.push("-o");
                 args.push(buildDirectory);
@@ -1380,8 +1380,8 @@ export class XMake implements vscode.Disposable {
                 this._optionChanged = true;
 
                 // update architecture
-                let plat = chosen.label;
-                let arch = await this.getDefaultArch(plat);
+                const plat = chosen.label;
+                const arch = await this.getDefaultArch(plat);
                 if (arch && arch != "") {
                     this._option.set("arch", arch);
                     this._status.arch = arch;
@@ -1436,7 +1436,7 @@ export class XMake implements vscode.Disposable {
 
         // select architecture
         let items: vscode.QuickPickItem[] = [];
-        let plat = this._option.get<string>("plat");
+        const plat = this._option.get<string>("plat");
 
         // select archs
         let archs = await this.listArchs(plat);
