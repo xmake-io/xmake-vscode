@@ -59,7 +59,7 @@
     "onCommand:xmake.setDefaultTarget",
     "onCommand:xmake.setTargetToolchain"
   ],
-  "main": "./out/src/extension",
+  "main": "./out/extension",
   "contributes": {
     "keybindings": [
       {
