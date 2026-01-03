@@ -519,6 +519,11 @@ export class XMake implements vscode.Disposable {
         this.createProject();
     }
 
+    // on show explorer
+    async onShowExplorer(target?: string) {
+        vscode.commands.executeCommand('workbench.view.extension.xmake-explorer');
+    }
+
     // on new files
     async onNewFiles(target?: string) {
 

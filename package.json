@@ -278,6 +278,11 @@
         "category": "XMake"
       },
       {
+        "command": "xmake.onShowExplorer",
+        "title": "Show Explorer",
+        "category": "XMake"
+      },
+      {
         "command": "xmakeExplorer.rebuild",
         "title": "Rebuild",
         "category": "XMake",
@@ -737,6 +742,56 @@
           "type": "boolean",
           "default": true,
           "description": "Enable lua syntax check"
+        },
+        "xmake.status.showProject": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show project button in status bar"
+        },
+        "xmake.status.showXMake": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show xmake button in status bar"
+        },
+        "xmake.status.showPlatform": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show platform button in status bar"
+        },
+        "xmake.status.showArch": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show architecture button in status bar"
+        },
+        "xmake.status.showMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show build mode button in status bar"
+        },
+        "xmake.status.showToolchain": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show toolchain button in status bar"
+        },
+        "xmake.status.showTarget": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show default target button in status bar"
+        },
+        "xmake.status.showBuild": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show build button in status bar"
+        },
+        "xmake.status.showRun": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show run button in status bar"
+        },
+        "xmake.status.showDebug": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show debug button in status bar"
         }
       }
     },

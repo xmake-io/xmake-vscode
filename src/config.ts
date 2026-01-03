@@ -113,6 +113,56 @@ export class Config {
     get enableSyntaxCheck(): boolean {
         return this.get<boolean>("enableSyntaxCheck");
     }
+
+    // show project button in status bar
+    get statusShowProject(): boolean {
+        return this.get<boolean>("status.showProject");
+    }
+
+    // show xmake button in status bar
+    get statusShowXMake(): boolean {
+        return this.get<boolean>("status.showXMake");
+    }
+
+    // show platform button in status bar
+    get statusShowPlatform(): boolean {
+        return this.get<boolean>("status.showPlatform");
+    }
+
+    // show architecture button in status bar
+    get statusShowArch(): boolean {
+        return this.get<boolean>("status.showArch");
+    }
+
+    // show build mode button in status bar
+    get statusShowMode(): boolean {
+        return this.get<boolean>("status.showMode");
+    }
+
+    // show toolchain button in status bar
+    get statusShowToolchain(): boolean {
+        return this.get<boolean>("status.showToolchain");
+    }
+
+    // show default target button in status bar
+    get statusShowTarget(): boolean {
+        return this.get<boolean>("status.showTarget");
+    }
+
+    // show build button in status bar
+    get statusShowBuild(): boolean {
+        return this.get<boolean>("status.showBuild");
+    }
+
+    // show run button in status bar
+    get statusShowRun(): boolean {
+        return this.get<boolean>("status.showRun");
+    }
+
+    // show debug button in status bar
+    get statusShowDebug(): boolean {
+        return this.get<boolean>("status.showDebug");
+    }
 }
 
 // init the global config

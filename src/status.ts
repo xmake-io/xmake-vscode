@@ -8,13 +8,17 @@ import {config} from './config';
 // the status class
 export class Status implements vscode.Disposable {
 
+    // the xmake button
+    private readonly _xmakeButton = vscode.window.createStatusBarItem(
+        "Xmake", vscode.StatusBarAlignment.Left, 31);
+
     // the project button
     private readonly _projectButton = vscode.window.createStatusBarItem(
         "Xmake Project", vscode.StatusBarAlignment.Left, 30);
 
     // the platform button
     private readonly _platButton = vscode.window.createStatusBarItem(
-        "XMake Config: Platform", vscode.StatusBarAlignment.Left, 29);
+        "Xmake Config: Platform", vscode.StatusBarAlignment.Left, 29);
 
     // the architecture button
     private readonly _archButton = vscode.window.createStatusBarItem(
@@ -22,7 +26,7 @@ export class Status implements vscode.Disposable {
 
     // the mode button
     private readonly _modeButton = vscode.window.createStatusBarItem(
-        "XMake Config: Mode", vscode.StatusBarAlignment.Left, 27);
+        "Xmake Config: Mode", vscode.StatusBarAlignment.Left, 27);
 
     // the build button
     private readonly _buildButton = vscode.window.createStatusBarItem(
@@ -30,29 +34,37 @@ export class Status implements vscode.Disposable {
 
     // the target button
     private readonly _targetButton = vscode.window.createStatusBarItem(
-        "XMake Config: Target", vscode.StatusBarAlignment.Left, 24);
+        "Xmake Config: Target", vscode.StatusBarAlignment.Left, 24);
 
     // the run button
     private readonly _runButton = vscode.window.createStatusBarItem(
-        "XMake Run", vscode.StatusBarAlignment.Left, 23);
+        "Xmake Run", vscode.StatusBarAlignment.Left, 23);
 
     // the debug button
     private readonly _debugButton = vscode.window.createStatusBarItem(
-        "XMake Debug", vscode.StatusBarAlignment.Left, 22);
+        "Xmake Debug", vscode.StatusBarAlignment.Left, 22);
 
     // is visible?
     private _visible: boolean = true;
 
     // the toolchain
     private readonly _toolChainButton = vscode.window.createStatusBarItem(
-        "XMake Config: Toolchain", vscode.StatusBarAlignment.Left, 26);
+        "Xmake Config: Toolchain", vscode.StatusBarAlignment.Left, 26);
+
+    // the disposables
+    private _disposables: vscode.Disposable[] = [];
 
     // the constructor
     constructor() {
 
+        // init xmake button
+        this._xmakeButton.command = 'xmake.onShowExplorer';
+        this._xmakeButton.text = `Xmake`;
+        this._xmakeButton.tooltip = "Show Xmake Explorer";
+
         // init project button
         this._projectButton.command = 'xmake.setProjectRoot';
-        this._projectButton.text = `XMake:`;
+        this._projectButton.text = `Xmake:`;
         this._projectButton.tooltip = "Set the project root directory";
 
         // init platform button
@@ -96,6 +108,7 @@ export class Status implements vscode.Disposable {
         this._toolChainButton.tooltip = "change the toolchain";
 
         for (let item of [
+            this._xmakeButton,
             this._projectButton,
             this._platButton,
             this._archButton,
@@ -109,6 +122,13 @@ export class Status implements vscode.Disposable {
             item.name = item.id;
         }
 
+        // update visibility on config change
+        this._disposables.push(vscode.workspace.onDidChangeConfiguration(e => {
+            if (e.affectsConfiguration('xmake.status')) {
+                this.updateVisibility();
+            }
+        }));
+
         // update visibility
         this.updateVisibility();
     }
@@ -117,6 +137,7 @@ export class Status implements vscode.Disposable {
     public dispose() {
 
         for (const item of [
+            this._xmakeButton,
             this._projectButton,
             this._platButton,
             this._archButton,
@@ -129,22 +150,29 @@ export class Status implements vscode.Disposable {
         ]) {
             item.dispose();
         }
+
+        for (const disposable of this._disposables) {
+            disposable.dispose();
+        }
     }
 
     // update visibility
     private updateVisibility() {
-        for (const item of [
-            this._projectButton,
-            this._platButton,
-            this._archButton,
-            this._modeButton,
-            this._buildButton,
-            this._targetButton,
-            this._runButton,
-            this._debugButton,
-            this._toolChainButton
-        ]) {
-            if (this.visible && !!item.text) {
+        const buttons = [
+            { item: this._xmakeButton, show: config.statusShowXMake },
+            { item: this._projectButton, show: config.statusShowProject },
+            { item: this._platButton, show: config.statusShowPlatform },
+            { item: this._archButton, show: config.statusShowArch },
+            { item: this._modeButton, show: config.statusShowMode },
+            { item: this._buildButton, show: config.statusShowBuild },
+            { item: this._targetButton, show: config.statusShowTarget },
+            { item: this._runButton, show: config.statusShowRun },
+            { item: this._debugButton, show: config.statusShowDebug },
+            { item: this._toolChainButton, show: config.statusShowToolchain },
+        ];
+
+        for (const { item, show } of buttons) {
+            if (this.visible && !!item.text && show) {
                 item.show();
             } else {
                 item.hide();
@@ -165,12 +193,12 @@ export class Status implements vscode.Disposable {
 
     // set the project root
     public set project(value: string) {
-        this._projectButton.text = `XMake: ${value}`;
+        this._projectButton.text = `Xmake: ${value}`;
     }
 
     // get the project root
     public get project(): string {
-        return this._projectButton.text.replace('XMake: ', '');
+        return this._projectButton.text.replace('Xmake: ', '');
     }
 
     // set the target platform

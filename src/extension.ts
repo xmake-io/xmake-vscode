@@ -52,7 +52,10 @@ export async function activate(context: vscode.ExtensionContext) {
                         }
                     }
                     break;
-            
+                
+                case 'xmake.onShowExplorer':
+                    break;
+
                 default:
                     if (!fs.existsSync(path.join(config.workingDirectory, "xmake.lua"))) {
                         if (!!(await vscode.window.showErrorMessage('xmake.lua not found!',
@@ -91,6 +94,7 @@ export async function activate(context: vscode.ExtensionContext) {
         'onMacroRun',
         'onRunLastCommand',
         'onUpdateIntellisense',
+        'onShowExplorer',
         'setProjectRoot',
         'setTargetPlat',
         'setTargetArch',
