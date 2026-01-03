@@ -17,6 +17,48 @@ export function getProjectRoot(): string {
     return projectRoot;
 }
 
+// get assets script path
+export function getAssetsScriptPath(scriptName: string): string {
+    // In development mode (running from source), __dirname points to src/
+    // In compiled extension (running from out), __dirname points to out/
+    // So we need to handle both cases
+    if (__dirname.endsWith('src')) {
+        // Development mode: go up two levels from src/
+        return path.resolve(__dirname, "..", "..", "assets", scriptName);
+    } else {
+        // Compiled mode: go up one level from out/
+        return path.resolve(__dirname, "..", "assets", scriptName);
+    }
+}
+
+// get res directory path
+export function getResourcePath(resourceName: string = ""): string {
+    // In development mode (running from source), __dirname points to src/
+    // In compiled extension (running from out), __dirname points to out/
+    // So we need to handle both cases
+    if (__dirname.endsWith('src')) {
+        // Development mode: go up two levels from src/
+        return path.resolve(__dirname, "..", "..", "res", resourceName);
+    } else {
+        // Compiled mode: go up one level from out/
+        return path.resolve(__dirname, "..", "res", resourceName);
+    }
+}
+
+// get template directory path
+export function getTemplatePath(templateName: string = ""): string {
+    // In development mode (running from source), __dirname points to src/
+    // In compiled extension (running from out), __dirname points to out/
+    // So we need to handle both cases
+    if (__dirname.endsWith('src')) {
+        // Development mode: go up two levels from src/
+        return path.resolve(__dirname, "..", "..", "assets", "newfiles", templateName);
+    } else {
+        // Compiled mode: go up one level from out/
+        return path.resolve(__dirname, "..", "assets", "newfiles", templateName);
+    }
+}
+
 // replace all
 export function replaceAll(str: string, needle: string, what: string) {
     const pattern = needle.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1');

@@ -8,6 +8,7 @@ import {log} from './log';
 import * as path from 'path';
 import { config } from './config';
 import * as process from './process';
+import * as utils from './utils';
 
 // get lua keyword list
 function getLuaKeywordList(): Promise<string> {
@@ -19,7 +20,7 @@ function getLuaKeywordList(): Promise<string> {
 // get xmake command list
 function getXMakeCommandList(): Promise<string> {
     return new Promise(async function (resolve, reject) {
-        let getApisScript = path.join(__dirname, `../../assets/apis.lua`);
+        let getApisScript = utils.getAssetsScriptPath("apis.lua");
         if (fs.existsSync(getApisScript)) {
             let result = (await process.iorunv(config.executable, ["l", getApisScript], { "COLORTERM": "nocolor" },
                 config.workingDirectory)).stdout.trim();

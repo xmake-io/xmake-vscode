@@ -5,12 +5,11 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { WorkspaceFolder } from 'vscode';
-import * as process from './process';
-
-import { config as settings } from './config';
 import { log } from './log';
+import * as utils from './utils';
+import { config } from './config';
 import { Option } from './option';
+import * as process from './process';
 
 /**
  * integrated: Use integrated terminal in VSCode
@@ -39,9 +38,9 @@ interface TargetInformations {
 
 async function getDebuggableTargets(): Promise<Array<string>> {
     let targets = "";
-    let getTargetsPathScript = path.join(__dirname, `../../assets/debuggable_targets.lua`);
+    let getTargetsPathScript = utils.getAssetsScriptPath("debuggable_targets.lua");
     if (fs.existsSync(getTargetsPathScript)) {
-        targets = (await process.iorunv(settings.executable, ["l", getTargetsPathScript], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
+        targets = (await process.iorunv(config.executable, ["l", getTargetsPathScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
     }
     if (targets) {
         return process.getAnnotatedJSON(targets)[0];
@@ -55,12 +54,27 @@ async function getDebuggableTargets(): Promise<Array<string>> {
  * @returns TargetInformations
  */
 async function getInformations(targetName: string): Promise<TargetInformations> {
-    let getTargetInformationsScript = path.join(__dirname, `../../assets/target_informations.lua`);
+    let getTargetInformationsScript = utils.getAssetsScriptPath("target_informations.lua");
     if (fs.existsSync(getTargetInformationsScript)) {
-        let targetInformations = (await process.iorunv(settings.executable, ["l", getTargetInformationsScript, targetName], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
-        if (targetInformations) {
-            return process.getAnnotatedJSON(targetInformations)[0];
+        try {
+            const result = await process.iorunv(config.executable, ["l", getTargetInformationsScript, targetName], { "COLORTERM": "nocolor" }, config.workingDirectory);
+            const targetInformations = result.stdout.trim();
+            log.verbose(`Target informations result: ${targetInformations}`);
+            
+            if (targetInformations) {
+                const parsed = process.getAnnotatedJSON(targetInformations);
+                if (parsed && parsed.length > 0) {
+                    log.verbose(`Parsed target info: ${JSON.stringify(parsed[0])}`);
+                    return parsed[0];
+                }
+            }
+            
+            log.error(`Failed to get target informations for ${targetName}. Result: ${targetInformations}`);
+        } catch (error) {
+            log.error(`Error executing target_informations.lua: ${error}`);
         }
+    } else {
+        log.error(`target_informations.lua script not found at ${getTargetInformationsScript}`);
     }
 
     return null;
@@ -72,9 +86,9 @@ async function getInformations(targetName: string): Promise<TargetInformations> 
  */
 async function findGdbPath(): Promise<string> {
     let gdbPath = "";
-    let findGdbScript = path.join(__dirname, `../../assets/find_gdb.lua`);
+    let findGdbScript = utils.getAssetsScriptPath("find_gdb.lua");
     if (fs.existsSync(findGdbScript)) {
-        gdbPath = (await process.iorunv(settings.executable, ["l", findGdbScript], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
+        gdbPath = (await process.iorunv(config.executable, ["l", findGdbScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
         if (gdbPath) {
             gdbPath = gdbPath.split('\n')[0].trim();
         }
@@ -158,7 +172,7 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
      * @param token 
      * @returns the modified config to cpptols or codelldb
      */
-    public async resolveDebugConfiguration(folder: WorkspaceFolder | undefined, config: XmakeDebugConfiguration, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration> {
+    public async resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: XmakeDebugConfiguration, token?: vscode.CancellationToken): Promise<vscode.DebugConfiguration> {
 
         // If target is not set, resolve it with the status
         if (!config.target) {
@@ -180,7 +194,18 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
 
         // Set the program path
         if (!(targetInformations.path && fs.existsSync(targetInformations.path))) {
-            await vscode.window.showErrorMessage('The target program not found!');
+            const errorMsg = `The target program not found! 
+Target: ${config.target || 'default'}
+Expected path: ${targetInformations.path || 'unknown'}
+Working directory: ${config.workingDirectory}
+Build directory: ${config.buildDirectory}
+
+Please ensure:
+1. The project has been built (run "xmake build" first)
+2. The target name is correct
+3. The build configuration is valid`;
+            
+            await vscode.window.showErrorMessage(errorMsg);
             return { name: "Error: Target not found", type: "cppdbg", request: "launch" }; // Return a fake config
         }
         config.program = targetInformations.path;
@@ -199,14 +224,14 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         if (!config.args) {
             let args = [];
 
-            if (config.target in settings.debuggingTargetsArguments)
-                args = settings.debuggingTargetsArguments[config.target];
-            else if ("default" in settings.debuggingTargetsArguments)
-                args = settings.debuggingTargetsArguments["default"];
-            else if (config.target in settings.runningTargetsArguments)
+            if (config.target in config.debuggingTargetsArguments)
+                args = config.debuggingTargetsArguments[config.target];
+            else if ("default" in config.debuggingTargetsArguments)
+                args = config.debuggingTargetsArguments["default"];
+            else if (config.target in config.runningTargetsArguments)
                 args = config.runningTargetsArguments[config.target];
-            else if ("default" in settings.runningTargetsArguments)
-                args = settings.runningTargetsArguments["default"];
+            else if ("default" in config.runningTargetsArguments)
+                args = config.runningTargetsArguments["default"];
 
             config.args = args;
         }
@@ -214,9 +239,9 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         // Get xmake env and merge it with config envs
         const sep = os.platform() == "win32" ? ';' : ':'
         let xmakeEnvs = targetInformations.envs;
-        if (settings.envBehaviour === 'override') {
+        if (config.envBehaviour === 'override') {
             config.env = { ...xmakeEnvs, ...config.env };
-        } else if (settings.envBehaviour === 'merge' && config.env !== undefined) {
+        } else if (config.envBehaviour === 'merge' && config.env !== undefined) {
             // Merge behaviour between xmake envs and launch.json envs
             for (const key in xmakeEnvs) {
                 // If the key exist in debug envs
@@ -242,7 +267,7 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         }
 
         // Switch to lldb if needed
-        if (settings.debugConfigType == "codelldb") {
+        if (config.debugConfigType == "codelldb") {
             config.type = 'lldb';
             config.stopOnEntry = config.stopAtEntry;
             // Code LLDB doesn't support newExternal
@@ -256,6 +281,39 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
                 config.program = `${targetInformations.name}.exe`;
             }
         }
+
+        // Switch to LLDB DAP if needed
+        if (config.debugConfigType == "lldb-dap") {
+            config.type = 'lldb-dap';
+            config.stopOnEntry = config.stopOnEntry;
+            // LLDB DAP doesn't support newExternal
+            if (config.terminal == 'newExternal') {
+                config.terminal = 'external';
+            }
+
+            // LLDB DAP use program key for search a running process
+            if (config.request == 'attach') {
+                config.stopOnEntry = false;
+                config.program = `${targetInformations.name}.exe`;
+            }
+        }
+
+        // Switch to GDB DAP if needed
+        if (config.debugConfigType == "gdb-dap") {
+            config.type = 'gdb';
+            config.stopOnEntry = config.stopOnEntry;
+            // GDB DAP doesn't support newExternal
+            if (config.terminal == 'newExternal') {
+                config.terminal = 'external';
+            }
+
+            // GDB DAP use program key for search a running process
+            if (config.request == 'attach') {
+                config.stopOnEntry = false;
+                config.program = `${targetInformations.name}.exe`;
+            }
+        }
+
         // Set MIMode for macos
         if (os.platform() == 'darwin') {
             config.MIMode = "lldb";
@@ -285,7 +343,7 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         config = { ...config, ...setupCommands };
 
         // Merge the custom debug config with actual config
-        config = { ...config, ...settings.customDebugConfig };
+        config = { ...config, ...config.customDebugConfig };
 
         return config;
     }
@@ -294,20 +352,26 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
 export function initDebugger(context: vscode.ExtensionContext, option: Option) {
     const cpptools = vscode.extensions.getExtension("ms-vscode.cpptools");
     const codelldb = vscode.extensions.getExtension("vadimcn.vscode-lldb");
+    const lldbdap = vscode.extensions.getExtension("llvm-vs-code-extensions.vscode-lldb-dap");
 
-    if (!cpptools && !codelldb) {
-        log.error("Neither CppTools or Code LLDB is installed");
-        vscode.window.showErrorMessage("Neither CppTools or Code LLDB is installed. Install one of this extension to debug");
+    if (!cpptools && !codelldb && !lldbdap) {
+        log.error("No debugging extensions are installed");
+        vscode.window.showErrorMessage("No debugging extensions found. Please install CppTools, CodeLLDB, or LLDB DAP extension to debug");
         return;
     }
 
-    if (!codelldb && settings.debugConfigType == 'codelldb') {
-        vscode.window.showErrorMessage("Code LLDB is not installed. Install it first to use the debugger.");
+    // Check if the configured debugger is available
+    if (config.debugConfigType == "lldb-dap" && !lldbdap) {
+        log.info("LLDB DAP is configured but not available, falling back to available debuggers");
+    }
+    if (config.debugConfigType == "codelldb" && !codelldb) {
+        log.info("CodeLLDB is configured but not available, falling back to available debuggers");
     }
 
-    // Activate the two extensions
+    // Activate all available debugging extensions
     cpptools?.activate();
-    codelldb?.activate()
+    codelldb?.activate();
+    lldbdap?.activate();
 
     const provider = new XmakeConfigurationProvider(option);
     context.subscriptions.push(vscode.debug.registerDebugConfigurationProvider('xmake', provider, vscode.DebugConfigurationProviderTriggerKind.Dynamic));

@@ -7,6 +7,7 @@ import * as path from 'path';
 import * as process from './process';
 import { config } from './config';
 import { log } from './log';
+import * as utils from './utils';
 
 // Different tree view items contain different data
 // Following types store specific info that we should keep in each tree view item
@@ -76,7 +77,7 @@ class XMakeExplorerItem extends vscode.TreeItem {
         // Set the icon depending on the type
         // Each known file type is assigned a language specific icon
         // If the file type is recognized then the default file icon is assigned
-        const resDirPath = [__dirname, "..", "..", "res"];
+        const resDirPath = utils.getResourcePath();
 
         switch (info.type) {
             case XMakeExplorerItemType.GROUP:
@@ -801,7 +802,7 @@ export class XMakeExplorer implements vscode.Disposable {
     // Helper function to read all the information used by the explorer from xmake.lua
     private async readInfo() {
         try {
-            const getExplorerTargetsScript = path.join(__dirname, `../../assets/explorer.lua`);
+            const getExplorerTargetsScript = utils.getAssetsScriptPath("explorer.lua");
             if (fs.existsSync(getExplorerTargetsScript)) {
                 const infoJson = (await process.iorunv(config.executable, ["l", getExplorerTargetsScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
                 const info = JSON.parse(infoJson);
