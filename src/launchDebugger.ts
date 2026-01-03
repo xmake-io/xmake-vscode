@@ -339,7 +339,7 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
 export function initDebugger(context: vscode.ExtensionContext, option: Option) {
     const cpptools = vscode.extensions.getExtension("ms-vscode.cpptools");
     const codelldb = vscode.extensions.getExtension("vadimcn.vscode-lldb");
-    const lldbdap = vscode.extensions.getExtension("llvm-vs-code-extensions.vscode-lldb-dap");
+    const lldbdap = vscode.extensions.getExtension("llvm-vs-code-extensions.lldb-dap");
 
     if (!cpptools && !codelldb && !lldbdap) {
         log.error("No debugging extensions are installed");

@@ -70,7 +70,7 @@ export class Debugger implements vscode.Disposable {
 
         // uses lldb-dap debugger?
         var lldbdap = false;
-        if (config.debugConfigType == "lldb-dap" && vscode.extensions.getExtension("llvm-vs-code-extensions.vscode-lldb-dap")) {
+        if (config.debugConfigType == "lldb-dap" && vscode.extensions.getExtension("llvm-vs-code-extensions.lldb-dap")) {
             lldbdap = true;
         }
 

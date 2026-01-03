@@ -1139,7 +1139,7 @@ export class XMake implements vscode.Disposable {
          */
         var extension = null;
         if (config.debugConfigType == "lldb-dap") {
-            extension = vscode.extensions.getExtension("llvm-vs-code-extensions.vscode-lldb-dap");
+            extension = vscode.extensions.getExtension("llvm-vs-code-extensions.lldb-dap");
         }
         if (!extension && (os.platform() == "darwin" || config.debugConfigType == "codelldb")) {
             extension = vscode.extensions.getExtension("vadimcn.vscode-lldb");
@@ -1254,7 +1254,7 @@ export class XMake implements vscode.Disposable {
          */
         let extension = null;
         if (config.debugConfigType == "lldb-dap") {
-            extension = vscode.extensions.getExtension("llvm-vs-code-extensions.vscode-lldb-dap");
+            extension = vscode.extensions.getExtension("llvm-vs-code-extensions.lldb-dap");
         }
         if (!extension && (os.platform() == "darwin" || config.debugConfigType == "codelldb")) {
             extension = vscode.extensions.getExtension("vadimcn.vscode-lldb");
