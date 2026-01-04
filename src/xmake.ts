@@ -1512,9 +1512,9 @@ export class XMake implements vscode.Disposable {
 
         // get target names
         let targets = "";
-        let getTargetInformationsScript = utils.getAssetsScriptPath("target_informations.lua");
-        if (fs.existsSync(getTargetInformationsScript)) {
-            targets = (await process.iorunv(config.executable, ["l", getTargetInformationsScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
+        const getTargetsScript = utils.getAssetsScriptPath("targets.lua");
+        if (fs.existsSync(getTargetsScript)) {
+            targets = (await process.iorunv(config.executable, ["l", getTargetsScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
         }
 
         // select target
