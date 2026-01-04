@@ -53,13 +53,13 @@ export class Debugger implements vscode.Disposable {
 
         // get target arguments
         let args = [];
-        if (targetName in config.debuggingTargetsArguments)
+        if (config.debuggingTargetsArguments && targetName in config.debuggingTargetsArguments)
             args = config.debuggingTargetsArguments[targetName];
-        else if ("default" in config.debuggingTargetsArguments)
+        else if (config.debuggingTargetsArguments && "default" in config.debuggingTargetsArguments)
             args = config.debuggingTargetsArguments["default"];
-        else if (targetName in config.runningTargetsArguments)
+        else if (config.runningTargetsArguments && targetName in config.runningTargetsArguments)
             args = config.runningTargetsArguments[targetName];
-        else if ("default" in config.runningTargetsArguments)
+        else if (config.runningTargetsArguments && "default" in config.runningTargetsArguments)
             args = config.runningTargetsArguments["default"];
 
         // uses codelldb debugger?

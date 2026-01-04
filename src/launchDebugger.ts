@@ -211,13 +211,13 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         if (!config.args) {
             let args = [];
 
-            if (config.target in config.debuggingTargetsArguments)
+            if (config.debuggingTargetsArguments && config.target in config.debuggingTargetsArguments)
                 args = config.debuggingTargetsArguments[config.target];
-            else if ("default" in config.debuggingTargetsArguments)
+            else if (config.debuggingTargetsArguments && "default" in config.debuggingTargetsArguments)
                 args = config.debuggingTargetsArguments["default"];
-            else if (config.target in config.runningTargetsArguments)
+            else if (config.runningTargetsArguments && config.target in config.runningTargetsArguments)
                 args = config.runningTargetsArguments[config.target];
-            else if ("default" in config.runningTargetsArguments)
+            else if (config.runningTargetsArguments && "default" in config.runningTargetsArguments)
                 args = config.runningTargetsArguments["default"];
 
             config.args = args;

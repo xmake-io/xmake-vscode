@@ -901,9 +901,9 @@ export class XMake implements vscode.Disposable {
         // get target arguments
         let args = ["run"];
         let configArgs = [];
-        if (targetName && targetName in config.runningTargetsArguments)
+        if (targetName && config.runningTargetsArguments && targetName in config.runningTargetsArguments)
             configArgs = config.runningTargetsArguments[targetName];
-        else if ("default" in config.runningTargetsArguments)
+        else if (config.runningTargetsArguments && "default" in config.runningTargetsArguments)
             configArgs = config.runningTargetsArguments["default"];
 
         // make command
@@ -949,9 +949,9 @@ export class XMake implements vscode.Disposable {
         // get target arguments
         let args = ["run"];
         let configArgs = [];
-        if (targetName && targetName in config.runningTargetsArguments)
+        if (targetName && config.runningTargetsArguments && targetName in config.runningTargetsArguments)
             configArgs = config.runningTargetsArguments[targetName];
-        else if ("default" in config.runningTargetsArguments)
+        else if (config.runningTargetsArguments && "default" in config.runningTargetsArguments)
             configArgs = config.runningTargetsArguments["default"];
 
         // make command
