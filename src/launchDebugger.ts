@@ -7,7 +7,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { log } from './log';
 import * as utils from './utils';
-import { config } from './config';
+import { config as settings } from './config';
 import { Option } from './option';
 import * as process from './process';
 
@@ -40,7 +40,7 @@ async function getDebuggableTargets(): Promise<Array<string>> {
     let targets = "";
     let getTargetsPathScript = utils.getAssetsScriptPath("debuggable_targets.lua");
     if (fs.existsSync(getTargetsPathScript)) {
-        targets = (await process.iorunv(config.executable, ["l", getTargetsPathScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
+        targets = (await process.iorunv(settings.executable, ["l", getTargetsPathScript], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
     }
     if (targets) {
         return process.getAnnotatedJSON(targets)[0];
@@ -57,7 +57,7 @@ async function getInformations(targetName: string): Promise<TargetInformations> 
     let getTargetInformationsScript = utils.getAssetsScriptPath("target_informations.lua");
     if (fs.existsSync(getTargetInformationsScript)) {
         try {
-            const result = await process.iorunv(config.executable, ["l", getTargetInformationsScript, targetName], { "COLORTERM": "nocolor" }, config.workingDirectory);
+            const result = await process.iorunv(settings.executable, ["l", getTargetInformationsScript, targetName], { "COLORTERM": "nocolor" }, settings.workingDirectory);
             const targetInformations = result.stdout.trim();
             
             if (targetInformations) {
@@ -86,7 +86,7 @@ async function findGdbPath(): Promise<string> {
     let gdbPath = "";
     let findGdbScript = utils.getAssetsScriptPath("find_gdb.lua");
     if (fs.existsSync(findGdbScript)) {
-        gdbPath = (await process.iorunv(config.executable, ["l", findGdbScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
+        gdbPath = (await process.iorunv(settings.executable, ["l", findGdbScript], { "COLORTERM": "nocolor" }, settings.workingDirectory)).stdout.trim();
         if (gdbPath) {
             gdbPath = gdbPath.split('\n')[0].trim();
         }
@@ -211,14 +211,14 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         if (!config.args) {
             let args = [];
 
-            if (config.debuggingTargetsArguments && config.target in config.debuggingTargetsArguments)
-                args = config.debuggingTargetsArguments[config.target];
-            else if (config.debuggingTargetsArguments && "default" in config.debuggingTargetsArguments)
-                args = config.debuggingTargetsArguments["default"];
-            else if (config.runningTargetsArguments && config.target in config.runningTargetsArguments)
-                args = config.runningTargetsArguments[config.target];
-            else if (config.runningTargetsArguments && "default" in config.runningTargetsArguments)
-                args = config.runningTargetsArguments["default"];
+            if (settings.debuggingTargetsArguments && config.target in settings.debuggingTargetsArguments)
+                args = settings.debuggingTargetsArguments[config.target];
+            else if (settings.debuggingTargetsArguments && "default" in settings.debuggingTargetsArguments)
+                args = settings.debuggingTargetsArguments["default"];
+            else if (settings.runningTargetsArguments && config.target in settings.runningTargetsArguments)
+                args = settings.runningTargetsArguments[config.target];
+            else if (settings.runningTargetsArguments && "default" in settings.runningTargetsArguments)
+                args = settings.runningTargetsArguments["default"];
 
             config.args = args;
         }
@@ -226,9 +226,9 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         // Get xmake env and merge it with config envs
         const sep = os.platform() == "win32" ? ';' : ':'
         let xmakeEnvs = targetInformations.envs;
-        if (config.envBehaviour === 'override') {
+        if (settings.envBehaviour === 'override') {
             config.env = { ...xmakeEnvs, ...config.env };
-        } else if (config.envBehaviour === 'merge' && config.env !== undefined) {
+        } else if (settings.envBehaviour === 'merge' && config.env !== undefined) {
             // Merge behaviour between xmake envs and launch.json envs
             for (const key in xmakeEnvs) {
                 // If the key exist in debug envs
@@ -254,7 +254,7 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         }
 
         // Switch to lldb if needed
-        if (config.debugConfigType == "codelldb") {
+        if (settings.debugConfigType == "codelldb") {
             config.type = 'lldb';
             config.stopOnEntry = config.stopAtEntry;
             // Code LLDB doesn't support newExternal
@@ -270,7 +270,7 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         }
 
         // Switch to LLDB DAP if needed
-        if (config.debugConfigType == "lldb-dap") {
+        if (settings.debugConfigType == "lldb-dap") {
             config.type = 'lldb-dap';
             config.stopOnEntry = config.stopOnEntry;
             // LLDB DAP doesn't support newExternal
@@ -286,7 +286,7 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         }
 
         // Switch to GDB DAP if needed
-        if (config.debugConfigType == "gdb-dap") {
+        if (settings.debugConfigType == "gdb-dap") {
             config.type = 'gdb';
             config.stopOnEntry = config.stopOnEntry;
             // GDB DAP doesn't support newExternal
@@ -330,7 +330,7 @@ class XmakeConfigurationProvider implements vscode.DebugConfigurationProvider {
         config = { ...config, ...setupCommands };
 
         // Merge the custom debug config with actual config
-        config = { ...config, ...config.customDebugConfig };
+        config = { ...config, ...settings.customDebugConfig };
 
         return config;
     }
@@ -348,10 +348,10 @@ export function initDebugger(context: vscode.ExtensionContext, option: Option) {
     }
 
     // Check if the configured debugger is available
-    if (config.debugConfigType == "lldb-dap" && !lldbdap) {
+    if (settings.debugConfigType == "lldb-dap" && !lldbdap) {
         log.info("LLDB DAP is configured but not available, falling back to available debuggers");
     }
-    if (config.debugConfigType == "codelldb" && !codelldb) {
+    if (settings.debugConfigType == "codelldb" && !codelldb) {
         log.info("CodeLLDB is configured but not available, falling back to available debuggers");
     }
 
