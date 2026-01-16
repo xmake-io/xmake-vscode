@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="http://xmake.io">
+  <a href="https://xmake.io">
     <img width="200" heigth="200" src="https://github.com/xmake-io/xmake-vscode/raw/master/res/logo256.png">
   </a>
 
@@ -272,9 +272,7 @@ Control which buttons appear in the status bar:
 
 ## XMake Explorer
 
-The extension provides a dedicated XMake Explorer in the Activity Bar for project management:
-
-![XMake Explorer](https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/explorer.png)
+The extension provides a dedicated XMake Explorer in the Activity Bar for project management.
 
 ### Features
 
