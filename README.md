@@ -103,6 +103,16 @@ Please see [xmake-github](https://github.com/xmake-io/xmake) and [website](https
 
 xmake-vscode will generate `.vscode/compile_commands.json` file, so you need only add it to `.vscode/c_cpp_properties.json` to enable IntelliSense.
 
+### Automatic Generation Modes
+
+The extension provides three modes for automatic generation of `compile_commands.json`:
+
+- **onFileChange** (default): Generate compile_commands.json when xmake.lua files change
+- **onBuild**: Generate compile_commands.json after building the project  
+- **disabled**: Disable automatic generation (manual generation via "XMake: UpdateIntellisense" command is still available)
+
+You can configure this in VSCode settings with `xmake.autoGenerateCompileCommands`.
+
 for example (`.vscode/c_cpp_properties.json`):
 
 ```json
@@ -262,6 +272,7 @@ Control which buttons appear in the status bar:
 | **xmake.WDKDirectory** | string | "" | Windows Driver Kit Directory |
 | **xmake.compileCommandsDirectory** | string | ".vscode" | compile_commands.json file directory |
 | **xmake.compileCommandsBackend** | string | "clangd" | LSP backend for compile_commands |
+| **xmake.autoGenerateCompileCommands** | string | "onFileChange" | Automatic generation mode: `onFileChange`, `onBuild`, `disabled` |
 | **xmake.additionalConfigArguments** | array | [] | Additional config arguments, e.g. `["--cc=gcc", "--myopt=xxx"]` |
 | **xmake.runningTargetsArguments** | object | {"default": []} | Running targets arguments, e.g. `{"targetName": ["args", "..."]}` |
 | **xmake.debuggingTargetsArguments** | object | {"default": []} | Debugging targets arguments |
@@ -412,7 +423,11 @@ Supported platform prefixes:
 - Use `xmake.executable` setting to specify the full path to xmake executable
 
 **IntelliSense not working**
-- Run `XMake: UpdateIntellisense` command to generate `compile_commands.json`
+- Check your `xmake.autoGenerateCompileCommands` setting:
+  - Set to `onFileChange` to generate when xmake.lua changes
+  - Set to `onBuild` to generate after building
+  - Set to `disabled` and use `XMake: UpdateIntellisense` command manually
+- Run `XMake: UpdateIntellisense` command to generate `compile_commands.json` manually
 - Ensure your `.vscode/c_cpp_properties.json` references the correct compile commands file
 - Check that the C/C++ extension is installed and enabled
 

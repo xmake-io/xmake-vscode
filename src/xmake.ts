@@ -219,7 +219,25 @@ export class XMake implements vscode.Disposable {
     }
 
     // update Intellisense
-    async updateIntellisense() {
+    async updateIntellisense(trigger: "fileChange" | "build" | "manual" = "manual") {
+        const mode = config.autoGenerateCompileCommands;
+        
+        // Check if automatic generation should be triggered
+        if (trigger === "fileChange" && mode !== "onFileChange") {
+            log.verbose("compile_commands generation not triggered on file change");
+            return;
+        }
+        
+        if (trigger === "build" && mode !== "onBuild") {
+            log.verbose("compile_commands generation not triggered on build");
+            return;
+        }
+        
+        // Manual trigger is always allowed regardless of the mode setting
+        if (trigger === "manual" && mode === "disabled") {
+            log.verbose("manual compile_commands generation is explicitly triggered");
+        }
+        
         log.verbose("updating Intellisense ..");
         let updateIntellisenseScript = utils.getAssetsScriptPath("update_intellisense.lua");
         if (fs.existsSync(updateIntellisenseScript)) {
@@ -336,7 +354,7 @@ export class XMake implements vscode.Disposable {
         if (filePath.includes("xmake.lua") && !filePath.includes(".xmake")) {
             log.verbose("onProjectFileUpdated: " + affectedPath.fsPath);
             this.loadCache();
-            this.updateIntellisense();
+            this.updateIntellisense("fileChange");
             this._xmakeExplorer.refresh();
         }
 
@@ -713,6 +731,7 @@ export class XMake implements vscode.Disposable {
         const success = await this.execCommandsSequentially("Build", commands);
         if (success) {
             this._optionChanged = false;
+            await this.updateIntellisense("build");
         }
     }
     async onBuildAll(target?: string) {
@@ -745,6 +764,7 @@ export class XMake implements vscode.Disposable {
         const success = await this.execCommandsSequentially("BuildAll", commands);
         if (success) {
             this._optionChanged = false;
+            await this.updateIntellisense("build");
         }
     }
 
@@ -789,6 +809,7 @@ export class XMake implements vscode.Disposable {
         const success = await this.execCommandsSequentially("Rebuild", commands);
         if (success) {
             this._optionChanged = false;
+            await this.updateIntellisense("build");
         }
     }
 
@@ -1339,7 +1360,7 @@ export class XMake implements vscode.Disposable {
     // on update intellisense
     async onUpdateIntellisense(target?: string) {
         if (this._enabled) {
-            await this.updateIntellisense();
+            await this.updateIntellisense("manual");
         }
     }
 

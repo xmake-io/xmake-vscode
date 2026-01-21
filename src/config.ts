@@ -73,6 +73,11 @@ export class Config {
         return utils.replaceVars(this.get<string>("compileCommandsBackend"));
     }
 
+    // enable automatic generation of compile_commands.json
+    get autoGenerateCompileCommands(): string {
+        return this.get<string>("autoGenerateCompileCommands");
+    }
+
     // the additional config arguments
     get additionalConfigArguments(): string[] {
         let values = this.get("additionalConfigArguments");

@@ -701,6 +701,21 @@
           "default": "clangd",
           "description": "Set the LSP backend for compile_commands"
         },
+        "xmake.autoGenerateCompileCommands": {
+          "type": "string",
+          "default": "onFileChange",
+          "description": "Automatic generation mode for compile_commands.json",
+          "enum": [
+            "onFileChange",
+            "onBuild",
+            "disabled"
+          ],
+          "enumDescriptions": [
+            "Generate compile_commands.json when xmake.lua changes",
+            "Generate compile_commands.json after building the project",
+            "Disable automatic generation of compile_commands.json"
+          ]
+        },
         "xmake.additionalConfigArguments": {
           "type": "array",
           "items": {
