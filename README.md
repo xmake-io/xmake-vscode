@@ -1,5 +1,5 @@
 <div align="center">
-  <a href="https://xmake.io">
+  <a href="https://github.com/xmake-io/xmake-vscode">
     <img width="200" heigth="200" src="https://github.com/xmake-io/xmake-vscode/raw/master/res/logo256.png">
   </a>
 
@@ -46,7 +46,7 @@ A XMake integration in Visual Studio Code.
 
 You need install [xmake](https://github.com/xmake-io/xmake) first and a project with `xmake.lua`.
 
-Please see [xmake-github](https://github.com/xmake-io/xmake) and [website](https://xmake.io) if you want to known more about xmake.
+Please see [xmake-github](https://github.com/xmake-io/xmake) and [website](https://xmake.io) if you want to know more about xmake.
 
 ## Features
 
@@ -443,7 +443,7 @@ Supported platform prefixes:
 
 ### Getting Help
 
-- **Documentation**: [XMake Official Documentation](https://xmake.io)
+- **Documentation**: [XMake Official Documentation](https://xmake.io/#/docs)
 - **Issues**: [GitHub Issues](https://github.com/xmake-io/xmake-vscode/issues)
 - **Community**: 
   - [Reddit](https://www.reddit.com/r/xmake/)
@@ -453,11 +453,11 @@ Supported platform prefixes:
 
 ## Contributing
 
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+Contributions are welcome! Please see [CONTRIBUTING.md](https://github.com/xmake-io/xmake-vscode/blob/master/CONTRIBUTING.md) for guidelines.
 
 ## License
 
-This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache License 2.0 - see the [LICENSE](https://github.com/xmake-io/xmake-vscode/blob/master/LICENSE) file for details.
 
 ## Donation
 
