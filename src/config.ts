@@ -168,6 +168,11 @@ export class Config {
     get statusShowDebug(): boolean {
         return this.get<boolean>("status.showDebug");
     }
+
+    // the status bar alignment
+    get statusAlignment(): string {
+        return this.get<string>("status.alignment");
+    }
 }
 
 // init the global config

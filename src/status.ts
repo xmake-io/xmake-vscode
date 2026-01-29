@@ -9,44 +9,34 @@ import {config} from './config';
 export class Status implements vscode.Disposable {
 
     // the xmake button
-    private readonly _xmakeButton = vscode.window.createStatusBarItem(
-        "Xmake", vscode.StatusBarAlignment.Right, 3100);
+    private _xmakeButton: vscode.StatusBarItem;
 
     // the project button
-    private readonly _projectButton = vscode.window.createStatusBarItem(
-        "Xmake Project", vscode.StatusBarAlignment.Right, 3000);
+    private _projectButton: vscode.StatusBarItem;
 
     // the platform button
-    private readonly _platButton = vscode.window.createStatusBarItem(
-        "Xmake Config: Platform", vscode.StatusBarAlignment.Right, 2900);
+    private _platButton: vscode.StatusBarItem;
 
     // the architecture button
-    private readonly _archButton = vscode.window.createStatusBarItem(
-        "Xmake Config: Arch", vscode.StatusBarAlignment.Right, 2800);
+    private _archButton: vscode.StatusBarItem;
 
     // the mode button
-    private readonly _modeButton = vscode.window.createStatusBarItem(
-        "Xmake Config: Mode", vscode.StatusBarAlignment.Right, 2700);
+    private _modeButton: vscode.StatusBarItem;
 
     // the toolchain
-    private readonly _toolChainButton = vscode.window.createStatusBarItem(
-        "Xmake Config: Toolchain", vscode.StatusBarAlignment.Right, 2600);
+    private _toolChainButton: vscode.StatusBarItem;
 
     // the build button
-    private readonly _buildButton = vscode.window.createStatusBarItem(
-        "Xmake Build", vscode.StatusBarAlignment.Right, 2500);
+    private _buildButton: vscode.StatusBarItem;
 
     // the target button
-    private readonly _targetButton = vscode.window.createStatusBarItem(
-        "Xmake Config: Target", vscode.StatusBarAlignment.Right, 2400);
+    private _targetButton: vscode.StatusBarItem;
 
     // the run button
-    private readonly _runButton = vscode.window.createStatusBarItem(
-        "Xmake Run", vscode.StatusBarAlignment.Right, 2300);
+    private _runButton: vscode.StatusBarItem;
 
     // the debug button
-    private readonly _debugButton = vscode.window.createStatusBarItem(
-        "Xmake Debug", vscode.StatusBarAlignment.Right, 2200);
+    private _debugButton: vscode.StatusBarItem;
 
     // is visible?
     private _visible: boolean = true;
@@ -57,55 +47,128 @@ export class Status implements vscode.Disposable {
     // the constructor
     constructor() {
 
+        // create buttons
+        this.createButtons();
+
+        // update visibility on config change
+        this._disposables.push(vscode.workspace.onDidChangeConfiguration(e => {
+            if (e.affectsConfiguration('xmake.status')) {
+                if (e.affectsConfiguration('xmake.status.alignment')) {
+                    this.createButtons(true);
+                } else {
+                    this.updateVisibility();
+                }
+            }
+        }));
+
+        // update visibility
+        this.updateVisibility();
+    }
+
+    // create buttons
+    private createButtons(restore: boolean = false) {
+
+        // save texts
+        let xmakeButtonText = this._xmakeButton ? this._xmakeButton.text : null;
+        let projectButtonText = this._projectButton ? this._projectButton.text : null;
+        let platButtonText = this._platButton ? this._platButton.text : null;
+        let archButtonText = this._archButton ? this._archButton.text : null;
+        let modeButtonText = this._modeButton ? this._modeButton.text : null;
+        let toolChainButtonText = this._toolChainButton ? this._toolChainButton.text : null;
+        let buildButtonText = this._buildButton ? this._buildButton.text : null;
+        let targetButtonText = this._targetButton ? this._targetButton.text : null;
+        let runButtonText = this._runButton ? this._runButton.text : null;
+        let debugButtonText = this._debugButton ? this._debugButton.text : null;
+
+        // dispose old buttons
+        if (this._xmakeButton) { this._xmakeButton.hide(); this._xmakeButton.dispose(); }
+        if (this._projectButton) { this._projectButton.hide(); this._projectButton.dispose(); }
+        if (this._platButton) { this._platButton.hide(); this._platButton.dispose(); }
+        if (this._archButton) { this._archButton.hide(); this._archButton.dispose(); }
+        if (this._modeButton) { this._modeButton.hide(); this._modeButton.dispose(); }
+        if (this._toolChainButton) { this._toolChainButton.hide(); this._toolChainButton.dispose(); }
+        if (this._buildButton) { this._buildButton.hide(); this._buildButton.dispose(); }
+        if (this._targetButton) { this._targetButton.hide(); this._targetButton.dispose(); }
+        if (this._runButton) { this._runButton.hide(); this._runButton.dispose(); }
+        if (this._debugButton) { this._debugButton.hide(); this._debugButton.dispose(); }
+
+        // get alignment
+        let alignment = vscode.StatusBarAlignment.Right;
+        let idSuffix = "";
+        if (config.statusAlignment === 'left') {
+            alignment = vscode.StatusBarAlignment.Left;
+            idSuffix = " (Left)";
+        }
+
         // init xmake button
+        this._xmakeButton = vscode.window.createStatusBarItem(
+            "Xmake" + idSuffix, alignment, 3100);
         this._xmakeButton.command = 'xmake.onShowExplorer';
-        this._xmakeButton.text = `$(xmake-logo) Xmake`;
+        this._xmakeButton.text = restore && xmakeButtonText ? xmakeButtonText : `$(xmake-logo) Xmake`;
         this._xmakeButton.tooltip = "Show Xmake Explorer";
 
         // init project button
+        this._projectButton = vscode.window.createStatusBarItem(
+            "Xmake Project" + idSuffix, alignment, 3000);
         this._projectButton.command = 'xmake.setProjectRoot';
-        this._projectButton.text = `Xmake:`;
+        this._projectButton.text = restore && projectButtonText ? projectButtonText : `Xmake:`;
         this._projectButton.tooltip = "Set the project root directory";
 
         // init platform button
+        this._platButton = vscode.window.createStatusBarItem(
+            "Xmake Config: Platform" + idSuffix, alignment, 2900);
         this._platButton.command = 'xmake.setTargetPlat';
-        this._platButton.text = `macosx`;
+        this._platButton.text = restore && platButtonText ? platButtonText : `macosx`;
         this._platButton.tooltip = "Set the target platform";
 
         // init architecture button
+        this._archButton = vscode.window.createStatusBarItem(
+            "Xmake Config: Arch" + idSuffix, alignment, 2800);
         this._archButton.command = 'xmake.setTargetArch';
-        this._archButton.text = `x86_64`;
+        this._archButton.text = restore && archButtonText ? archButtonText : `x86_64`;
         this._archButton.tooltip = "Set the target architecture";
 
         // init mode button
+        this._modeButton = vscode.window.createStatusBarItem(
+            "Xmake Config: Mode" + idSuffix, alignment, 2700);
         this._modeButton.command = 'xmake.setBuildMode';
-        this._modeButton.text = `debug`;
+        this._modeButton.text = restore && modeButtonText ? modeButtonText : `debug`;
         this._modeButton.tooltip = "Set build mode";
 
+        // init toolchain button
+        this._toolChainButton = vscode.window.createStatusBarItem(
+            "Xmake Config: Toolchain" + idSuffix, alignment, 2600);
+        this._toolChainButton.command = 'xmake.setTargetToolchain';
+        this._toolChainButton.text = restore && toolChainButtonText ? toolChainButtonText : `toolchain`;
+        this._toolChainButton.tooltip = "change the toolchain";
+
         // init build button, icons: https://octicons.github.com/
+        this._buildButton = vscode.window.createStatusBarItem(
+            "Xmake Build" + idSuffix, alignment, 2500);
         this._buildButton.command = 'xmake.onBuild';
-        this._buildButton.text = `$(xmake-build)`;
+        this._buildButton.text = restore && buildButtonText ? buildButtonText : `$(xmake-build)`;
         this._buildButton.tooltip = "Build the given target";
 
         // init target button
+        this._targetButton = vscode.window.createStatusBarItem(
+            "Xmake Config: Target" + idSuffix, alignment, 2400);
         this._targetButton.command = 'xmake.setDefaultTarget';
-        this._targetButton.text = `default`;
+        this._targetButton.text = restore && targetButtonText ? targetButtonText : `default`;
         this._targetButton.tooltip = "Set the default target";
 
         // init run button
+        this._runButton = vscode.window.createStatusBarItem(
+            "Xmake Run" + idSuffix, alignment, 2300);
         this._runButton.command = 'xmake.onRun';
-        this._runButton.text = `$(play)`;
+        this._runButton.text = restore && runButtonText ? runButtonText : `$(play)`;
         this._runButton.tooltip = "Run the given target";
 
         // init debug button
+        this._debugButton = vscode.window.createStatusBarItem(
+            "Xmake Debug" + idSuffix, alignment, 2200);
         this._debugButton.command = 'xmake.onDebug';
-        this._debugButton.text = `$(bug)`;
+        this._debugButton.text = restore && debugButtonText ? debugButtonText : `$(bug)`;
         this._debugButton.tooltip = "Debug the given target";
-
-        // init toolchain button
-        this._toolChainButton.command = 'xmake.setTargetToolchain';
-        this._toolChainButton.text = `toolchain`;
-        this._toolChainButton.tooltip = "change the toolchain";
 
         for (let item of [
             this._xmakeButton,
@@ -121,13 +184,6 @@ export class Status implements vscode.Disposable {
         ]) {
             item.name = item.id;
         }
-
-        // update visibility on config change
-        this._disposables.push(vscode.workspace.onDidChangeConfiguration(e => {
-            if (e.affectsConfiguration('xmake.status')) {
-                this.updateVisibility();
-            }
-        }));
 
         // update visibility
         this.updateVisibility();
@@ -148,7 +204,7 @@ export class Status implements vscode.Disposable {
             this._debugButton,
             this._toolChainButton
         ]) {
-            item.dispose();
+            if (item) item.dispose();
         }
 
         for (const disposable of this._disposables) {
@@ -172,10 +228,12 @@ export class Status implements vscode.Disposable {
         ];
 
         for (const { item, show } of buttons) {
-            if (this.visible && !!item.text && show) {
-                item.show();
-            } else {
-                item.hide();
+            if (item) {
+                if (this.visible && !!item.text && show) {
+                    item.show();
+                } else {
+                    item.hide();
+                }
             }
         }
     }
@@ -193,62 +251,74 @@ export class Status implements vscode.Disposable {
 
     // set the project root
     public set project(value: string) {
-        this._projectButton.text = `Xmake: ${value}`;
+        if (this._projectButton) {
+            this._projectButton.text = `Xmake: ${value}`;
+        }
     }
 
     // get the project root
     public get project(): string {
-        return this._projectButton.text.replace('Xmake: ', '');
+        return this._projectButton ? this._projectButton.text.replace('Xmake: ', '') : "";
     }
 
     // set the target platform
     public set plat(value: string) {
-        this._platButton.text = value;
+        if (this._platButton) {
+            this._platButton.text = value;
+        }
     }
 
     // get the target platform
     public get plat(): string {
-        return this._platButton.text;
+        return this._platButton ? this._platButton.text : "";
     }
 
     // set the toolchain
     public set toolchain(value: string) {
-        this._toolChainButton.text = value;
+        if (this._toolChainButton) {
+            this._toolChainButton.text = value;
+        }
     }
 
     // get the toolchain
     public get toolchain(): string {
-        return this._toolChainButton.text;
+        return this._toolChainButton ? this._toolChainButton.text : "";
     }
 
     // set the target architecture
     public set arch(value: string) {
-        this._archButton.text = value;
+        if (this._archButton) {
+            this._archButton.text = value;
+        }
     }
 
     // get the target architecture
     public get arch(): string {
-        return this._archButton.text;
+        return this._archButton ? this._archButton.text : "";
     }
 
     // set the build mode
     public set mode(value: string) {
-        this._modeButton.text = value;
+        if (this._modeButton) {
+            this._modeButton.text = value;
+        }
     }
 
     // get the build mode
     public get mode(): string {
-        return this._modeButton.text;
+        return this._modeButton ? this._modeButton.text : "";
     }
 
     // set the default target
     public set target(value: string) {
-        this._targetButton.text = value;
+        if (this._targetButton) {
+            this._targetButton.text = value;
+        }
     }
 
     // get the default target
     public get target(): string {
-        return this._targetButton.text;
+        return this._targetButton ? this._targetButton.text : "";
     }
 
     // start to record

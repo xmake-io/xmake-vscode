@@ -823,6 +823,15 @@
           "type": "boolean",
           "default": true,
           "description": "Show debug button in status bar"
+        },
+        "xmake.status.alignment": {
+          "type": "string",
+          "default": "right",
+          "description": "The Status Bar Alignment: right/left",
+          "enum": [
+            "right",
+            "left"
+          ]
         }
       }
     },
