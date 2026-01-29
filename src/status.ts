@@ -29,6 +29,9 @@ export class Status implements vscode.Disposable {
     // the build button
     private _buildButton: vscode.StatusBarItem;
 
+    // the rebuild button
+    private _rebuildButton: vscode.StatusBarItem;
+
     // the target button
     private _targetButton: vscode.StatusBarItem;
 
@@ -76,6 +79,7 @@ export class Status implements vscode.Disposable {
         let modeButtonText = this._modeButton ? this._modeButton.text : null;
         let toolChainButtonText = this._toolChainButton ? this._toolChainButton.text : null;
         let buildButtonText = this._buildButton ? this._buildButton.text : null;
+        let rebuildButtonText = this._rebuildButton ? this._rebuildButton.text : null;
         let targetButtonText = this._targetButton ? this._targetButton.text : null;
         let runButtonText = this._runButton ? this._runButton.text : null;
         let debugButtonText = this._debugButton ? this._debugButton.text : null;
@@ -88,6 +92,7 @@ export class Status implements vscode.Disposable {
         if (this._modeButton) { this._modeButton.hide(); this._modeButton.dispose(); }
         if (this._toolChainButton) { this._toolChainButton.hide(); this._toolChainButton.dispose(); }
         if (this._buildButton) { this._buildButton.hide(); this._buildButton.dispose(); }
+        if (this._rebuildButton) { this._rebuildButton.hide(); this._rebuildButton.dispose(); }
         if (this._targetButton) { this._targetButton.hide(); this._targetButton.dispose(); }
         if (this._runButton) { this._runButton.hide(); this._runButton.dispose(); }
         if (this._debugButton) { this._debugButton.hide(); this._debugButton.dispose(); }
@@ -149,6 +154,13 @@ export class Status implements vscode.Disposable {
         this._buildButton.text = restore && buildButtonText ? buildButtonText : `$(xmake-build)`;
         this._buildButton.tooltip = "Build the given target";
 
+        // init rebuild button
+        this._rebuildButton = vscode.window.createStatusBarItem(
+            "Xmake Rebuild" + idSuffix, alignment, 2450);
+        this._rebuildButton.command = 'xmake.onRebuild';
+        this._rebuildButton.text = restore && rebuildButtonText ? rebuildButtonText : `$(refresh)`;
+        this._rebuildButton.tooltip = "Rebuild the given target";
+
         // init target button
         this._targetButton = vscode.window.createStatusBarItem(
             "Xmake Config: Target" + idSuffix, alignment, 2400);
@@ -177,6 +189,7 @@ export class Status implements vscode.Disposable {
             this._archButton,
             this._modeButton,
             this._buildButton,
+            this._rebuildButton,
             this._targetButton,
             this._runButton,
             this._debugButton,
@@ -199,6 +212,7 @@ export class Status implements vscode.Disposable {
             this._archButton,
             this._modeButton,
             this._buildButton,
+            this._rebuildButton,
             this._targetButton,
             this._runButton,
             this._debugButton,
@@ -221,6 +235,7 @@ export class Status implements vscode.Disposable {
             { item: this._archButton, show: config.statusShowArch },
             { item: this._modeButton, show: config.statusShowMode },
             { item: this._buildButton, show: config.statusShowBuild },
+            { item: this._rebuildButton, show: config.statusShowRebuild },
             { item: this._targetButton, show: config.statusShowTarget },
             { item: this._runButton, show: config.statusShowRun },
             { item: this._debugButton, show: config.statusShowDebug },

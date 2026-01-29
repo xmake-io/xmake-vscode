@@ -814,6 +814,11 @@
           "default": true,
           "description": "Show build button in status bar"
         },
+        "xmake.status.showRebuild": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show rebuild button in status bar"
+        },
         "xmake.status.showRun": {
           "type": "boolean",
           "default": true,

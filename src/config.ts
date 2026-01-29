@@ -159,6 +159,11 @@ export class Config {
         return this.get<boolean>("status.showBuild");
     }
 
+    // show rebuild button in status bar
+    get statusShowRebuild(): boolean {
+        return this.get<boolean>("status.showRebuild");
+    }
+
     // show run button in status bar
     get statusShowRun(): boolean {
         return this.get<boolean>("status.showRun");
