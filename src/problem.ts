@@ -5,7 +5,6 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import * as encoding from 'encoding';
 import {log} from './log';
 import {config} from './config';
 
@@ -43,19 +42,53 @@ export class ProblemList implements vscode.Disposable {
         // exists logfile?
         if (logfile) {
 
+            // Judge the encoding method
+            const iconv = require("iconv-lite");
+
+            const isUtf8Bom = (buffer: Buffer) => buffer.length >= 3 && buffer[0] === 0xEF && buffer[1] === 0xBB && buffer[2] === 0xBF;
+            const isUtf16LeBom = (buffer: Buffer) => buffer.length >= 2 && buffer[0] === 0xFF && buffer[1] === 0xFE;
+            const isUtf16BeBom = (buffer: Buffer) => buffer.length >= 2 && buffer[0] === 0xFE && buffer[1] === 0xFF;
+
+            const decodeWithConfidence = (buffer: Buffer): { encoding: string, text: string } => {
+                if (isUtf8Bom(buffer)) {
+                    return { encoding: "utf8-bom", text: buffer.slice(3).toString("utf8") };
+                }
+                if (isUtf16LeBom(buffer)) {
+                    return { encoding: "utf16le-bom", text: iconv.decode(buffer.slice(2), "utf16le") };
+                }
+                if (isUtf16BeBom(buffer)) {
+                    return { encoding: "utf16be-bom", text: iconv.decode(buffer.slice(2), "utf16be") };
+                }
+
+                const utf8Text = buffer.toString("utf8");
+                if (Buffer.from(utf8Text, "utf8").equals(buffer)) {
+                    return { encoding: "utf8", text: utf8Text };
+                }
+
+                const gbkText = iconv.decode(buffer, "gbk");
+                if (iconv.encode(gbkText, "gbk").equals(buffer)) {
+                    return { encoding: "gbk", text: gbkText };
+                }
+
+                const utf8ReplacementCount = (utf8Text.match(/\uFFFD/g) || []).length;
+                const gbkReplacementCount = (gbkText.match(/\uFFFD/g) || []).length;
+                if (gbkReplacementCount < utf8ReplacementCount) {
+                    return { encoding: "gbk-fallback", text: gbkText };
+                }
+
+                return { encoding: "utf8-fallback", text: utf8Text };
+            };
+
             // on windows?
             const isWin = os.platform() == "win32";
 
             // read the log file
-            fs.readFile(logfile, isWin? null : "utf8", (err, content) => {
+            fs.readFile(logfile, null, (err, content) => {
 
                 if (!err && content) {
-
-                    // convert gbk to utf8
-                    let text = content;
-                    if (isWin) {
-                        text = encoding.convert(content, "utf8", "gbk").toString();
-                    }
+                    const decoded = decodeWithConfidence(content);
+                    const text = decoded.text;
+                    // log.verbose(`diagnose logfile encoding: ${decoded.encoding}`);
 
                     // init regex of gcc/clang output
                     const rOutputGcc: RegExp = new RegExp("^(error: )?(.*?):([0-9]*):([0-9]*): (.*?): (.*)$");
