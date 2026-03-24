@@ -57,7 +57,13 @@ export class Terminal implements vscode.Disposable {
 
         var options = {"cwd": config.workingDirectory};
         if (withlog) {
-            options["env"] = {XMAKE_LOGFILE: this.logfile};
+            options["env"] = {
+                XMAKE_LOGFILE: this.logfile,
+                XMAKE_COLORTERM: "nocolor",
+                COLORTERM: "nocolor",
+                NO_COLOR: "1",
+                CLICOLOR: "0"
+            };
         }
 
         const kind: vscode.TaskDefinition = {
@@ -79,7 +85,13 @@ export class Terminal implements vscode.Disposable {
 
         var options = {"cwd": config.workingDirectory};
         if (withlog) {
-            options["env"] = {XMAKE_LOGFILE: this.logfile};
+            options["env"] = {
+                XMAKE_LOGFILE: this.logfile,
+                XMAKE_COLORTERM: "nocolor",
+                COLORTERM: "nocolor",
+                NO_COLOR: "1",
+                CLICOLOR: "0"
+            };
         }
 
         const kind: vscode.TaskDefinition = {

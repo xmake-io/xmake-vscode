@@ -7,7 +7,7 @@ import * as path from 'path';
 import * as os from 'os';
 import {log} from './log';
 import {config} from './config';
-import {decodeBufferWithConfidence} from './utils';
+import {decodeBufferWithConfidence, sanitizeBuildLogText} from './utils';
 
 // the problem list class
 export class ProblemList implements vscode.Disposable {
@@ -50,7 +50,7 @@ export class ProblemList implements vscode.Disposable {
 
                 if (!err && content) {
                     const decoded = decodeBufferWithConfidence(content);
-                    const text = decoded.text;
+                    const text = sanitizeBuildLogText(decoded.text);
                     // log.verbose(`diagnose logfile encoding: ${decoded.encoding}`);
 
                     // init regex of gcc/clang output

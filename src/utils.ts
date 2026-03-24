@@ -114,6 +114,23 @@ export function decodeBufferWithConfidence(buffer: Buffer): { encoding: string; 
     return { encoding: 'utf8-fallback', text: utf8Text };
 }
 
+// Remove terminal control bytes so diagnostics parser gets stable plain text.
+export function sanitizeBuildLogText(text: string): string {
+    let cleaned = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+
+    // Strip ANSI escape sequences (e.g. colors, cursor controls).
+    cleaned = cleaned.replace(/\u001B\[[0-?]*[ -/]*[@-~]/g, '');
+
+    // Apply backspaces to avoid broken words from in-place terminal updates.
+    while (/\x08/.test(cleaned)) {
+        cleaned = cleaned.replace(/[^\n]\x08/g, '').replace(/\x08/g, '');
+    }
+
+    // Remove other non-printable control chars but keep tab/newline.
+    cleaned = cleaned.replace(/[\x00-\x08\x0B-\x1F\x7F]/g, '');
+    return cleaned;
+}
+
 // simplistic function for just checking if a string can be parsed as json
 export function isJson(text?: string): boolean {
     try {
