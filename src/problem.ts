@@ -5,9 +5,9 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import * as encoding from 'encoding';
 import {log} from './log';
 import {config} from './config';
+import {decodeBufferWithConfidence} from './utils';
 
 // the problem list class
 export class ProblemList implements vscode.Disposable {
@@ -42,20 +42,16 @@ export class ProblemList implements vscode.Disposable {
 
         // exists logfile?
         if (logfile) {
-
             // on windows?
             const isWin = os.platform() == "win32";
 
             // read the log file
-            fs.readFile(logfile, isWin? null : "utf8", (err, content) => {
+            fs.readFile(logfile, null, (err, content) => {
 
                 if (!err && content) {
-
-                    // convert gbk to utf8
-                    let text = content;
-                    if (isWin) {
-                        text = encoding.convert(content, "utf8", "gbk").toString();
-                    }
+                    const decoded = decodeBufferWithConfidence(content);
+                    const text = decoded.text;
+                    // log.verbose(`diagnose logfile encoding: ${decoded.encoding}`);
 
                     // init regex of gcc/clang output
                     const rOutputGcc: RegExp = new RegExp("^(error: )?(.*?):([0-9]*):([0-9]*): (.*?): (.*)$");

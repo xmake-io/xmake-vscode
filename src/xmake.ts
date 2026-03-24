@@ -264,15 +264,16 @@ export class XMake implements vscode.Disposable {
 
     // init watcher
     async initWatcher() {
+        const workingDirectoryUri = vscode.Uri.file(config.workingDirectory);
 
         // init log file system watcher
-        this._logFileSystemWatcher = vscode.workspace.createFileSystemWatcher(".xmake/**/vscode-build.log");
+        this._logFileSystemWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workingDirectoryUri, ".xmake/**/vscode-build.log"));
         this._logFileSystemWatcher.onDidCreate(this.onLogFileUpdated.bind(this));
         this._logFileSystemWatcher.onDidChange(this.onLogFileUpdated.bind(this));
         this._logFileSystemWatcher.onDidDelete(this.onLogFileDeleted.bind(this));
 
         // init config file system watcher
-        this._configFileSystemWatcher = vscode.workspace.createFileSystemWatcher(".xmake/**/xmake.conf");
+        this._configFileSystemWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workingDirectoryUri, ".xmake/**/xmake.conf"));
         this._configFileSystemWatcher.onDidCreate(this.onConfigFileUpdated.bind(this));
         this._configFileSystemWatcher.onDidChange(this.onConfigFileUpdated.bind(this));
 
