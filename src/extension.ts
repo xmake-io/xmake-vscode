@@ -9,105 +9,195 @@ import * as path from 'path';
 import { XMake } from './xmake';
 import { config } from './config';
 
+function isXmakeLua(filePath: string): boolean {
+  return path.basename(filePath).toLowerCase() === 'xmake.lua';
+}
+
+function shouldSwitchProjectRoot(detectedRoot: string): boolean {
+  const currentRoot = utils.getProjectRoot();
+  if (!currentRoot) {
+    return true;
+  }
+  if (currentRoot === detectedRoot) {
+    return false;
+  }
+  return !fs.existsSync(path.join(currentRoot, 'xmake.lua'));
+}
+
+function tryDetectProjectRootFromDocument(document?: vscode.TextDocument): boolean {
+  if (!document || document.isUntitled || !isXmakeLua(document.fileName)) {
+    return false;
+  }
+
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
+  if (!workspaceFolder) {
+    return false;
+  }
+
+  const detectedRoot = path.dirname(document.fileName);
+  if (shouldSwitchProjectRoot(detectedRoot)) {
+    utils.setProjectRoot(detectedRoot);
+    return true;
+  }
+  return false;
+}
+
+async function tryDetectProjectRoot(): Promise<boolean> {
+  // Prefer the active editor if it is an xmake.lua file.
+  if (tryDetectProjectRootFromDocument(vscode.window.activeTextEditor?.document)) {
+    return true;
+  }
+
+  // Then scan currently opened documents.
+  for (const document of vscode.workspace.textDocuments) {
+    if (tryDetectProjectRootFromDocument(document)) {
+      return true;
+    }
+  }
+
+  // Finally, search the workspace for the first xmake.lua file.
+  const files = await vscode.workspace.findFiles('**/xmake.lua', '**/.xmake/**', 1);
+  if (files.length > 0) {
+    const detectedRoot = path.dirname(files[0].fsPath);
+    if (shouldSwitchProjectRoot(detectedRoot)) {
+      utils.setProjectRoot(detectedRoot);
+      return true;
+    }
+  }
+  return false;
+}
+
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
+  // this extension is activated!
+  console.log('xmake-vscode: actived!');
 
-    // this extension is activated!
-    console.log('xmake-vscode: actived!');
+  // init xmake plugin
+  const xmake = new XMake(context);
+  context.subscriptions.push(xmake);
 
-    // init xmake plugin
-    const xmake = new XMake(context);
-    context.subscriptions.push(xmake);
+  // register all commands of the xmake plugin
+  function register(name, fn) {
+    fn = fn.bind(xmake);
+    const slot = async target => {
+      if (!utils.getProjectRoot()) {
+        if (
+          !!(await vscode.window.showErrorMessage(
+            'no opened folder!',
+            'Open a directory first!',
+          ))
+        ) {
+          vscode.commands.executeCommand('vscode.openFolder');
+        }
+        return;
+      }
 
-    // register all commands of the xmake plugin
-    function register(name, fn) {
+      // check xmake
+      if (
+        0 !=
+        (
+          await process.runv(
+            config.executable,
+            ['--version'],
+            { COLORTERM: 'nocolor' },
+            config.workingDirectory,
+          )
+        ).retval
+      ) {
+        if (
+          !!(await vscode.window.showErrorMessage(
+            'xmake not found!',
+            'Access https://xmake.io to download and install xmake first!',
+          ))
+        ) {
+        }
+        return;
+      }
 
-        fn = fn.bind(xmake);
-        const slot = async (target) => {
-            if (!utils.getProjectRoot()) {
-                if (!!(await vscode.window.showErrorMessage('no opened folder!',
-                    'Open a directory first!'))) {
-                    vscode.commands.executeCommand('vscode.openFolder');
-                }
-                return;
+      // valid xmake project?
+      switch (name) {
+        case 'xmake.onCreateProject':
+          if (fs.existsSync(path.join(config.workingDirectory, 'xmake.lua'))) {
+            if (
+              !(await vscode.window.showErrorMessage(
+                'xmake.lua already exists!',
+                'continue',
+              ))
+            ) {
+              return;
             }
+          }
+          break;
 
+        case 'xmake.onShowExplorer':
+          break;
 
-            // check xmake
-            if (0 != (await process.runv(config.executable, ["--version"], { "COLORTERM": "nocolor" }, config.workingDirectory)).retval) {
-                if (!!(await vscode.window.showErrorMessage('xmake not found!',
-                    'Access https://xmake.io to download and install xmake first!'))) {
-                }
-                return;
+        default:
+          if (!fs.existsSync(path.join(config.workingDirectory, 'xmake.lua'))) {
+            if (
+              !!(await vscode.window.showErrorMessage(
+                'xmake.lua not found!',
+                'Create a new xmake project',
+              ))
+            ) {
+              await xmake.createProject();
             }
+            return;
+          }
+          break;
+      }
 
-            // valid xmake project?
-            switch (name) {
-                case 'xmake.onCreateProject':
-                    if (fs.existsSync(path.join(config.workingDirectory, "xmake.lua"))) {
-                        if (!(await vscode.window.showErrorMessage('xmake.lua already exists!',
-                            'continue'))) {
-                            return;
-                        }
-                    }
-                    break;
-                
-                case 'xmake.onShowExplorer':
-                    break;
+      fn(target);
+    };
 
-                default:
-                    if (!fs.existsSync(path.join(config.workingDirectory, "xmake.lua"))) {
-                        if (!!(await vscode.window.showErrorMessage('xmake.lua not found!',
-                            'Create a new xmake project'))) {
-                            await xmake.createProject();
-                        }
-                        return;
-                    }
-                    break;
-            }
+    return vscode.commands.registerCommand(name, slot);
+  }
+  for (const key of [
+    'onCreateProject',
+    'onNewFiles',
+    'onForceConfigure',
+    'onCleanConfigure',
+    'onBuild',
+    'onBuildAll',
+    'onRebuild',
+    'onClean',
+    'onCleanAll',
+    'onBuildRun',
+    'onRun',
+    'onPackage',
+    'onInstall',
+    'onUninstall',
+    'onDebug',
+    'onLaunchDebug',
+    'onMacroBegin',
+    'onMacroEnd',
+    'onMacroRun',
+    'onRunLastCommand',
+    'onUpdateIntellisense',
+    'onShowExplorer',
+    'setProjectRoot',
+    'setTargetPlat',
+    'setTargetArch',
+    'setBuildMode',
+    'setDefaultTarget',
+    'setTarget',
+    'setTargetToolchain',
+  ]) {
+    context.subscriptions.push(register('xmake.' + key, xmake[key]));
+  }
 
-            fn(target);
-        };
+  context.subscriptions.push(
+    vscode.workspace.onDidOpenTextDocument(async document => {
+      if (tryDetectProjectRootFromDocument(document)) {
+        await xmake.start();
+      }
+    }),
+  );
 
-        return vscode.commands.registerCommand(name, slot);
-    }
-    for (const key of [
-        'onCreateProject',
-        'onNewFiles',
-        'onForceConfigure',
-        'onCleanConfigure',
-        'onBuild',
-        'onBuildAll',
-        'onRebuild',
-        'onClean',
-        'onCleanAll',
-        'onBuildRun',
-        'onRun',
-        'onPackage',
-        'onInstall',
-        'onUninstall',
-        'onDebug',
-        'onLaunchDebug',
-        'onMacroBegin',
-        'onMacroEnd',
-        'onMacroRun',
-        'onRunLastCommand',
-        'onUpdateIntellisense',
-        'onShowExplorer',
-        'setProjectRoot',
-        'setTargetPlat',
-        'setTargetArch',
-        'setBuildMode',
-        'setDefaultTarget',
-        'setTarget',
-        'setTargetToolchain'
-    ]) {
-        context.subscriptions.push(register('xmake.' + key, xmake[key]));
-    }
-
-    // start xmake plugin
-    await xmake.start();
+  // start xmake plugin
+  await tryDetectProjectRoot();
+  await xmake.start();
 }
 
 // this method is called when your extension is deactivated
