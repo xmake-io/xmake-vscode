@@ -18,10 +18,7 @@ function shouldSwitchProjectRoot(detectedRoot: string): boolean {
   if (!currentRoot) {
     return true;
   }
-  if (currentRoot === detectedRoot) {
-    return false;
-  }
-  return !fs.existsSync(path.join(currentRoot, 'xmake.lua'));
+  return currentRoot !== detectedRoot;
 }
 
 function tryDetectProjectRootFromDocument(document?: vscode.TextDocument): boolean {
@@ -78,9 +75,9 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(xmake);
 
   // register all commands of the xmake plugin
-  function register(name, fn) {
+  function register(name: string, fn: (...args: any[]) => any) {
     fn = fn.bind(xmake);
-    const slot = async target => {
+    const slot = async (target: any) => {
       if (!utils.getProjectRoot()) {
         if (
           !!(await vscode.window.showErrorMessage(
@@ -105,12 +102,12 @@ export async function activate(context: vscode.ExtensionContext) {
           )
         ).retval
       ) {
-        if (
-          !!(await vscode.window.showErrorMessage(
-            'xmake not found!',
-            'Access https://xmake.io to download and install xmake first!',
-          ))
-        ) {
+        const choice = await vscode.window.showErrorMessage(
+          'xmake not found!',
+          'Install XMake',
+        );
+        if (choice === 'Install XMake') {
+          await vscode.env.openExternal(vscode.Uri.parse('https://xmake.io'));
         }
         return;
       }
@@ -184,13 +181,13 @@ export async function activate(context: vscode.ExtensionContext) {
     'setTarget',
     'setTargetToolchain',
   ]) {
-    context.subscriptions.push(register('xmake.' + key, xmake[key]));
+    context.subscriptions.push(register('xmake.' + key, (xmake as any)[key]));
   }
 
   context.subscriptions.push(
     vscode.workspace.onDidOpenTextDocument(async document => {
       if (tryDetectProjectRootFromDocument(document)) {
-        await xmake.start();
+        await xmake.onProjectRootChanged();
       }
     }),
   );
