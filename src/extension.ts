@@ -67,6 +67,7 @@ async function tryDetectProjectRoot(): Promise<boolean> {
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export async function activate(context: vscode.ExtensionContext) {
+
     // this extension is activated!
     console.log('xmake-vscode: actived!');
 
@@ -100,7 +101,7 @@ export async function activate(context: vscode.ExtensionContext) {
             // valid xmake project?
             switch (name) {
                 case 'xmake.onCreateProject':
-                    if (fs.existsSync(path.join(config.workingDirectory, 'xmake.lua'))) {
+                    if (fs.existsSync(path.join(config.workingDirectory, "xmake.lua"))) {
                         if (!(await vscode.window.showErrorMessage('xmake.lua already exists!',
                             'continue'))) {
                             return;
@@ -112,7 +113,7 @@ export async function activate(context: vscode.ExtensionContext) {
                     break;
 
                 default:
-                    if (!fs.existsSync(path.join(config.workingDirectory, 'xmake.lua'))) {
+                    if (!fs.existsSync(path.join(config.workingDirectory, "xmake.lua"))) {
                         if (!!(await vscode.window.showErrorMessage('xmake.lua not found!',
                             'Create a new xmake project'))) {
                             await xmake.createProject();
@@ -156,7 +157,7 @@ export async function activate(context: vscode.ExtensionContext) {
         'setBuildMode',
         'setDefaultTarget',
         'setTarget',
-        'setTargetToolchain',
+        'setTargetToolchain'
     ]) {
         context.subscriptions.push(register('xmake.' + key, (xmake as any)[key]));
     }
