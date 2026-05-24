@@ -1,5 +1,5 @@
 -- imports
-import("core.project.template")
+import("actions.create.template", {rootdir = os.programdir()})
 
 -- main entry
 function main()
