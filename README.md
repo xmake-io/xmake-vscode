@@ -451,6 +451,71 @@ Supported platform prefixes:
   - [Telegram](https://t.me/tbooxorg)
   - [QQ Group](https://jq.qq.com/?_wv=1027&k=5hpwWFv)
 
+## Building from Source
+
+If you want to hack on the extension itself, build a local `.vsix`, or publish a new release.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) >= 16
+- [Yarn](https://yarnpkg.com/) (this project uses `yarn.lock`)
+- [vsce](https://github.com/microsoft/vscode-vsce) for packaging/publishing:
+  ```console
+  $ npm install -g @vscode/vsce
+  ```
+
+### Install dependencies
+
+Always run this first after cloning, or whenever `package.json` / `yarn.lock` changes:
+
+```console
+$ yarn install
+```
+
+Skipping this step makes the TypeScript compile fail with hundreds of `Cannot find module 'vscode'` / `Cannot find name 'require'` errors — the type packages (`@types/node`, `@types/vscode`, `iconv-lite`, ...) live under `node_modules/`.
+
+### Compile
+
+```console
+$ yarn run compile        # one-shot build
+$ yarn run watch          # incremental rebuild on save
+```
+
+Press `F5` inside VSCode to launch an Extension Development Host with the local build loaded — ideal for testing changes interactively.
+
+### Package a local .vsix
+
+```console
+$ ./package.sh            # runs `vsce package` and produces xmake-vscode-<version>.vsix
+```
+
+You can install the resulting `.vsix` in VSCode via `Extensions: Install from VSIX...`.
+
+### Publish a release
+
+One-time publisher setup:
+
+```console
+$ vsce create-publisher <publisher-name>
+$ vsce login <publisher-name>
+```
+
+Then bump the version in `package.json` and run:
+
+```console
+$ ./publish.sh <version>  # e.g. ./publish.sh 2.5.7
+```
+
+`publish.sh` invokes `vsce publish <version>`, which triggers the `vscode:prepublish` hook → `npm run compile`. So dependencies must be installed first (`yarn install`).
+
+To also publish on [Open VSX](https://open-vsx.org/):
+
+```console
+$ ovsx publish --pat <token>
+```
+
+See [CONTRIBUTING.md](https://github.com/xmake-io/xmake-vscode/blob/master/CONTRIBUTING.md) for the full contributor guide (中文版同样可见).
+
 ## Contributing
 
 Contributions are welcome! Please see [CONTRIBUTING.md](https://github.com/xmake-io/xmake-vscode/blob/master/CONTRIBUTING.md) for guidelines.
