@@ -25,26 +25,53 @@ try to follow these guidelines when you do so.
 
 ## Install environment
 
-#### Create empty project
+#### Prerequisites
+
+- [Node.js](https://nodejs.org/) (>= 16)
+- [Yarn](https://yarnpkg.com/) (this project uses `yarn.lock`)
+- [vsce](https://github.com/microsoft/vscode-vsce) for packaging/publishing:
 
 ```console
-$ npm install -g yo generator-code
-$ yo code
+$ npm install -g @vscode/vsce
 ```
 
-#### Create publisher
+#### Install dependencies
+
+Always run this first after cloning, or when `package.json` / `yarn.lock` changes. Without it, TypeScript can't find `vscode`, `@types/node`, `iconv-lite`, etc. and the compile will fail.
 
 ```console
-$ npm install -g vsce
-$ vsce create-publisher (publisher name)
-$ vsce login (publisher name)
+$ yarn install
 ```
 
-#### Build and publish
+#### Compile
 
 ```console
-$ vsce package
-$ vsce publish [version]
+$ yarn run compile        # one-shot build
+$ yarn run watch          # incremental rebuild on save
+```
+
+You can also press `F5` in VSCode to launch a development host with the extension loaded for debugging.
+
+#### Create publisher (one-time setup)
+
+```console
+$ vsce create-publisher <publisher-name>
+$ vsce login <publisher-name>
+```
+
+#### Package and publish
+
+```console
+$ ./package.sh                # produces a .vsix locally (vsce package)
+$ ./publish.sh <version>      # publishes to the Marketplace (vsce publish <version>)
+```
+
+`publish.sh` runs `vsce publish <version>`, which triggers `vscode:prepublish` → `npm run compile`. If dependencies are not installed, compile will fail with hundreds of `Cannot find module 'vscode'` / `Cannot find name 'require'` errors — run `yarn install` first.
+
+To also publish on [Open VSX](https://open-vsx.org/):
+
+```console
+$ ovsx publish --pat <token>
 ```
 
 ## Financial contributions
@@ -89,32 +116,62 @@ Thank you to all our sponsors! (please ask your company to also support this ope
 
 ## 安装环境
 
-#### 安装cnpm
+#### 环境要求
+
+- [Node.js](https://nodejs.org/) (>= 16)
+- [Yarn](https://yarnpkg.com/)（本项目使用 `yarn.lock`）
+- [vsce](https://github.com/microsoft/vscode-vsce)，用于打包和发布：
 
 ```console
-$ npm install -g cnpm --registry=https://registry.npm.taobao.org
+$ npm install -g @vscode/vsce
 ```
 
-#### 创建空工程
+国内网络较慢时，可以使用 cnpm 镜像：
 
 ```console
-$ cnpm install -g yo generator-code
-$ yo code
+$ npm install -g cnpm --registry=https://registry.npmmirror.com
+$ cnpm install -g @vscode/vsce
 ```
 
-#### 创建发布者
+#### 安装依赖
+
+克隆仓库后，或 `package.json` / `yarn.lock` 有变动时，先执行：
 
 ```console
-$ cnpm install -g vsce
-$ vsce create-publisher (publisher name)
-$ vsce login (publisher name)
+$ yarn install
 ```
 
-#### 构建发布
+不装依赖直接编译会报一大堆 `Cannot find module 'vscode'` / `Cannot find name 'require'`，因为缺少 `@types/node`、`vscode` 等类型声明。
+
+#### 编译
 
 ```console
-$ vsce package
-$ vsce publish [version]
+$ yarn run compile        # 一次性编译
+$ yarn run watch          # 监听文件变化增量编译
+```
+
+也可以在 VSCode 中按 `F5` 启动一个加载了本扩展的开发宿主窗口，方便调试。
+
+#### 创建发布者（首次发布需要）
+
+```console
+$ vsce create-publisher <publisher-name>
+$ vsce login <publisher-name>
+```
+
+#### 打包和发布
+
+```console
+$ ./package.sh                # 本地打包，生成 .vsix 文件
+$ ./publish.sh <version>      # 发布到 VSCode Marketplace
+```
+
+`publish.sh` 内部会执行 `vsce publish <version>`，它会触发 `vscode:prepublish` 钩子 → `npm run compile`。如果没装依赖，编译会失败，所以发布前务必先 `yarn install`。
+
+同时发布到 [Open VSX](https://open-vsx.org/)：
+
+```console
+$ ovsx publish --pat <token>
 ```
 
 ## 提交代码
