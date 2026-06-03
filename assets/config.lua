@@ -1,5 +1,6 @@
 -- imports
 import("core.project.config")
+import("core.base.json")
 
 -- main entry
 function main ()
@@ -11,7 +12,12 @@ function main ()
     print("__begin__")
 
     -- print config
-    print("{\"plat\":\"$(plat)\", \"arch\":\"$(arch)\", \"mode\":\"$(mode)\"}")
+    print(json.encode({
+        plat = config.get("plat"),
+        arch = config.get("arch"),
+        mode = config.get("mode"),
+        toolchain = config.get("toolchain")
+    }))
 
     -- print end tag to ignore other deprecated/warnings infos
     print("__end__")
