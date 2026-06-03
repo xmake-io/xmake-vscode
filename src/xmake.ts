@@ -220,12 +220,13 @@ export class XMake implements vscode.Disposable {
             }
         }
 
-        // Whether user has edited xmake.lua or exec `xmake f`, and plat & arch & mode has been changed by vscode plugin.
+        // Whether user has edited xmake.lua or exec `xmake f`, and config options have been changed by vscode plugin.
         // We mark this situation because plugin write this configs lazily, until build/run.
         const keepChangedOptions = this._optionChanged &&
             !!this._option.get<string>("plat") &&
             !!this._option.get<string>("arch") &&
-            !!this._option.get<string>("mode");
+            !!this._option.get<string>("mode") &&
+            !!this._option.get<string>("toolchain");
         // Therefore, we should use those configs which still in memory rather than cached version.
 
         // init platform
@@ -1613,9 +1614,7 @@ export class XMake implements vscode.Disposable {
         const targetName = target || "default";
         this._option.set("target", targetName);
         this._status.target = targetName;
-        if (target) {
-            await this.updatePersistedTarget(targetName);
-        }
+        await this.updatePersistedTarget(targetName);
         this._xmakeConfigureView.refresh();
     }
 };
