@@ -74,7 +74,73 @@ export function iorunv(program: string, args: string[], env: {[key: string]: str
             stderr_acc += convertor.bytes2string(data);
         });
 
+        child.stderr.on('end', () => {
+            if (proc_end && stdout_end)
+                resolve({ retval: proc_ret, stdout: stdout_acc, stderr: stderr_acc })
+            else
+                stderr_end = true;
+        });
+
+        child.on('exit', (retval) => {
+            if (stdout_end && stderr_end)
+                resolve({ retval: retval, stdout: stdout_acc, stderr: stderr_acc });
+            else {
+                proc_end = true;
+                proc_ret = retval;
+            }
+        });
+    });
+}
+
+// run shell program with cancellation support
+export function iorunvWithCancel(program: string, args: string[], env: {[key: string]: string} = {}, workingDirectory?: string, token?: vscode.CancellationToken): Promise<IExecutionResult> {
+
+    // trace
+    log.verbose('os.execv: ' + [program].concat(args).map(a => a.replace('"', '\"')).map(a => /[ \n\r\f;\t]/.test(a) ? `"${a}"` : a).join(' '));
+
+    // return execution result promise
+    return new Promise<IExecutionResult>((resolve, reject) => {
+        const child = proc.spawn(program, args, {env: addenv(process.env, env), cwd: workingDirectory});
+        child.on('error', (err) => {
+            reject(err);
+        });
+        let stdout_acc = '';
+        let stderr_acc = '';
+
+        let proc_end = false;
+        let proc_ret = 0;
+        let stdout_end = false;
+        let stderr_end = false;
+
+        // Handle cancellation
+        if (token) {
+            if (token.isCancellationRequested) {
+                child.kill('SIGTERM');
+                reject(new Error('Test execution cancelled'));
+                return;
+            }
+            token.onCancellationRequested(() => {
+                child.kill('SIGTERM');
+                reject(new Error('Test execution cancelled'));
+            });
+        }
+
+        child.stdout.on('data', (data: Uint8Array) => {
+            stdout_acc += convertor.bytes2string(data);
+        });
+
         child.stdout.on('end', () => {
+            if (proc_end && stderr_end)
+                resolve({ retval: proc_ret, stdout: stdout_acc, stderr: stderr_acc })
+            else
+                stdout_end = true;
+        });
+
+        child.stderr.on('data', (data: Uint8Array) => {
+            stderr_acc += convertor.bytes2string(data);
+        });
+
+        child.stderr.on('end', () => {
             if (proc_end && stdout_end)
                 resolve({ retval: proc_ret, stdout: stdout_acc, stderr: stderr_acc })
             else

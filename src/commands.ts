@@ -8,7 +8,7 @@ export const xmakeCommands: string[] = [
     "add_linkdirs","add_links","add_mflags","add_moduledirs","add_mxflags","add_mxxflags",
     "add_options","add_packagedirs","add_packages","add_plugindirs","add_rcflags",
     "add_repositories","add_requireconfs","add_requires","add_rpathdirs","add_rules","add_runenvs",
-    "add_scflags","add_shflags","add_sysincludedirs","add_syslinks","add_toolchains",
+    "add_scflags","add_shflags","add_sysincludedirs","add_syslinks","add_tests","add_toolchains",
     "add_undefines","add_urls","add_values","add_vectorexts","add_versions",
     "after_build","after_build_file","after_build_files","after_check","after_clean","after_install",
     "after_link","after_load","after_package","after_run","after_uninstall","before_build",
