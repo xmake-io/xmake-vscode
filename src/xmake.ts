@@ -26,6 +26,13 @@ export interface OptionArguments extends vscode.QuickPickItem {
     args: Map<string, string>;
 }
 
+// using vscode's storage to remember last selected target
+const PERSISTED_TARGETS_KEY = "xmake.persistedTargets";
+
+interface PersistedProjectTargets {
+    [projectRoot: string]: string;
+}
+
 // the xmake plugin
 export class XMake implements vscode.Disposable {
 
@@ -149,6 +156,28 @@ export class XMake implements vscode.Disposable {
         return await this.runListingScript(getPlatsScript);
     }
 
+    // generate value key
+    private getPersistedProjectKey(): string {
+        return path.normalize(config.workingDirectory);
+    }
+
+    private getPersistedTarget(): string {
+        const targets = this._context.workspaceState.get<PersistedProjectTargets>(
+            PERSISTED_TARGETS_KEY, {}) || {};
+        return targets[this.getPersistedProjectKey()] || "default";
+    }
+
+    private async updatePersistedTarget(target: string) {
+        const targets = this._context.workspaceState.get<PersistedProjectTargets>(
+            PERSISTED_TARGETS_KEY, {}) || {};
+        const projectKey = this.getPersistedProjectKey();
+
+        await this._context.workspaceState.update(PERSISTED_TARGETS_KEY, {
+            ...targets,
+            [projectKey]: target
+        });
+    }
+
     // get default arch from platform
     public async getDefaultArch(plat: string): Promise<string> {
         let arch = "";
@@ -191,27 +220,45 @@ export class XMake implements vscode.Disposable {
             }
         }
 
+        // Whether user has edited xmake.lua or exec `xmake f`, and config options have been changed by vscode plugin.
+        // We mark this situation because plugin write this configs lazily, until build/run.
+        const keepChangedOptions = this._optionChanged &&
+            !!this._option.get<string>("plat") &&
+            !!this._option.get<string>("arch") &&
+            !!this._option.get<string>("mode") &&
+            !!this._option.get<string>("toolchain");
+        // Therefore, we should use those configs which still in memory rather than cached version.
+
         // init platform
-        const plat = ("plat" in cacheJson && cacheJson["plat"] != "") ? cacheJson["plat"] : { win32: 'windows', darwin: 'macosx', linux: 'linux' }[os.platform()];
+        const plat = keepChangedOptions ? this._option.get<string>("plat") :
+            (("plat" in cacheJson && cacheJson["plat"] != "") ? cacheJson["plat"] : { win32: 'windows', darwin: 'macosx', linux: 'linux' }[os.platform()]);
         if (plat) {
             this._option.set("plat", plat);
             this._status.plat = plat;
         }
 
         // init architecture
-        const arch = ("arch" in cacheJson && cacheJson["arch"] != "") ? cacheJson["arch"] : await this.getDefaultArch(plat);
+        const arch = keepChangedOptions ? this._option.get<string>("arch") :
+            (("arch" in cacheJson && cacheJson["arch"] != "") ? cacheJson["arch"] : await this.getDefaultArch(plat));
         if (arch) {
             this._option.set("arch", arch);
             this._status.arch = arch as string;
         }
 
         // init build mode
-        const mode = ("mode" in cacheJson && cacheJson["mode"] != "") ? cacheJson["mode"] : "debug";
+        const mode = keepChangedOptions ? this._option.get<string>("mode") :
+            (("mode" in cacheJson && cacheJson["mode"] != "") ? cacheJson["mode"] : "debug");
         this._option.set("mode", mode);
         this._status.mode = mode as string;
 
-        // init defaualt toolchain
-        const toolchain = "toolchain";
+        // init default target
+        const target = this.getPersistedTarget();
+        this._option.set("target", target);
+        this._status.target = target;
+
+        // init default toolchain
+        const toolchain = keepChangedOptions ? this._option.get<string>("toolchain") :
+            (("toolchain" in cacheJson && cacheJson["toolchain"] != "") ? cacheJson["toolchain"] : "toolchain");
         this._option.set("toolchain", toolchain);
         this._status.toolchain = toolchain;
 
@@ -1556,6 +1603,7 @@ export class XMake implements vscode.Disposable {
         const chosen: vscode.QuickPickItem | undefined = await vscode.window.showQuickPick(items);
         if (chosen && chosen.label !== this._option.get<string>("target")) {
             this._option.set("target", chosen.label);
+            await this.updatePersistedTarget(chosen.label);
             this._status.target = chosen.label;
             this._optionChanged = true;
             this._xmakeConfigureView.refresh();
@@ -1563,8 +1611,10 @@ export class XMake implements vscode.Disposable {
     }
 
     async setTarget(target?: string) {
-        this._option.set("target", target);
-        this._status.target = target;
+        const targetName = target || "default";
+        this._option.set("target", targetName);
+        this._status.target = targetName;
+        await this.updatePersistedTarget(targetName);
         this._xmakeConfigureView.refresh();
     }
 };
