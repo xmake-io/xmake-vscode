@@ -1619,13 +1619,19 @@ export class XMake implements vscode.Disposable {
     }
 
     private async openFileAtLine(file: string, line?: number) {
-        const uri = vscode.Uri.file(file);
-        const document = await vscode.workspace.openTextDocument(uri);
-        const editor = await vscode.window.showTextDocument(document);
-        const position = new vscode.Position(Math.max((line || 1) - 1, 0), 0);
-        editor.selection = new vscode.Selection(position, position);
-        editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+        try {
+            const uri = vscode.Uri.file(file);
+            const document = await vscode.workspace.openTextDocument(uri);
+            const editor = await vscode.window.showTextDocument(document);
+            const position = new vscode.Position(Math.max((line || 1) - 1, 0), 0);
+            editor.selection = new vscode.Selection(position, position);
+            editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+        } catch (error) {
+            log.error(`Failed to open file ${file}: ${error}`);
+            vscode.window.showErrorMessage(`Failed to open file: ${file}`);
+        }
     }
+
 
     private getProjectOptionValueDescription(value: string, currentValue: string, option: XMakeProjectOptionInfo): string | undefined {
         const descriptions: string[] = [];

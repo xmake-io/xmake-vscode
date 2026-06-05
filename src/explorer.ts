@@ -80,7 +80,7 @@ class XMakeExplorerItem extends vscode.TreeItem {
             this.command = {
                 title: "Open File",
                 command: "xmakeExplorer.openFile",
-                arguments: [info.file || path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, path.join(...info.path)), info.line]
+                arguments: [info.file || path.join(utils.getProjectRoot(), path.join(...info.path)), info.line]
             };
         if (info.type == XMakeExplorerItemType.FILE && info.line) {
             this.description = `line ${info.line}`;
@@ -804,15 +804,21 @@ export class XMakeExplorer implements vscode.Disposable {
     }
 
     private async openFile(filePath: string, line?: number) {
-        const uri = vscode.Uri.file(filePath);
-        const document = await vscode.workspace.openTextDocument(uri);
-        const editor = await vscode.window.showTextDocument(document);
-        if (line) {
-            const position = new vscode.Position(Math.max(line - 1, 0), 0);
-            editor.selection = new vscode.Selection(position, position);
-            editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+        try {
+            const uri = vscode.Uri.file(filePath);
+            const document = await vscode.workspace.openTextDocument(uri);
+            const editor = await vscode.window.showTextDocument(document);
+            if (line) {
+                const position = new vscode.Position(Math.max(line - 1, 0), 0);
+                editor.selection = new vscode.Selection(position, position);
+                editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+            }
+        } catch (error) {
+            log.error(`Failed to open file ${filePath}: ${error}`);
+            vscode.window.showErrorMessage(`Failed to open file: ${filePath}`);
         }
     }
+
 
     // Refresh is called whenever the configuration is changed
     async refresh() {

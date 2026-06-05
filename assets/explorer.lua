@@ -30,19 +30,39 @@ function _stringify_option_list(value)
     return #values > 0 and values or nil
 end
 
+function _collect_xmake_files()
+    local root = os.projectdir()
+    local candidates = {}
+    for _, filepath in ipairs(os.files(path.join(root, "xmake.lua"))) do
+        table.insert(candidates, filepath)
+    end
+    for _, filepath in ipairs(os.files(path.join(root, "**", "xmake.lua"))) do
+        table.insert(candidates, filepath)
+    end
+
+    local visited = {}
+    local files = {}
+    for _, filepath in ipairs(candidates) do
+        local normalized = filepath:gsub("\\", "/")
+        if not visited[filepath] and not normalized:find("/%.xmake/") then
+            visited[filepath] = true
+            table.insert(files, filepath)
+        end
+    end
+    return files
+end
+
 function _find_definition_locations(kind)
     local locations = {}
-    local files = os.files(path.join(os.projectdir(), "xmake.lua"))
-    for _, filepath in ipairs(os.files(path.join(os.projectdir(), "**", "xmake.lua"))) do
-        table.insert(files, filepath)
-    end
+    local files = _collect_xmake_files()
+    local double_quote_pattern = '^%s*' .. kind .. '%s*%(?%s*"([^"]+)"'
+    local single_quote_pattern = "^%s*" .. kind .. "%s*%(?%s*'([^']+)'"
+
     for _, filepath in ipairs(files) do
         local line_number = 0
         for line in io.lines(filepath) do
             line_number = line_number + 1
-            local pattern = '^%s*' .. kind .. '%s*%(%s*"([^"]+)"%s*%)'
-            local single_quote_pattern = "^%s*" .. kind .. "%s*%(%s*'([^']+)'%s*%)"
-            local name = line:match(pattern) or line:match(single_quote_pattern)
+            local name = line:match(double_quote_pattern) or line:match(single_quote_pattern)
             if name and not locations[name] then
                 locations[name] = {
                     file = filepath,
