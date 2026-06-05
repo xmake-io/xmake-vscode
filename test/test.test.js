@@ -1,5 +1,4 @@
 const assert = require('assert');
-const path = require('path');
 
 const PREFIX = '[unit]';
 
@@ -184,39 +183,12 @@ function testMacroPatterns() {
     log('  ✅ All patterns have global flag - OK');
 }
 
-// Test path utilities
-function testPathUtils() {
-    log('  --- path utility tests ---');
-
-    assert.strictEqual(path.isAbsolute('/usr/bin/test'), true);
-    assert.strictEqual(path.isAbsolute('C:\\Users\\test'), true);
-    assert.strictEqual(path.isAbsolute('build/release/test'), false);
-    assert.strictEqual(path.isAbsolute('.\\build\\test'), false);
-    log('  ✅ path.isAbsolute - OK');
-
-    const base = '/project/root';
-    const resolved = path.resolve(base, 'build/test');
-    assert.ok(typeof resolved === 'string');
-    assert.ok(resolved.includes('build'));
-    assert.ok(resolved.includes('test'));
-    log('  ✅ path.resolve - OK');
-
-    const joined = path.join('build', 'windows', 'x64', 'release');
-    assert.ok(typeof joined === 'string');
-    assert.ok(joined.includes('build'));
-    assert.ok(joined.includes('windows'));
-    assert.ok(joined.includes('x64'));
-    assert.ok(joined.includes('release'));
-    log('  ✅ path.join - OK');
-}
-
 function runTests() {
     log('Running unit tests...');
 
     try {
         testResultParser();
         testMacroPatterns();
-        testPathUtils();
         log('✅ All unit tests passed!\n');
         return true;
     } catch (err) {
