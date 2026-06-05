@@ -6,10 +6,10 @@ import * as util from 'util';
 const readFileAsync = util.promisify(fs.readFile);
 
 // Result line pattern: [XX%]: target/testname ... passed/failed X.XXXs
-const RESULT_LINE = /\[\s*(\d+)%\]:\s+(\S+)\s+\.+\s+(passed|failed|expected failure|unexpected pass)\s+(\d+\.\d+)s/;
+const RESULT_LINE = /\[\s*(\d+)%\]:\s+(\S+)\s+\.+\s+(passed|failed|expected failure|unexpected pass)\s+([\d.]+)s/;
 
 // Summary line pattern
-const SUMMARY_LINE = /(\d+)% tests passed, (\d+) test\(s\) failed(?:, (\d+) unexpected pass\(es\))?(?:, (\d+) expected failure\(s\))? out of (\d+), spent (\d+\.\d+)s/;
+const SUMMARY_LINE = /(\d+)% tests passed, (\d+) test\(s\) failed(?:, (\d+) unexpected pass\(es\))?(?:, (\d+) expected failure\(s\))? out of (\d+), spent ([\d.]+)s/;
 
 // Output line pattern (-v mode): stdout/stderr/errors: content
 const OUTPUT_LINE = /^(stdout|stderr|errors): (.+)$/;
@@ -77,9 +77,8 @@ export async function parseXmakeTestOutput(output: string, useDiagnosticMode: bo
         const trimmedLine = line.trim();
         if (!trimmedLine) continue;
 
-        // Match result line - more flexible pattern
-        // Format: [XX%]: target/testname ... passed/failed X.XXXs
-        const resultMatch = trimmedLine.match(/\[\s*(\d+)%\]:\s+(\S+)\s+\.+\s+(passed|failed|expected failure|unexpected pass)\s+([\d.]+)s/);
+        // Match result line
+        const resultMatch = trimmedLine.match(RESULT_LINE);
         if (resultMatch) {
             const [, percent, name, status, duration] = resultMatch;
             const parts = name.split('/');
@@ -133,7 +132,7 @@ export async function parseXmakeTestOutput(output: string, useDiagnosticMode: bo
         }
 
         // Match summary line
-        const summaryMatch = trimmedLine.match(/(\d+)% tests passed, (\d+) test\(s\) failed(?:, (\d+) unexpected pass\(es\))?(?:, (\d+) expected failure\(s\))? out of (\d+), spent ([\d.]+)s/);
+        const summaryMatch = trimmedLine.match(SUMMARY_LINE);
         if (summaryMatch) {
             const [, rate, failed, unexpected, expected, total, duration] = summaryMatch;
             passRate = parseInt(rate, 10);

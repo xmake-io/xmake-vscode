@@ -136,15 +136,6 @@ export async function activate(context: vscode.ExtensionContext) {
         )
     );
 
-    // discover tests on startup if test explorer is enabled
-    const testExplorerEnabled = config.get<boolean>('testExplorerIntegrationEnabled');
-    if (testExplorerEnabled !== false) {
-        // Wait a bit for the project to load, then discover tests
-        setTimeout(async () => {
-            await discoverTests();
-        }, 2000);
-    }
-
     // watch for xmake.lua changes to refresh tests
     const workspaceRoot = config.workingDirectory;
     const xmakeLuaWatcher = vscode.workspace.createFileSystemWatcher(
@@ -162,6 +153,12 @@ export async function activate(context: vscode.ExtensionContext) {
 
     // start xmake plugin
     await xmake.start();
+
+    // discover tests on startup if test explorer is enabled
+    const testExplorerEnabled = config.get<boolean>('testExplorerIntegrationEnabled');
+    if (testExplorerEnabled !== false) {
+        await discoverTests();
+    }
 }
 
 // this method is called when your extension is deactivated

@@ -50,7 +50,7 @@ export function bytes2string(bytes: Uint8Array): string {
     const fallbackCharset = isWin ? 'gbk' : 'utf8';
    
     // Try UTF-8 first, fall back to system encoding if not valid UTF-8
-    const buf = Buffer.from(bytes);
+    const buf = Buffer.from(bytes.buffer, bytes.byteOffset, bytes.byteLength);
     if (isValidUtf8(buf)) {
         return iconv.decode(buf, 'utf8');
     }

@@ -8,7 +8,7 @@ import("core.base.scheduler")
 import("async.runjobs")
 
 -- clean control characters from output
-function _clean_output(text)
+local function _clean_output(text)
     if not text then return "" end
     -- Keep ANSI escape codes for colored output in VSCode Test Output terminal
     -- Remove carriage returns (keep newlines)
@@ -18,7 +18,7 @@ function _clean_output(text)
 end
 
 -- run a single test, returns (passed, stdout, stderr)
-function _run_test(target, testinfo)
+local function _run_test(target, testinfo)
     local oldenvs = os.getenvs()
     local rundir = testinfo.rundir or target:rundir()
     local runargs = testinfo.runargs
@@ -89,7 +89,7 @@ function _run_test(target, testinfo)
 end
 
 -- get tests
-function _get_tests(testname)
+local function _get_tests(testname)
     local tests = {}
     local group_pattern = option.get("group")
     if group_pattern then

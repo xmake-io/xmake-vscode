@@ -312,12 +312,18 @@ async function runTestHandler(
             testsToRun.forEach(t => targets.set(t.id.split('/')[0], true));
             const targetList = Array.from(targets.keys());
             const buildArgs = targetList.length === 1 ? ['build', targetList[0]] : ['build', '-a'];
-            await process.iorunv(
+            const buildResult = await process.iorunv(
                 config.executable,
                 buildArgs,
                 {},
                 config.workingDirectory
             );
+            if (buildResult.retval !== 0) {
+                for (const test of testsToRun) {
+                    run.errored(test, new vscode.TestMessage(`Build failed before running tests (exit code ${buildResult.retval})`));
+                }
+                return;
+            }
         } catch (err) {
             for (const test of testsToRun) {
                 run.errored(test, new vscode.TestMessage(`Build failed before running tests: ${err}`));

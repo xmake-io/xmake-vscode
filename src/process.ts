@@ -100,6 +100,12 @@ export function iorunvWithCancel(program: string, args: string[], env: {[key: st
 
     // return execution result promise
     return new Promise<IExecutionResult>((resolve, reject) => {
+        // Check cancellation before spawning
+        if (token && token.isCancellationRequested) {
+            reject(new Error('Test execution cancelled'));
+            return;
+        }
+
         const child = proc.spawn(program, args, {env: addenv(process.env, env), cwd: workingDirectory});
         child.on('error', (err) => {
             reject(err);
@@ -112,13 +118,8 @@ export function iorunvWithCancel(program: string, args: string[], env: {[key: st
         let stdout_end = false;
         let stderr_end = false;
 
-        // Handle cancellation
+        // Handle cancellation after spawn
         if (token) {
-            if (token.isCancellationRequested) {
-                child.kill('SIGTERM');
-                reject(new Error('Test execution cancelled'));
-                return;
-            }
             token.onCancellationRequested(() => {
                 child.kill('SIGTERM');
                 reject(new Error('Test execution cancelled'));
