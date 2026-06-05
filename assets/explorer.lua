@@ -2,8 +2,62 @@ import("core.project.config")
 import("core.project.project")
 import("core.base.json")
 
+function _stringify_option_value(value)
+    if value == nil then
+        return nil
+    end
+    if type(value) == "table" then
+        local values = {}
+        for _, item in ipairs(value) do
+            table.insert(values, tostring(item))
+        end
+        return table.concat(values, "\n")
+    end
+    return tostring(value)
+end
+
+function _stringify_option_list(value)
+    if value == nil then
+        return nil
+    end
+    if type(value) ~= "table" then
+        return {_stringify_option_value(value)}
+    end
+    local values = {}
+    for _, item in ipairs(value) do
+        table.insert(values, _stringify_option_value(item))
+    end
+    return #values > 0 and values or nil
+end
+
+function _find_definition_locations(kind)
+    local locations = {}
+    local files = os.files(path.join(os.projectdir(), "xmake.lua"))
+    for _, filepath in ipairs(os.files(path.join(os.projectdir(), "**", "xmake.lua"))) do
+        table.insert(files, filepath)
+    end
+    for _, filepath in ipairs(files) do
+        local line_number = 0
+        for line in io.lines(filepath) do
+            line_number = line_number + 1
+            local pattern = '^%s*' .. kind .. '%s*%(%s*"([^"]+)"%s*%)'
+            local single_quote_pattern = "^%s*" .. kind .. "%s*%(%s*'([^']+)'%s*%)"
+            local name = line:match(pattern) or line:match(single_quote_pattern)
+            if name and not locations[name] then
+                locations[name] = {
+                    file = filepath,
+                    line = line_number
+                }
+            end
+        end
+    end
+    return locations
+end
+
 function main ()
     config.load()
+    local option_locations = _find_definition_locations("option")
+    local target_locations = _find_definition_locations("target")
 
     -- read all the files from the target
     local explorer_targets = {}
@@ -12,6 +66,11 @@ function main ()
         explorer_target.name = name
         explorer_target.kind = target:kind()
         explorer_target.scriptdir = target:scriptdir()
+        local location = target_locations[name]
+        if location then
+            explorer_target.file = location.file
+            explorer_target.line = location.line
+        end
 
         local group = target:get("group")
         if group then
@@ -39,20 +98,32 @@ function main ()
         local explorer_option = {}
         local show
         if option.showmenu then
-            showmenu = option:showmenu()
+            local showmenu = option:showmenu()
             show = showmenu ~= false
         else
-            show = option:get("showmenu")
+            local showmenu = option:get("showmenu")
+            show = showmenu ~= false
         end
         if show then
             explorer_option.name = name
-            explorer_option.value = option:value() or option:get("default")
-
-            local explorer_option_values = {}
-            for _, value in ipairs(option:get("values")) do
-                table.insert(explorer_option_values, value)
+            local default = option:get("default")
+            local value = option:value()
+            if value == nil then
+                value = default
             end
-            if #explorer_option_values > 0 then
+            explorer_option.value = _stringify_option_value(value)
+            explorer_option.default = _stringify_option_value(default)
+            explorer_option.description = _stringify_option_value(option:get("description"))
+            explorer_option.category = _stringify_option_value(option:get("category"))
+            local location = option_locations[name]
+            if location then
+                explorer_option.file = location.file
+                explorer_option.line = location.line
+            end
+
+            local values = option:get("values")
+            local explorer_option_values = _stringify_option_list(values)
+            if explorer_option_values then
                 explorer_option.values = explorer_option_values
             end
             table.insert(explorer_options, explorer_option)

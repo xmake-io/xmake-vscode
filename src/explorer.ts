@@ -8,6 +8,7 @@ import * as process from './process';
 import { config } from './config';
 import { log } from './log';
 import * as utils from './utils';
+import { XMakeProjectOptionInfo, XMakeProjectTargetInfo } from './projectInfo';
 
 // Different tree view items contain different data
 // Following types store specific info that we should keep in each tree view item
@@ -34,6 +35,8 @@ type XMakeExplorerTargetInfo = {
     group: string[];
     target: string;
     kind: string;
+    file?: string;
+    line?: number;
 }
 
 type XMakeExplorerDirectoryInfo = {
@@ -48,9 +51,15 @@ type XMakeExplorerFileInfo = {
     group: string[];
     target: string;
     path: string[];
+    file?: string;
+    line?: number;
 }
 
 type XMakeExplorerItemInfo = XMakeExplorerRootInfo | XMakeExplorerGroupInfo | XMakeExplorerTargetInfo | XMakeExplorerDirectoryInfo | XMakeExplorerFileInfo;
+
+type XMakeExplorerOptions = {
+    onOptionsRefresh?: (options: XMakeProjectOptionInfo[]) => void;
+}
 
 // Tree view item
 // This stores item specific data and initializes itself to show correct icons and actions
@@ -71,8 +80,11 @@ class XMakeExplorerItem extends vscode.TreeItem {
             this.command = {
                 title: "Open File",
                 command: "xmakeExplorer.openFile",
-                arguments: [path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, path.join(...info.path))]
+                arguments: [info.file || path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, path.join(...info.path)), info.line]
             };
+        if (info.type == XMakeExplorerItemType.FILE && info.line) {
+            this.description = `line ${info.line}`;
+        }
 
         // Set the icon depending on the type
         // Each known file type is assigned a language specific icon
@@ -164,7 +176,7 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
     // This is populated in the read config function
     private hierarchy: XMakeExplorerHierarchyNode = new XMakeExplorerHierarchyNode({ type: XMakeExplorerItemType.ROOT });
 
-    async refresh(targets: any) {
+    async refresh(targets: XMakeProjectTargetInfo[]) {
 
         if (targets == null) {
             return;
@@ -207,7 +219,14 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
             }
 
             // Add the target
-            current.children.push(new XMakeExplorerHierarchyNode({ type: XMakeExplorerItemType.TARGET, group: groups, target: target.name, kind: target.kind }));
+            current.children.push(new XMakeExplorerHierarchyNode({
+                type: XMakeExplorerItemType.TARGET,
+                group: groups,
+                target: target.name,
+                kind: target.kind,
+                file: target.file,
+                line: target.line
+            }));
             current = current.children[current.children.length - 1];
 
             const targetNode = current;
@@ -216,7 +235,14 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
             const relScriptDir = path.relative(config.workingDirectory, target.scriptdir);
             const targetScript = path.join(relScriptDir, "xmake.lua");
             const scriptPath = this.splitPath(targetScript);
-            targetNode.children.push(new XMakeExplorerHierarchyNode({ type: XMakeExplorerItemType.FILE, group: groups, target: target.name, path: scriptPath }));
+            targetNode.children.push(new XMakeExplorerHierarchyNode({
+                type: XMakeExplorerItemType.FILE,
+                group: groups,
+                target: target.name,
+                path: scriptPath,
+                file: target.file,
+                line: target.line
+            }));
 
             // Sort files so that they appear the same when refreshed
             if (target.files != null && Array.isArray(target.files)) {
@@ -674,14 +700,18 @@ export class XMakeExplorer implements vscode.Disposable {
     private _xmakeExplorerDataProvider: XMakeExplorerDataProvider;
     private _treeView: vscode.TreeView<XMakeExplorerItem>;
 //    private _xmakeOptionsProvider: XMakeOptionsProvider;
+    private _onOptionsRefresh?: (options: XMakeProjectOptionInfo[]) => void;
 
-    async init(context: vscode.ExtensionContext) {
+    async init(context: vscode.ExtensionContext, options: XMakeExplorerOptions = {}) {
+        this._onOptionsRefresh = options.onOptionsRefresh;
 
         // Tree view
         const info = await this.readInfo();
         this._xmakeExplorerDataProvider = new XMakeExplorerDataProvider();
-        if (info)
+        if (info) {
             await this._xmakeExplorerDataProvider.refresh(info.targets);
+            this._onOptionsRefresh?.(info.options || []);
+        }
 
         this._treeView = vscode.window.createTreeView('xmakeExplorer', {
             treeDataProvider: this._xmakeExplorerDataProvider
@@ -697,11 +727,9 @@ export class XMakeExplorer implements vscode.Disposable {
         });
 
         // Open file command for files in the tree view
-        vscode.commands.registerCommand('xmakeExplorer.openFile', (file_path: string) => {
-                const uri = vscode.Uri.file(file_path);
-                vscode.workspace.openTextDocument(uri).then(doc => vscode.window.showTextDocument(uri));
-            }
-        );
+        vscode.commands.registerCommand('xmakeExplorer.openFile', (file_path: string, line?: number) => {
+            this.openFile(file_path, line);
+        });
 
         /* disable Options panel now
         this._xmakeOptionsProvider = new XMakeOptionsProvider(context.extensionUri);
@@ -775,11 +803,23 @@ export class XMakeExplorer implements vscode.Disposable {
         this._xmakeExplorerDataProvider = undefined;
     }
 
+    private async openFile(filePath: string, line?: number) {
+        const uri = vscode.Uri.file(filePath);
+        const document = await vscode.workspace.openTextDocument(uri);
+        const editor = await vscode.window.showTextDocument(document);
+        if (line) {
+            const position = new vscode.Position(Math.max(line - 1, 0), 0);
+            editor.selection = new vscode.Selection(position, position);
+            editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+        }
+    }
+
     // Refresh is called whenever the configuration is changed
     async refresh() {
         const info = await this.readInfo();
         if (info) {
             await this._xmakeExplorerDataProvider.refresh(info.targets);
+            this._onOptionsRefresh?.(info.options || []);
           //  await this._xmakeOptionsProvider.refresh(info.options);
         }
     }

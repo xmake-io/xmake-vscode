@@ -16,7 +16,8 @@ import { initDebugger } from './launchDebugger';
 import { Completion } from './completion';
 import { XmakeTaskProvider } from './task';
 import { XMakeExplorer } from './explorer';
-import { XMakeConfigureView } from './configureView';
+import { XMakeConfigureView, XMakeOptionsView } from './configureView';
+import { XMakeProjectOptionInfo } from './projectInfo';
 import * as process from './process';
 import * as utils from './utils';
 import * as diagnosis from './diagnosis';
@@ -73,6 +74,13 @@ export class XMake implements vscode.Disposable {
     // the xmake configure view
     private _xmakeConfigureView: XMakeConfigureView;
 
+    // the xmake options view
+    private _xmakeOptionsView: XMakeOptionsView;
+
+    // project-defined xmake options
+    private _projectOptionDefinitions: XMakeProjectOptionInfo[] = [];
+    private _projectOptionValues: Map<string, string> = new Map();
+
     private _xmakeDiagnosticCollection: vscode.DiagnosticCollection;
 
     // the constructor
@@ -120,6 +128,9 @@ export class XMake implements vscode.Disposable {
         }
         if (this._xmakeConfigureView) {
             this._xmakeConfigureView.dispose();
+        }
+        if (this._xmakeOptionsView) {
+            this._xmakeOptionsView.dispose();
         }
         if (this._xmakeDiagnosticCollection) {
             this._xmakeDiagnosticCollection.dispose();
@@ -402,10 +413,6 @@ export class XMake implements vscode.Disposable {
         // register xmake task provider
         this._xmakeTaskProvider = vscode.tasks.registerTaskProvider(XmakeTaskProvider.XmakeType, new XmakeTaskProvider(utils.getProjectRoot()));
 
-        // explorer
-        this._xmakeExplorer = new XMakeExplorer();
-        await this._xmakeExplorer.init(this._context);
-
         // init terminal
         if (!this._terminal) {
             this._terminal = new Terminal();
@@ -429,11 +436,11 @@ export class XMake implements vscode.Disposable {
         // init xmake configure view
         this._xmakeConfigureView = new XMakeConfigureView(this._status);
 
+        // init xmake options view
+        this._xmakeOptionsView = new XMakeOptionsView();
+
         // load cached configure
         this.loadCache();
-
-        // init watcher
-        this.initWatcher();
 
         // init project name
         let projectName = path.basename(utils.getProjectRoot());
@@ -441,6 +448,15 @@ export class XMake implements vscode.Disposable {
         this._status.project = projectName;
 
         this._xmakeConfigureView.refresh();
+
+        // explorer
+        this._xmakeExplorer = new XMakeExplorer();
+        await this._xmakeExplorer.init(this._context, {
+            onOptionsRefresh: options => this.setProjectOptionDefinitions(options)
+        });
+
+        // init watcher
+        this.initWatcher();
 
         // enable this plugin
         this._enabled = true;
@@ -605,8 +621,46 @@ export class XMake implements vscode.Disposable {
         if (toolchain != "toolchain") {
             args.push("--toolchain=" + toolchain);
         }
+        for (const [name, value] of this._projectOptionValues) {
+            args.push(`--${name}=${value}`);
+        }
         
         return args;
+    }
+
+    private setProjectOptionDefinitions(projectOptions?: XMakeProjectOptionInfo[]) {
+        this._projectOptionDefinitions = projectOptions ? [...projectOptions] : [];
+        const optionNames = new Set(this._projectOptionDefinitions.map(option => option.name));
+        for (const name of Array.from(this._projectOptionValues.keys())) {
+            if (!optionNames.has(name)) {
+                this._projectOptionValues.delete(name);
+            }
+        }
+        this.refreshProjectOptionsView();
+    }
+
+    private getProjectOptionValue(option: XMakeProjectOptionInfo): string {
+        if (this._projectOptionValues.has(option.name)) {
+            return this._projectOptionValues.get(option.name);
+        }
+        const value = option.value !== undefined && option.value !== null ? option.value : option.default;
+        return value !== undefined && value !== null ? String(value) : "";
+    }
+
+    private getDisplayedProjectOptions(): XMakeProjectOptionInfo[] {
+        return this._projectOptionDefinitions.map(option => ({
+            ...option,
+            value: this.getProjectOptionValue(option)
+        }));
+    }
+
+    private refreshProjectOptionsView() {
+        if (this._xmakeConfigureView) {
+            this._xmakeConfigureView.refresh(this.getDisplayedProjectOptions());
+        }
+        if (this._xmakeOptionsView) {
+            this._xmakeOptionsView.refresh(this.getDisplayedProjectOptions());
+        }
     }
 
     // execute commands in sequence, stop if any command fails
@@ -671,19 +725,8 @@ export class XMake implements vscode.Disposable {
 
         // make command
         let command = config.executable;
-        var args = ["f", "-c"];
-        if (config.buildDirectory != "") {
-            const buildDirectory = path.normalize(config.buildDirectory);
-            if (buildDirectory != path.join(utils.getProjectRoot(), "build")) {
-                args.push("-o");
-                args.push(buildDirectory);
-            }
-        }
-        if (config.additionalConfigArguments) {
-            for (let arg of config.additionalConfigArguments) {
-                args.push(arg);
-            }
-        }
+        var args = this.getConfigureArgs();
+        args.push("-c");
 
         // configure it
         await this._terminal.execv("clean config", command, args);
@@ -1522,6 +1565,77 @@ export class XMake implements vscode.Disposable {
                 }
             }
         }
+    }
+
+    async setProjectOption(optionName?: string) {
+
+        // this plugin enabled?
+        if (!this._enabled || !optionName) {
+            return
+        }
+
+        const option = this._projectOptionDefinitions.find(item => item.name === optionName);
+        if (!option) {
+            return;
+        }
+
+        const currentValue = this.getProjectOptionValue(option);
+        let chosenValue: string | undefined;
+        if (option.values && option.values.length > 0) {
+            const chosen = await vscode.window.showQuickPick(option.values.map(value => ({
+                label: value,
+                description: this.getProjectOptionValueDescription(value, currentValue, option),
+                picked: value === currentValue
+            })), {
+                placeHolder: `Select value for ${option.name}`
+            });
+            chosenValue = chosen?.label;
+        } else {
+            chosenValue = await vscode.window.showInputBox({
+                prompt: `Set value for ${option.name}`,
+                placeHolder: option.default !== undefined && option.default !== null ? `Default: ${option.default}` : undefined,
+                value: currentValue
+            });
+        }
+
+        if (chosenValue === undefined || chosenValue === currentValue) {
+            return;
+        }
+
+        this._projectOptionValues.set(option.name, chosenValue);
+        this._optionChanged = true;
+        this.refreshProjectOptionsView();
+    }
+
+    async openProjectOptionDefinition(optionName?: string) {
+        if (!optionName) {
+            return;
+        }
+        const option = this._projectOptionDefinitions.find(item => item.name === optionName);
+        if (!option || !option.file) {
+            return;
+        }
+        await this.openFileAtLine(option.file, option.line);
+    }
+
+    private async openFileAtLine(file: string, line?: number) {
+        const uri = vscode.Uri.file(file);
+        const document = await vscode.workspace.openTextDocument(uri);
+        const editor = await vscode.window.showTextDocument(document);
+        const position = new vscode.Position(Math.max((line || 1) - 1, 0), 0);
+        editor.selection = new vscode.Selection(position, position);
+        editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+    }
+
+    private getProjectOptionValueDescription(value: string, currentValue: string, option: XMakeProjectOptionInfo): string | undefined {
+        const descriptions: string[] = [];
+        if (value === currentValue) {
+            descriptions.push("current");
+        }
+        if (option.default !== undefined && option.default !== null && value === String(option.default)) {
+            descriptions.push("default");
+        }
+        return descriptions.length > 0 ? descriptions.join(", ") : undefined;
     }
 
     // set default target

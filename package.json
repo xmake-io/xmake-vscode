@@ -294,6 +294,11 @@
         "category": "XMake"
       },
       {
+        "command": "xmake.openProjectOptionDefinition",
+        "title": "Open Project Option Definition",
+        "category": "XMake"
+      },
+      {
         "command": "xmake.onShowExplorer",
         "title": "Show Explorer",
         "category": "XMake"
@@ -332,7 +337,7 @@
         "command": "xmakeExplorer.configure",
         "title": "Configure",
         "category": "XMake",
-        "enablement": "view == xmakeOptions",
+        "enablement": "view == xmakeOptionsView",
         "icon": "$(gear)"
       }
     ],
@@ -438,7 +443,7 @@
         },
         {
           "command": "xmakeExplorer.configure",
-          "when": "view == xmakeOptions",
+          "when": "view == xmakeOptionsView",
           "group": "navigation"
         }
       ],
@@ -865,6 +870,14 @@
           "name": "Targets",
           "icon": "res/logo-mono.svg",
           "contextualTitle": "XMake",
+          "when": "xmakeEnabled"
+        },
+        {
+          "type": "tree",
+          "id": "xmakeOptionsView",
+          "name": "Options",
+          "icon": "res/logo-mono.svg",
+          "contextualTitle": "XMake Options",
           "when": "xmakeEnabled"
         }
       ]
