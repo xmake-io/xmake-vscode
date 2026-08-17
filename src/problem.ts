@@ -4,7 +4,6 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as os from 'os';
 import {log} from './log';
 import {config} from './config';
 import {decodeBufferWithConfidence} from './utils';
@@ -42,8 +41,6 @@ export class ProblemList implements vscode.Disposable {
 
         // exists logfile?
         if (logfile) {
-            // on windows?
-            const isWin = os.platform() == "win32";
 
             // read the log file
             fs.readFile(logfile, null, (err, content) => {
@@ -66,7 +63,13 @@ export class ProblemList implements vscode.Disposable {
                         if (textLine) {
 
                             // parse warning and error from the given text line
-                            let matches: RegExpExecArray = isWin? rOutputMsvc.exec(textLine) : rOutputGcc.exec(textLine);
+                            // try gcc/clang format first, fall back to msvc (fix: Windows + GCC toolchain)
+                            let matches: RegExpExecArray | null = rOutputGcc.exec(textLine);
+                            let isGcc = true;
+                            if (!matches) {
+                                matches = rOutputMsvc.exec(textLine);
+                                isGcc = false;
+                            }
                             if (matches) {
 
                                 // get warning and error info
@@ -75,20 +78,20 @@ export class ProblemList implements vscode.Disposable {
                                 let column = "0";
                                 let kind = "error";
                                 let message = "";
-                                if (isWin) {
-
-                                    file = matches[1].trim();
-                                    line = matches[2].trim();
-                                    kind = matches[3].toLocaleLowerCase().trim();
-                                    message = matches[4].trim();
-
-                                } else {
+                                if (isGcc) {
 
                                     file = matches[2].trim();
                                     line = matches[3].trim();
                                     column = matches[4].trim();
                                     kind = matches[5].toLocaleLowerCase().trim();
                                     message = matches[6].trim();
+
+                                } else {
+
+                                    file = matches[1].trim();
+                                    line = matches[2].trim();
+                                    kind = matches[3].toLocaleLowerCase().trim();
+                                    message = matches[4].trim();
                                 }
 
                                 // get uri of file
