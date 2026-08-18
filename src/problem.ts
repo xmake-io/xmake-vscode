@@ -59,7 +59,9 @@ export class ProblemList implements vscode.Disposable {
                     let diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
 
                     // parse errors and warnings
-                    text.split("\n").forEach(textLine => {
+                    // split on \r?\n so CRLF logfiles (Windows) don't leave a
+                    // trailing \r that defeats the gcc/clang regex $ anchor
+                    text.split(/\r?\n/).forEach(textLine => {
                         if (textLine) {
 
                             // parse warning and error from the given text line
