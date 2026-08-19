@@ -54,7 +54,7 @@ export class ProblemList implements vscode.Disposable {
                     const rOutputGcc: RegExp = new RegExp("^(error: )?(.*?):([0-9]*):([0-9]*): (.*?): (.*)$");
 
                     // init regex of msvc output
-                    const rOutputMsvc: RegExp = new RegExp("(.*?)\\(([0-9]*)\\): (.*?) .*?: (.*)");
+                    const rOutputMsvc: RegExp = new RegExp("(.*?)\\(([0-9]*)\\) ?: (.*?) .*?: (.*)");
                     // init diagnostics map
                     let diagnosticsMap: Map<string, vscode.Diagnostic[]> = new Map();
 
