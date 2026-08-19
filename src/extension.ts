@@ -8,6 +8,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { XMake } from './xmake';
 import { config } from './config';
+import { XMakeTestCodeLensProvider } from './testCodeLensProvider';
+import { discoverTests, disposeTestController, refreshTests, runTest, debugTest } from './testRunner';
 
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
@@ -95,6 +97,7 @@ export async function activate(context: vscode.ExtensionContext) {
         'onRunLastCommand',
         'onUpdateIntellisense',
         'onShowExplorer',
+        'onTest',
         'setProjectRoot',
         'setTargetPlat',
         'setTargetArch',
@@ -106,10 +109,59 @@ export async function activate(context: vscode.ExtensionContext) {
         context.subscriptions.push(register('xmake.' + key, xmake[key]));
     }
 
+    // register test-related commands
+    context.subscriptions.push(
+        vscode.commands.registerCommand('xmake.refreshTests', async () => {
+            await refreshTests();
+        }),
+        vscode.commands.registerCommand('xmake.testRunFromCodeLens', async (args: { testName: string; sourceFile: string }) => {
+            await runTest(args.testName, args.sourceFile);
+        }),
+        vscode.commands.registerCommand('xmake.testDebugFromCodeLens', async (args: { testName: string; sourceFile: string }) => {
+            await debugTest(args.testName, args.sourceFile);
+        })
+    );
+
+    // register CodeLens provider for test integration
+    const codeLensProvider = new XMakeTestCodeLensProvider();
+    context.subscriptions.push(
+        vscode.languages.registerCodeLensProvider(
+            [
+                { language: 'cpp', scheme: 'file' },
+                { language: 'c', scheme: 'file' },
+                { language: 'hpp', scheme: 'file' },
+                { language: 'h', scheme: 'file' }
+            ],
+            codeLensProvider
+        )
+    );
+
+    // watch for xmake.lua changes to refresh tests
+    const workspaceRoot = config.workingDirectory;
+    const xmakeLuaWatcher = vscode.workspace.createFileSystemWatcher(
+        workspaceRoot
+            ? new vscode.RelativePattern(workspaceRoot, 'xmake.lua')
+            : '**/xmake.lua'
+    );
+    xmakeLuaWatcher.onDidChange(async () => {
+        const enabled = config.get<boolean>('testExplorerIntegrationEnabled');
+        if (enabled !== false) {
+            await refreshTests();
+        }
+    });
+    context.subscriptions.push(xmakeLuaWatcher);
+
     // start xmake plugin
     await xmake.start();
+
+    // discover tests on startup if test explorer is enabled
+    const testExplorerEnabled = config.get<boolean>('testExplorerIntegrationEnabled');
+    if (testExplorerEnabled !== false) {
+        await discoverTests();
+    }
 }
 
 // this method is called when your extension is deactivated
 export async function deactivate() {
+    disposeTestController();
 }

@@ -20,6 +20,7 @@ import { XMakeConfigureView } from './configureView';
 import * as process from './process';
 import * as utils from './utils';
 import * as diagnosis from './diagnosis';
+import * as testRunner from './testRunner';
 
 // the option arguments
 export interface OptionArguments extends vscode.QuickPickItem {
@@ -1196,6 +1197,17 @@ export class XMake implements vscode.Disposable {
         }
     }
 
+    // auto-switch to debug mode if not already in it
+    private autoSwitchDebugMode(): void {
+        const currentMode = this._option.get<string>("mode");
+        if (currentMode !== "debug") {
+            this._option.set("mode", "debug");
+            this._status.mode = "debug";
+            this._optionChanged = true;
+            log.info('Auto-switched to debug mode for debugging');
+        }
+    }
+
     // on debug target
     async onDebug(target?: string) {
 
@@ -1203,6 +1215,14 @@ export class XMake implements vscode.Disposable {
         if (!this._enabled) {
             return;
         }
+
+        // auto-switch to debug mode if not already in it
+        this.autoSwitchDebugMode();
+
+        // resolve target name: use passed-in target, or fall back to globally selected one
+        const debugTarget = target || this._option.get<string>("target") || "default";
+        this._option.set("target", debugTarget);
+        this._status.target = debugTarget;
 
         /* cpptools, codelldb, lldb-dap, or gdb-dap extensions not found?
          *
@@ -1223,16 +1243,13 @@ export class XMake implements vscode.Disposable {
         }
         if (!extension) {
 
-            // get target name
-            const targetName = this._option.get<string>("target");
-
             // make command
             let command = `${config.executable} r -d`;
-            if (targetName && targetName != "default")
-                command += ` ${targetName}`;
+            if (debugTarget && debugTarget != "default")
+                command += ` ${debugTarget}`;
 
             // configure and debug it
-            await this.onConfigure(target);
+            await this.onConfigure(debugTarget);
             await this._terminal.exec("debug", command);
             return;
         }
@@ -1244,31 +1261,23 @@ export class XMake implements vscode.Disposable {
 
         // build and run debugger?
         const runMode = config.get<string>("runMode");
-        if (runMode == "buildRun") {
-            await this.onBuild(target);
+        if (runMode == "buildRun" || this._optionChanged) {
+            log.info('Rebuilding target for debug...');
+            await this.onBuild(debugTarget);
         }
-
-        // option changed?
-        if (this._optionChanged) {
-             vscode.window.showWarningMessage('Configuration have been changed, please rebuild program first!');
-        }
-
-        // get target name
-        var targetName = this._option.get<string>("target");
-        if (!targetName) targetName = "default";
 
         // get target program
         var targetProgram = null;
         let getTargetPathScript = utils.getAssetsScriptPath("targetpath.lua");
         if (fs.existsSync(getTargetPathScript)) {
             try {
-                const result = await process.iorunv(config.executable, ["l", getTargetPathScript, targetName], { "COLORTERM": "nocolor" }, config.workingDirectory);
+                const result = await process.iorunv(config.executable, ["l", getTargetPathScript, debugTarget], { "COLORTERM": "nocolor" }, config.workingDirectory);
                 const output = result.stdout.trim();
                 
                 if (output) {
                     targetProgram = process.getAnnotatedOutput(output)[0].split('\n')[0].trim();
                 } else {
-                    log.error(`Target path script returned empty output for target: ${targetName}`);
+                    log.error(`Target path script returned empty output for target: ${debugTarget}`);
                 }
             } catch (error) {
                 log.error(`Error executing targetpath.lua: ${error}`);
@@ -1281,7 +1290,7 @@ export class XMake implements vscode.Disposable {
         var targetRunDir = null;
         let getTargetRunDirScript = utils.getAssetsScriptPath("target_rundir.lua");
         if (fs.existsSync(getTargetRunDirScript)) {
-            targetRunDir = (await process.iorunv(config.executable, ["l", getTargetRunDirScript, targetName], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
+            targetRunDir = (await process.iorunv(config.executable, ["l", getTargetRunDirScript, debugTarget], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (targetRunDir) {
                 targetRunDir = process.getAnnotatedOutput(targetRunDir)[0].split('\n')[0].trim();
             }
@@ -1291,7 +1300,7 @@ export class XMake implements vscode.Disposable {
         var targetRunEnvs = null;
         let getTargetRunEnvsScript = utils.getAssetsScriptPath("target_runenvs.lua");
         if (fs.existsSync(getTargetRunEnvsScript)) {
-            targetRunEnvs = (await process.iorunv(config.executable, ["l", getTargetRunEnvsScript, targetName], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
+            targetRunEnvs = (await process.iorunv(config.executable, ["l", getTargetRunEnvsScript, debugTarget], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
             if (targetRunEnvs) {
                 targetRunEnvs = process.getAnnotatedJSON(targetRunEnvs)[0];
             } else {
@@ -1305,7 +1314,7 @@ export class XMake implements vscode.Disposable {
 
         // start debugging
         if (targetProgram && fs.existsSync(targetProgram)) {
-            this._debugger.startDebugging(targetName, targetProgram, targetRunDir, targetRunEnvs, plat);
+            this._debugger.startDebugging(debugTarget, targetProgram, targetRunDir, targetRunEnvs, plat);
         } else {
             await vscode.window.showErrorMessage("The target program not found! Please build the project first.");
         }
@@ -1317,6 +1326,14 @@ export class XMake implements vscode.Disposable {
         if (!this._enabled) {
             return;
         }
+
+        // auto-switch to debug mode if not already in it
+        this.autoSwitchDebugMode();
+
+        // resolve target name: use passed-in target, or fall back to globally selected one
+        const debugTarget = target || this._option.get<string>("target") || "default";
+        this._option.set("target", debugTarget);
+        this._status.target = debugTarget;
 
         /* cpptools, codelldb, lldb-dap, or gdb-dap extensions not found?
          *
@@ -1337,16 +1354,13 @@ export class XMake implements vscode.Disposable {
         }
         if (!extension) {
 
-            // get target name
-            const targetName = this._option.get<string>("target");
-
             // make command
             let command = `${config.executable} r -d`;
-            if (targetName && targetName != "default")
-                command += ` ${targetName}`;
+            if (debugTarget && debugTarget != "default")
+                command += ` ${debugTarget}`;
 
             // configure and debug it
-            await this.onConfigure(target);
+            await this.onConfigure(debugTarget);
             await this._terminal.exec("debug", command);
             return;
         }
@@ -1357,23 +1371,15 @@ export class XMake implements vscode.Disposable {
         }
 
         // build and run debugger?
-        const runMode = config.get<string>("runMode");
-        if (runMode == "buildRun") {
-            await this.onBuild(target);
+        const launchRunMode = config.get<string>("runMode");
+        if (launchRunMode == "buildRun" || this._optionChanged) {
+            log.info('Rebuilding target for debug...');
+            await this.onBuild(debugTarget);
         }
-
-        // option changed?
-        if (this._optionChanged) {
-           vscode.window.showWarningMessage('Configuration have been changed, please rebuild program first!');
-        }
-
-        // get target name
-        let targetName = this._option.get<string>("target");
-        if (!targetName) targetName = "default";
 
         // start debugging
-        const name = `Debug: ${targetName}`;
-        const debugConfig = { name: name, type: 'xmake', request: 'launch', target: targetName, stopAtEntry: true };
+        const name = `Debug: ${debugTarget}`;
+        const debugConfig = { name: name, type: 'xmake', request: 'launch', target: debugTarget, stopAtEntry: true };
         await vscode.debug.startDebugging(vscode.workspace.workspaceFolders[0], debugConfig);
     }
 
@@ -1616,5 +1622,48 @@ export class XMake implements vscode.Disposable {
         this._status.target = targetName;
         await this.updatePersistedTarget(targetName);
         this._xmakeConfigureView.refresh();
+    }
+
+    // on test target
+    async onTest(target?: string) {
+
+        // this plugin enabled?
+        if (!this._enabled) {
+            return
+        }
+
+        // configure first if needed
+        if (this._optionChanged) {
+            const success = await this.execCommandsSequentially("Configure", [
+                {cmd: config.executable, args: this.getConfigureArgs()}
+            ]);
+            if (!success) {
+                return;
+            }
+            this._optionChanged = false;
+        }
+
+        // run tests
+        const args = ['test', '-vD'];
+        if (target && target !== 'all') {
+            args.push(target);
+        }
+
+        await this._terminal.execv("Test", config.executable, args);
+    }
+
+    // refresh tests
+    async refreshTests() {
+        await testRunner.refreshTests();
+    }
+
+    // run specific test
+    async runTest(testName: string) {
+        await testRunner.runTest(testName);
+    }
+
+    // debug specific test
+    async debugTest(testName: string) {
+        await testRunner.debugTest(testName);
     }
 };

@@ -52,6 +52,10 @@
     "onCommand:xmake.onMacroRun",
     "onCommand:xmake.onRunLastCommand",
     "onCommand:xmake.onUpdateIntellisense",
+    "onCommand:xmake.onTest",
+    "onCommand:xmake.refreshTests",
+    "onCommand:xmake.testRunFromCodeLens",
+    "onCommand:xmake.testDebugFromCodeLens",
     "onCommand:xmake.setProjectRoot",
     "onCommand:xmake.setTargetPlat",
     "onCommand:xmake.setTargetArch",
@@ -334,6 +338,26 @@
         "category": "XMake",
         "enablement": "view == xmakeOptions",
         "icon": "$(gear)"
+      },
+      {
+        "command": "xmake.onTest",
+        "title": "Test",
+        "category": "XMake"
+      },
+      {
+        "command": "xmake.refreshTests",
+        "title": "Refresh Tests",
+        "category": "XMake"
+      },
+      {
+        "command": "xmake.testRunFromCodeLens",
+        "title": "Run Test",
+        "category": "XMake"
+      },
+      {
+        "command": "xmake.testDebugFromCodeLens",
+        "title": "Debug Test",
+        "category": "XMake"
       }
     ],
     "menus": {
@@ -754,6 +778,11 @@
           "default": {},
           "description": "The Custom Debugging Configurations"
         },
+        "xmake.testExplorerIntegrationEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable VSCode Testing panel integration and CodeLens for xmake tests"
+        },
         "xmake.envBehaviour": {
           "type": "string",
           "default": "merge",
@@ -874,7 +903,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "npx tsc -p ./",
     "watch": "npx tsc -watch -p ./",
-    "test": "npm run compile && node test/compile.test.js",
+    "test": "npm run compile && node test/run_all_tests.js",
     "package": "npm run compile && vsce package --no-yarn",
     "package-simple": "./package.sh",
     "publish": "./publish.sh",
