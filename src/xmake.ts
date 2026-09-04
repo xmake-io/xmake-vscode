@@ -82,6 +82,8 @@ export class XMake implements vscode.Disposable {
 
     private _xmakeDiagnosticCollection: vscode.DiagnosticCollection;
 
+    private _watcherEventRegistered: boolean = false;
+
     // the constructor
     constructor(context: vscode.ExtensionContext) {
 
@@ -313,6 +315,16 @@ export class XMake implements vscode.Disposable {
     async initWatcher() {
         const workingDirectoryUri = vscode.Uri.file(config.workingDirectory);
 
+        if (this._logFileSystemWatcher) {
+            this._logFileSystemWatcher.dispose();
+        }
+        if (this._configFileSystemWatcher) {
+            this._configFileSystemWatcher.dispose();
+        }
+        if (this._projectFileSystemWatcher) {
+            this._projectFileSystemWatcher.dispose();
+        }
+
         // init log file system watcher
         this._logFileSystemWatcher = vscode.workspace.createFileSystemWatcher(new vscode.RelativePattern(workingDirectoryUri, ".xmake/**/vscode-build.log"));
         this._logFileSystemWatcher.onDidCreate(this.onLogFileUpdated.bind(this));
@@ -329,29 +341,71 @@ export class XMake implements vscode.Disposable {
         this._projectFileSystemWatcher.onDidCreate(this.onProjectFileUpdated.bind(this));
         this._projectFileSystemWatcher.onDidChange(this.onProjectFileUpdated.bind(this));
 
-        this._context.subscriptions.push(
-            vscode.workspace.onDidCreateFiles((e: vscode.FileCreateEvent) => {
-                this._xmakeExplorer.refresh();
-            })
-        );
+        if (!this._watcherEventRegistered) {
+            this._watcherEventRegistered = true;
 
-        this._context.subscriptions.push(
-            vscode.workspace.onDidDeleteFiles((e: vscode.FileDeleteEvent) => {
-                this._xmakeExplorer.refresh();
-            })
-        );
+            this._context.subscriptions.push(
+                vscode.workspace.onDidCreateFiles((e: vscode.FileCreateEvent) => {
+                    this._xmakeExplorer.refresh();
+                })
+            );
 
-        // update Diagnosis when file is opened
-        this._context.subscriptions.push(
-            vscode.window.onDidChangeActiveTextEditor((e: vscode.TextEditor | undefined) => {
-                this.updateDiagnosis(e?.document.uri);
-            })
-        );
+            this._context.subscriptions.push(
+                vscode.workspace.onDidDeleteFiles((e: vscode.FileDeleteEvent) => {
+                    this._xmakeExplorer.refresh();
+                })
+            );
 
-        // initial opened file
-        if (vscode.window.activeTextEditor) {
-            this.updateDiagnosis(vscode.window.activeTextEditor.document.uri);
+            // update Diagnosis when file is opened
+            this._context.subscriptions.push(
+                vscode.window.onDidChangeActiveTextEditor((e: vscode.TextEditor | undefined) => {
+                    this.updateDiagnosis(e?.document.uri);
+                })
+            );
+
+            // initial opened file
+            if (vscode.window.activeTextEditor) {
+                this.updateDiagnosis(vscode.window.activeTextEditor.document.uri);
+            }
         }
+    }
+
+    // refresh plugin state after project root changes
+    async onProjectRootChanged(): Promise<void> {
+
+        // open project directory first!
+        if (!utils.getProjectRoot()) {
+            return;
+        }
+
+        // plugin is not started yet
+        if (!this._enabled) {
+            await this.start();
+            return;
+        }
+
+        log.verbose(`project root changed to ${config.workingDirectory}`);
+
+        // rebind watchers to the new working directory
+        await this.initWatcher();
+
+        // re-register task provider with the new root
+        if (this._xmakeTaskProvider) {
+            this._xmakeTaskProvider.dispose();
+        }
+        this._xmakeTaskProvider = vscode.tasks.registerTaskProvider(
+            XmakeTaskProvider.XmakeType,
+            new XmakeTaskProvider(utils.getProjectRoot())
+        );
+
+        // refresh status/options using the new project root
+        let projectName = path.basename(utils.getProjectRoot());
+        this._option.set("project", projectName);
+        this._status.project = projectName;
+
+        await this.loadCache();
+        this._xmakeExplorer.refresh();
+        await this.updateDiagnosis(vscode.window.activeTextEditor?.document.uri);
     }
 
     // refresh folder

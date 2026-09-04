@@ -30,6 +30,7 @@
   "activationEvents": [
     "onDebugResolve:xmake",
     "onDebugDynamicConfigurations:xmake",
+    "onLanguage:xmake",
     "workspaceContains:xmake.lua",
     "onCommand:xmake.onCreateProject",
     "onCommand:xmake.onNewFiles",
