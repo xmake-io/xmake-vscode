@@ -276,12 +276,12 @@ export class XMake implements vscode.Disposable {
         const mode = config.autoGenerateCompileCommands;
 
         // Check if automatic generation should be triggered
-        if (trigger === "fileChange" && mode !== "onFileChange") {
+        if (trigger === "fileChange" && mode !== "onFileChange" && mode !== "always") {
             log.verbose("compile_commands generation not triggered on file change");
             return;
         }
 
-        if (trigger === "build" && mode !== "onBuild") {
+        if (trigger === "build" && mode !== "onBuild" && mode !== "always") {
             log.verbose("compile_commands generation not triggered on build");
             return;
         }

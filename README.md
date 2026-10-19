@@ -105,9 +105,10 @@ xmake-vscode will generate `.vscode/compile_commands.json` file, so you need onl
 
 ### Automatic Generation Modes
 
-The extension provides three modes for automatic generation of `compile_commands.json`:
+The extension provides four modes for automatic generation of `compile_commands.json`:
 
-- **onFileChange** (default): Generate compile_commands.json when xmake.lua files change
+- **always** (default): Generate compile_commands.json on startup, when the target changes, when xmake.lua files change and after building
+- **onFileChange**: Generate compile_commands.json when xmake.lua files change
 - **onBuild**: Generate compile_commands.json after building the project
 - **disabled**: Disable automatic generation (manual generation via "XMake: UpdateIntellisense" command is still available)
 

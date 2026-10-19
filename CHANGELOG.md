@@ -5,6 +5,7 @@
 
 ### Added
 - **Per-target IntelliSense generation**: Automatic generation now covers the currently specified target (selected in the Configure view or the status bar) instead of all targets, and it regenerates the database on startup, when the target is changed, when `xmake.lua` files change and after building
+- **New `always` automatic generation mode** (now the default): Regenerate `compile_commands.json` on startup, on target changes, on `xmake.lua` changes and after building
 - **Generate for a specific target**: Right-click a target in the XMake explorer and select "Update Intellisense" to generate `compile_commands.json` for that target only
 
 ### Changed
