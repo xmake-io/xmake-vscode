@@ -108,10 +108,25 @@ xmake-vscode will generate `.vscode/compile_commands.json` file, so you need onl
 The extension provides three modes for automatic generation of `compile_commands.json`:
 
 - **onFileChange** (default): Generate compile_commands.json when xmake.lua files change
-- **onBuild**: Generate compile_commands.json after building the project  
+- **onBuild**: Generate compile_commands.json after building the project
 - **disabled**: Disable automatic generation (manual generation via "XMake: UpdateIntellisense" command is still available)
 
 You can configure this in VSCode settings with `xmake.autoGenerateCompileCommands`.
+
+### Per-Target Generation
+
+Automatic generation only covers the **currently specified target** instead of all targets:
+
+- When the extension starts up, the database is generated for the current target (unless automatic generation is set to `disabled`)
+- When you select a target in the Configure view (Build > Target) or the status bar, the database is regenerated for the newly selected target immediately (unless automatic generation is set to `disabled`)
+- When `xmake.lua` files change or after building, the database is regenerated for the current target
+
+The special targets are also supported:
+
+- `default` (the initial value): contains all the default targets (which are not disabled with `set_default(false)`)
+- `all`: contains all the targets
+
+If you want to generate `compile_commands.json` for all targets manually, run the **XMake: UpdateIntellisense** command in the Command Palette. You can also right-click a target in the XMake explorer (Targets view) and select **Update Intellisense** to generate the database for that target only.
 
 for example (`.vscode/c_cpp_properties.json`):
 
@@ -411,7 +426,7 @@ The extension supports platform-specific configuration. You can use platform pre
 
 Supported platform prefixes:
 - `windows` for Windows
-- `linux` for Linux  
+- `linux` for Linux
 - `osx` for macOS
 
 ## Troubleshooting
@@ -445,7 +460,7 @@ Supported platform prefixes:
 
 - **Documentation**: [XMake Official Documentation](https://xmake.io/#/docs)
 - **Issues**: [GitHub Issues](https://github.com/xmake-io/xmake-vscode/issues)
-- **Community**: 
+- **Community**:
   - [Reddit](https://www.reddit.com/r/xmake/)
   - [Discord](https://discord.gg/xmake)
   - [Telegram](https://t.me/tbooxorg)

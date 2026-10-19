@@ -329,6 +329,12 @@
         "enablement": "view == xmakeExplorer"
       },
       {
+        "command": "xmakeExplorer.updateIntellisense",
+        "title": "Update Intellisense",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
+      },
+      {
         "command": "xmakeExplorer.configure",
         "title": "Configure",
         "category": "XMake",
@@ -466,6 +472,10 @@
         },
         {
           "command": "xmakeExplorer.debug",
+          "when": "view == xmakeExplorer && viewItem == target"
+        },
+        {
+          "command": "xmakeExplorer.updateIntellisense",
           "when": "view == xmakeExplorer && viewItem == target"
         }
       ]

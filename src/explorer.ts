@@ -172,7 +172,7 @@ class XMakeExplorerDataProvider implements vscode.TreeDataProvider<XMakeExplorer
 
         // Sort targets so they appear correctly in the tree view
         targets.sort((t1, t2) => {
-            if(t1.group === t2.group)
+            if (t1.group === t2.group)
                 return t1.name.localeCompare(t2.name);
 
             return t1.group.localeCompare(t2.group);
@@ -629,31 +629,31 @@ class XMakeOptionsProvider implements vscode.WebviewViewProvider {
         const nonce = this.getNonce();
 
         return `<!DOCTYPE html>
-			<html lang="en">
-			<head>
-				<meta charset="UTF-8">
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
 
-				<!--
-					Use a content security policy to only allow loading images from https or from our extension directory,
-					and only allow scripts that have a specific nonce.
-				-->
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+                <!--
+                    Use a content security policy to only allow loading images from https or from our extension directory,
+                    and only allow scripts that have a specific nonce.
+                -->
+                <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
 
-				<meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-				<link href="${styleResetUri}" rel="stylesheet">
-				<link href="${styleVSCodeUri}" rel="stylesheet">
-				<link href="${styleMainUri}" rel="stylesheet">
+                <link href="${styleResetUri}" rel="stylesheet">
+                <link href="${styleVSCodeUri}" rel="stylesheet">
+                <link href="${styleMainUri}" rel="stylesheet">
 
-				<title>Options</title>
-			</head>
-			<body>
-				<form id="options">
-				</form>
+                <title>Options</title>
+            </head>
+            <body>
+                <form id="options">
+                </form>
 
-				<script nonce="${nonce}" src="${scriptUri}"></script>
-			</body>
-			</html>`;
+                <script nonce="${nonce}" src="${scriptUri}"></script>
+            </body>
+            </html>`;
     }
 
     private getNonce() {
@@ -673,7 +673,7 @@ export class XMakeExplorer implements vscode.Disposable {
 
     private _xmakeExplorerDataProvider: XMakeExplorerDataProvider;
     private _treeView: vscode.TreeView<XMakeExplorerItem>;
-//    private _xmakeOptionsProvider: XMakeOptionsProvider;
+    //    private _xmakeOptionsProvider: XMakeOptionsProvider;
 
     async init(context: vscode.ExtensionContext) {
 
@@ -698,9 +698,9 @@ export class XMakeExplorer implements vscode.Disposable {
 
         // Open file command for files in the tree view
         vscode.commands.registerCommand('xmakeExplorer.openFile', (file_path: string) => {
-                const uri = vscode.Uri.file(file_path);
-                vscode.workspace.openTextDocument(uri).then(doc => vscode.window.showTextDocument(uri));
-            }
+            const uri = vscode.Uri.file(file_path);
+            vscode.workspace.openTextDocument(uri).then(doc => vscode.window.showTextDocument(uri));
+        }
         );
 
         /* disable Options panel now
@@ -734,7 +734,7 @@ export class XMakeExplorer implements vscode.Disposable {
         });
 
         vscode.commands.registerCommand('xmakeExplorer.rebuild', (item: XMakeExplorerItem) => {
-            if (item.info.type == XMakeExplorerItemType.TARGET){
+            if (item.info.type == XMakeExplorerItemType.TARGET) {
                 vscode.commands.executeCommand("xmake.setTarget", item.info.target);
                 vscode.commands.executeCommand("xmake.onRebuild", item.info.target);
             }
@@ -752,21 +752,27 @@ export class XMakeExplorer implements vscode.Disposable {
         });
 
         vscode.commands.registerCommand('xmakeExplorer.run', (item: XMakeExplorerItem) => {
-            if(item.info.type == XMakeExplorerItemType.TARGET){
+            if (item.info.type == XMakeExplorerItemType.TARGET) {
                 vscode.commands.executeCommand("xmake.setTarget", item.info.target);
                 vscode.commands.executeCommand("xmake.onRun", item.info.target);
             }
         });
 
         vscode.commands.registerCommand('xmakeExplorer.debug', (item: XMakeExplorerItem) => {
-            if(item.info.type == XMakeExplorerItemType.TARGET) {
+            if (item.info.type == XMakeExplorerItemType.TARGET) {
                 vscode.commands.executeCommand("xmake.setTarget", item.info.target);
                 vscode.commands.executeCommand("xmake.onDebug", item.info.target);
             }
         });
 
+        vscode.commands.registerCommand('xmakeExplorer.updateIntellisense', (item: XMakeExplorerItem) => {
+            if (item && item.info.type == XMakeExplorerItemType.TARGET) {
+                vscode.commands.executeCommand("xmake.onUpdateIntellisense", item.info.target);
+            }
+        });
+
         vscode.commands.registerCommand('xmakeExplorer.configure', (item: XMakeExplorerItem) => {
-                vscode.commands.executeCommand("xmake.onForceConfigure");
+            vscode.commands.executeCommand("xmake.onForceConfigure");
         });
     }
 
@@ -780,7 +786,7 @@ export class XMakeExplorer implements vscode.Disposable {
         const info = await this.readInfo();
         if (info) {
             await this._xmakeExplorerDataProvider.refresh(info.targets);
-          //  await this._xmakeOptionsProvider.refresh(info.options);
+            //  await this._xmakeOptionsProvider.refresh(info.options);
         }
     }
 

@@ -3,6 +3,10 @@
 
 ## [Unreleased]
 
+### Added
+- **Per-target IntelliSense generation**: Automatic generation now covers the currently specified target (selected in the Configure view or the status bar) instead of all targets, and it regenerates the database on startup, when the target is changed, when `xmake.lua` files change and after building
+- **Generate for a specific target**: Right-click a target in the XMake explorer and select "Update Intellisense" to generate `compile_commands.json` for that target only
+
 ### Changed
 - **Version preparation**: Preparing for next release
 
@@ -54,7 +58,7 @@
 - **XMake Explorer**: Enhanced explorer visibility and functionality
 
 ### Changed
-- **Status bar improvements**: 
+- **Status bar improvements**:
   - Improved build button appearance
   - Adjusted status order for better UX
   - Enhanced tips and layout

@@ -76,7 +76,7 @@ export class XMake implements vscode.Disposable {
 
     // the xmake explorer
     private _xmakeExplorer: XMakeExplorer;
-    
+
     // the xmake configure view
     private _xmakeConfigureView: XMakeConfigureView;
 
@@ -265,30 +265,53 @@ export class XMake implements vscode.Disposable {
         this._xmakeConfigureView.refresh();
     }
 
+    // get the current specified target
+    private getCurrentTarget(): string | undefined {
+        const target = this._option.get<string>("target");
+        return (target && target.length > 0) ? target : undefined;
+    }
+
     // update Intellisense
-    async updateIntellisense(trigger: "fileChange" | "build" | "manual" = "manual") {
+    async updateIntellisense(trigger: "fileChange" | "build" | "manual" | "targetChange" | "startup" = "manual", target?: string) {
         const mode = config.autoGenerateCompileCommands;
-        
+
         // Check if automatic generation should be triggered
         if (trigger === "fileChange" && mode !== "onFileChange") {
             log.verbose("compile_commands generation not triggered on file change");
             return;
         }
-        
+
         if (trigger === "build" && mode !== "onBuild") {
             log.verbose("compile_commands generation not triggered on build");
             return;
         }
-        
+
+        if (trigger === "targetChange" && mode === "disabled") {
+            log.verbose("compile_commands generation not triggered on target change");
+            return;
+        }
+
+        if (trigger === "startup" && mode === "disabled") {
+            log.verbose("compile_commands generation not triggered on startup");
+            return;
+        }
+
         // Manual trigger is always allowed regardless of the mode setting
         if (trigger === "manual" && mode === "disabled") {
             log.verbose("manual compile_commands generation is explicitly triggered");
         }
-        
-        log.verbose("updating Intellisense ..");
+
+        // generate compile_commands.json for the given target only?
+        // - `default`: all default targets
+        // - `all`: all targets
+        log.verbose(target ? `updating Intellisense for target '${target}' ..` : "updating Intellisense ..");
         let updateIntellisenseScript = utils.getAssetsScriptPath("update_intellisense.lua");
         if (fs.existsSync(updateIntellisenseScript)) {
-            await process.runv(config.executable, ["l", updateIntellisenseScript, config.compileCommandsDirectory, config.compileCommandsBackend], { "COLORTERM": "nocolor" }, config.workingDirectory);
+            let args = ["l", updateIntellisenseScript, config.compileCommandsDirectory, config.compileCommandsBackend];
+            if (target) {
+                args.push(target);
+            }
+            await process.runv(config.executable, args, { "COLORTERM": "nocolor" }, config.workingDirectory);
         }
     }
 
@@ -402,7 +425,7 @@ export class XMake implements vscode.Disposable {
         if (filePath.includes("xmake.lua") && !filePath.includes(".xmake")) {
             log.verbose("onProjectFileUpdated: " + affectedPath.fsPath);
             this.loadCache();
-            this.updateIntellisense("fileChange");
+            this.updateIntellisense("fileChange", this.getCurrentTarget());
             this._xmakeExplorer.refresh();
         }
 
@@ -495,6 +518,9 @@ export class XMake implements vscode.Disposable {
         initDebugger(this._context, this._option);
 
         vscode.commands.executeCommand('setContext', 'xmakeEnabled', true);
+
+        // generate compile_commands.json on startup
+        this.updateIntellisense("startup", this.getCurrentTarget());
     }
 
     // create project
@@ -629,7 +655,7 @@ export class XMake implements vscode.Disposable {
         const arch = this._option.get<string>("arch");
         const mode = this._option.get<string>("mode");
         const toolchain = this._option.get<string>("toolchain");
-        
+
         let args = ["f", "-p", `${plat}`, "-a", `${arch}`, "-m", `${mode}`];
         if (this._option.get<string>("plat") == "android" && config.androidNDKDirectory != "") {
             args.push(`--ndk=${config.androidNDKDirectory}`);
@@ -652,16 +678,16 @@ export class XMake implements vscode.Disposable {
         if (toolchain != "toolchain") {
             args.push("--toolchain=" + toolchain);
         }
-        
+
         return args;
     }
 
     // execute commands in sequence, stop if any command fails
-    private async execCommandsSequentially(name: string, commands: Array<{cmd: string, args: string[]}>): Promise<boolean> {
+    private async execCommandsSequentially(name: string, commands: Array<{ cmd: string, args: string[] }>): Promise<boolean> {
         for (let i = 0; i < commands.length; i++) {
-            const {cmd, args} = commands[i];
+            const { cmd, args } = commands[i];
             const exitCode = await this._terminal.execv(`${name}_step${i + 1}`, cmd, args);
-            
+
             if (exitCode !== 0) {
                 log.error(`${name} failed at step ${i + 1}: ${cmd} ${args.join(' ')} (exit code: ${exitCode})`);
                 return false;
@@ -685,7 +711,7 @@ export class XMake implements vscode.Disposable {
 
             // configure it using terminal.execv to get exit code
             const exitCode = await this._terminal.execv("config", config.executable, args);
-            
+
             if (exitCode !== 0) {
                 log.error(`Configure failed with exit code ${exitCode}`);
                 return false;
@@ -749,10 +775,10 @@ export class XMake implements vscode.Disposable {
 
         // build commands sequence
         const commands = [];
-        
+
         // first configure if needed
         if (this._optionChanged) {
-            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+            commands.push({ cmd: config.executable, args: this.getConfigureArgs() });
         }
 
         // then build
@@ -772,14 +798,14 @@ export class XMake implements vscode.Disposable {
         } else if (targetName && targetName != "default") {
             buildArgs.push(targetName);
         }
-        
-        commands.push({cmd: config.executable, args: buildArgs});
+
+        commands.push({ cmd: config.executable, args: buildArgs });
 
         // execute all commands
         const success = await this.execCommandsSequentially("Build", commands);
         if (success) {
             this._optionChanged = false;
-            await this.updateIntellisense("build");
+            await this.updateIntellisense("build", this.getCurrentTarget());
         }
     }
     async onBuildAll(target?: string) {
@@ -790,10 +816,10 @@ export class XMake implements vscode.Disposable {
 
         // build commands sequence
         const commands = [];
-        
+
         // first configure if needed
         if (this._optionChanged) {
-            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+            commands.push({ cmd: config.executable, args: this.getConfigureArgs() });
         }
 
         // then build all
@@ -805,14 +831,14 @@ export class XMake implements vscode.Disposable {
             buildArgs.push("-vD");
         }
         buildArgs.push("--all");
-        
-        commands.push({cmd: config.executable, args: buildArgs});
+
+        commands.push({ cmd: config.executable, args: buildArgs });
 
         // execute all commands
         const success = await this.execCommandsSequentially("BuildAll", commands);
         if (success) {
             this._optionChanged = false;
-            await this.updateIntellisense("build");
+            await this.updateIntellisense("build", this.getCurrentTarget());
         }
     }
 
@@ -844,20 +870,20 @@ export class XMake implements vscode.Disposable {
 
         // configure and rebuild it
         const commands = [];
-        
+
         // first configure if needed
         if (this._optionChanged) {
-            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+            commands.push({ cmd: config.executable, args: this.getConfigureArgs() });
         }
 
         // then rebuild
-        commands.push({cmd: config.executable, args: args});
+        commands.push({ cmd: config.executable, args: args });
 
         // execute all commands
         const success = await this.execCommandsSequentially("Rebuild", commands);
         if (success) {
             this._optionChanged = false;
-            await this.updateIntellisense("build");
+            await this.updateIntellisense("build", this.getCurrentTarget());
         }
     }
 
@@ -879,10 +905,10 @@ export class XMake implements vscode.Disposable {
 
         // configure and clean it
         const commands = [];
-        
+
         // first configure if needed
         if (this._optionChanged) {
-            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+            commands.push({ cmd: config.executable, args: this.getConfigureArgs() });
         }
 
         // then clean
@@ -890,7 +916,7 @@ export class XMake implements vscode.Disposable {
         if (targetName && targetName != "default") {
             cleanArgs.push(targetName);
         }
-        commands.push({cmd: config.executable, args: cleanArgs});
+        commands.push({ cmd: config.executable, args: cleanArgs });
 
         // execute all commands
         const success = await this.execCommandsSequentially("Clean", commands);
@@ -917,10 +943,10 @@ export class XMake implements vscode.Disposable {
 
         // configure and clean all
         const commands = [];
-        
+
         // first configure if needed
         if (this._optionChanged) {
-            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+            commands.push({ cmd: config.executable, args: this.getConfigureArgs() });
         }
 
         // then clean all
@@ -928,7 +954,7 @@ export class XMake implements vscode.Disposable {
         if (targetName && targetName != "default") {
             cleanArgs.push(targetName);
         }
-        commands.push({cmd: config.executable, args: cleanArgs});
+        commands.push({ cmd: config.executable, args: cleanArgs });
 
         // execute all commands
         const success = await this.execCommandsSequentially("CleanAll", commands);
@@ -941,8 +967,7 @@ export class XMake implements vscode.Disposable {
     }
 
     // repeated case of getting the default target
-    async getDefaultTarget(): Promise<string|null>
-    {
+    async getDefaultTarget(): Promise<string | null> {
         let getDefaultTargetPathScript = utils.getAssetsScriptPath("default_target.lua");
         if (fs.existsSync(getDefaultTargetPathScript)) {
             let result = (await process.iorunv(config.executable, ["l", getDefaultTargetPathScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
@@ -1040,14 +1065,14 @@ export class XMake implements vscode.Disposable {
 
         // configure and run it
         const commands = [];
-        
+
         // first configure if needed
         if (this._optionChanged) {
-            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+            commands.push({ cmd: config.executable, args: this.getConfigureArgs() });
         }
 
         // then run
-        commands.push({cmd: config.executable, args: args});
+        commands.push({ cmd: config.executable, args: args });
 
         // execute all commands
         const success = await this.execCommandsSequentially("Run", commands);
@@ -1077,10 +1102,10 @@ export class XMake implements vscode.Disposable {
 
         // configure and package it
         const commands = [];
-        
+
         // first configure if needed
         if (this._optionChanged) {
-            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+            commands.push({ cmd: config.executable, args: this.getConfigureArgs() });
         }
 
         // then package
@@ -1090,7 +1115,7 @@ export class XMake implements vscode.Disposable {
         } else if (targetName && targetName != "default") {
             packageArgs.push(targetName);
         }
-        commands.push({cmd: config.executable, args: packageArgs});
+        commands.push({ cmd: config.executable, args: packageArgs });
 
         // execute all commands
         const success = await this.execCommandsSequentially("Package", commands);
@@ -1125,10 +1150,10 @@ export class XMake implements vscode.Disposable {
 
         // configure and install it
         const commands = [];
-        
+
         // first configure if needed
         if (this._optionChanged) {
-            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+            commands.push({ cmd: config.executable, args: this.getConfigureArgs() });
         }
 
         // then install
@@ -1141,7 +1166,7 @@ export class XMake implements vscode.Disposable {
         if (config.installDirectory != "") {
             installArgs.push("-o", config.installDirectory);
         }
-        commands.push({cmd: config.executable, args: installArgs});
+        commands.push({ cmd: config.executable, args: installArgs });
 
         // execute all commands
         const success = await this.execCommandsSequentially("Install", commands);
@@ -1173,10 +1198,10 @@ export class XMake implements vscode.Disposable {
 
         // configure and uninstall it
         const commands = [];
-        
+
         // first configure if needed
         if (this._optionChanged) {
-            commands.push({cmd: config.executable, args: this.getConfigureArgs()});
+            commands.push({ cmd: config.executable, args: this.getConfigureArgs() });
         }
 
         // then uninstall
@@ -1187,7 +1212,7 @@ export class XMake implements vscode.Disposable {
         if (config.installDirectory != "") {
             uninstallArgs.push(`--installdir=${config.installDirectory}`);
         }
-        commands.push({cmd: config.executable, args: uninstallArgs});
+        commands.push({ cmd: config.executable, args: uninstallArgs });
 
         // execute all commands
         const success = await this.execCommandsSequentially("Uninstall", commands);
@@ -1250,7 +1275,7 @@ export class XMake implements vscode.Disposable {
 
         // option changed?
         if (this._optionChanged) {
-             vscode.window.showWarningMessage('Configuration have been changed, please rebuild program first!');
+            vscode.window.showWarningMessage('Configuration have been changed, please rebuild program first!');
         }
 
         // get target name
@@ -1264,7 +1289,7 @@ export class XMake implements vscode.Disposable {
             try {
                 const result = await process.iorunv(config.executable, ["l", getTargetPathScript, targetName], { "COLORTERM": "nocolor" }, config.workingDirectory);
                 const output = result.stdout.trim();
-                
+
                 if (output) {
                     targetProgram = process.getAnnotatedOutput(output)[0].split('\n')[0].trim();
                 } else {
@@ -1364,7 +1389,7 @@ export class XMake implements vscode.Disposable {
 
         // option changed?
         if (this._optionChanged) {
-           vscode.window.showWarningMessage('Configuration have been changed, please rebuild program first!');
+            vscode.window.showWarningMessage('Configuration have been changed, please rebuild program first!');
         }
 
         // get target name
@@ -1408,7 +1433,7 @@ export class XMake implements vscode.Disposable {
     // on update intellisense
     async onUpdateIntellisense(target?: string) {
         if (this._enabled) {
-            await this.updateIntellisense("manual");
+            await this.updateIntellisense("manual", target);
         }
     }
 
@@ -1607,6 +1632,9 @@ export class XMake implements vscode.Disposable {
             this._status.target = chosen.label;
             this._optionChanged = true;
             this._xmakeConfigureView.refresh();
+
+            // regenerate compile_commands.json for the newly selected target
+            await this.updateIntellisense("targetChange", chosen.label);
         }
     }
 
