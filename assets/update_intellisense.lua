@@ -1,6 +1,7 @@
 -- imports
 import("core.project.config")
 import("core.project.project")
+import("private.utils.target", {alias = "target_utils"})
 import("clang.compile_commands", {rootdir = path.join(os.programdir(), "plugins", "project")})
 
 -- config target
@@ -30,8 +31,28 @@ function _config_targets()
     end
 end
 
+-- get selected targets by the given target name
+-- @note it will select all default targets if the given name is `default`
+function _get_selected_targets(targetName)
+    if targetName == "default" then
+        local targets = {}
+        for _, target in ipairs(project.ordertargets()) do
+            if target:is_default() and target:is_enabled() then
+                table.insert(targets, target)
+            end
+        end
+        return targets
+    else
+        for _, target in ipairs(project.ordertargets()) do
+            if target:name() == targetName then
+                return {target}
+            end
+        end
+    end
+end
+
 -- main entry
-function main(compileCommandsDirectory, compileCommandsBackend)
+function main(compileCommandsDirectory, compileCommandsBackend, targetName)
 
     -- generate compile_commands.json
     -- @note we can only load configuration because we watched onFileChanged(xmake.conf)
@@ -39,6 +60,24 @@ function main(compileCommandsDirectory, compileCommandsBackend)
     os.setenv("XMAKE_GENERATOR_COMPDB_LSP", compileCommandsBackend)
     config.load()
     _config_targets()
+
+    -- generate compile_commands.json only for the selected targets?
+    -- - `default`: all default targets, e.g. `xmake project -k compile_commands -t default`
+    -- - `<name>`: the given target, e.g. `xmake project -k compile_commands -t <name>`
+    -- - `all` or empty: all targets
+    -- @note it will fallback to all targets if the given target does not exist
+    local selected_targets
+    if targetName and targetName ~= "" and targetName ~= "all" then
+        selected_targets = _get_selected_targets(targetName)
+    end
+    local old_get_project_targets = target_utils.get_project_targets
+    if selected_targets then
+        target_utils.get_project_targets = function () return selected_targets end
+    end
     compile_commands.make(compileCommandsDirectory or ".vscode")
+    if selected_targets then
+        target_utils.get_project_targets = old_get_project_targets
+    end
+
     os.setenv("XMAKE_IN_PROJECT_GENERATOR", nil)
 end
