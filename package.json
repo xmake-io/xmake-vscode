@@ -727,14 +727,12 @@
         "xmake.runningTargetsArguments": {
           "type": "object",
           "default": {
-            "default": []
           },
           "description": "The Running Targets Arguments, .e.g {\"targetName\": [\"args\", \"...\"]}"
         },
         "xmake.debuggingTargetsArguments": {
           "type": "object",
           "default": {
-            "default": []
           },
           "description": "The Debugging Targets Arguments, .e.g {\"targetName\": [\"args\", \"...\"]}"
         },
