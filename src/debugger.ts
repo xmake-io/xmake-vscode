@@ -38,6 +38,16 @@ export class Debugger implements vscode.Disposable {
         return gdbPath? gdbPath : "";
     }
 
+    // get target run arguments from xmake.lua
+    private async getTargetRunArgs(targetName: string): Promise<string[]> {
+        const script = utils.getAssetsScriptPath("target_runargs.lua");
+        if (!fs.existsSync(script)) {
+            return [];
+        }
+        const result = await process.iorunv(config.executable, ["l", script, targetName], { "COLORTERM": "nocolor" }, config.workingDirectory);
+        return process.getAnnotatedJSON(result.stdout)[0] || [];
+    }
+
     // startDebugging
     async startDebugging(targetName?: string, targetProgram?: string, targetRunDir?: string, targetRunEnvs?: object, plat?: string) {
 
@@ -61,6 +71,8 @@ export class Debugger implements vscode.Disposable {
             args = config.runningTargetsArguments[targetName];
         else if (config.runningTargetsArguments && "default" in config.runningTargetsArguments)
             args = config.runningTargetsArguments["default"];
+        else
+            args = await this.getTargetRunArgs(targetName);
 
         // uses codelldb debugger?
         var codelldb = false;
