@@ -765,6 +765,12 @@ export class XMakeExplorer implements vscode.Disposable {
             }
         });
 
+        vscode.commands.registerCommand('xmakeExplorer.updateIntellisense', (item: XMakeExplorerItem) => {
+            if (item && item.info.type == XMakeExplorerItemType.TARGET) {
+                vscode.commands.executeCommand("xmake.onUpdateIntellisense", item.info.target);
+            }
+        });
+
         vscode.commands.registerCommand('xmakeExplorer.configure', (item: XMakeExplorerItem) => {
                 vscode.commands.executeCommand("xmake.onForceConfigure");
         });

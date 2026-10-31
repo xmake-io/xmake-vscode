@@ -329,6 +329,12 @@
         "enablement": "view == xmakeExplorer"
       },
       {
+        "command": "xmakeExplorer.updateIntellisense",
+        "title": "Update Intellisense",
+        "category": "XMake",
+        "enablement": "view == xmakeExplorer"
+      },
+      {
         "command": "xmakeExplorer.configure",
         "title": "Configure",
         "category": "XMake",
@@ -466,6 +472,10 @@
         },
         {
           "command": "xmakeExplorer.debug",
+          "when": "view == xmakeExplorer && viewItem == target"
+        },
+        {
+          "command": "xmakeExplorer.updateIntellisense",
           "when": "view == xmakeExplorer && viewItem == target"
         }
       ]
@@ -703,14 +713,16 @@
         },
         "xmake.autoGenerateCompileCommands": {
           "type": "string",
-          "default": "onFileChange",
+          "default": "always",
           "description": "Automatic generation mode for compile_commands.json",
           "enum": [
+            "always",
             "onFileChange",
             "onBuild",
             "disabled"
           ],
           "enumDescriptions": [
+            "Generate compile_commands.json on startup, when the target changes, when xmake.lua changes and after building",
             "Generate compile_commands.json when xmake.lua changes",
             "Generate compile_commands.json after building the project",
             "Disable automatic generation of compile_commands.json"
