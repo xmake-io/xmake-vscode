@@ -810,7 +810,7 @@ export class XMakeExplorer implements vscode.Disposable {
             const getExplorerTargetsScript = utils.getAssetsScriptPath("explorer.lua");
             if (fs.existsSync(getExplorerTargetsScript)) {
                 const infoJson = (await process.iorunv(config.executable, ["l", getExplorerTargetsScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
-                const info = JSON.parse(infoJson);
+                const info = process.getAnnotatedJSON(infoJson)[0];
                 return info;
             }
         } catch (e: unknown) {
