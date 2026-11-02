@@ -107,8 +107,8 @@ xmake-vscode will generate `.vscode/compile_commands.json` file, so you need onl
 
 The extension provides four modes for automatic generation of `compile_commands.json`:
 
-- **always** (default): Generate compile_commands.json on startup, when the target changes, when xmake.lua files change and after building
-- **onFileChange**: Generate compile_commands.json when xmake.lua files change
+- **always**: Generate compile_commands.json on startup, when the target changes, when xmake.lua files change and after building
+- **onFileChange** (default): Generate compile_commands.json when xmake.lua files change
 - **onBuild**: Generate compile_commands.json after building the project  
 - **disabled**: Disable automatic generation (manual generation via "XMake: UpdateIntellisense" command is still available)
 
@@ -288,7 +288,7 @@ Control which buttons appear in the status bar:
 | **xmake.WDKDirectory** | string | "" | Windows Driver Kit Directory |
 | **xmake.compileCommandsDirectory** | string | ".vscode" | compile_commands.json file directory |
 | **xmake.compileCommandsBackend** | string | "clangd" | LSP backend for compile_commands |
-| **xmake.autoGenerateCompileCommands** | string | "onFileChange" | Automatic generation mode: `onFileChange`, `onBuild`, `disabled` |
+| **xmake.autoGenerateCompileCommands** | string | "onFileChange" | Automatic generation mode: `always`, `onFileChange`, `onBuild`, `disabled` |
 | **xmake.additionalConfigArguments** | array | [] | Additional config arguments, e.g. `["--cc=gcc", "--myopt=xxx"]` |
 | **xmake.runningTargetsArguments** | object | {"default": []} | Running targets arguments, e.g. `{"targetName": ["args", "..."]}` |
 | **xmake.debuggingTargetsArguments** | object | {"default": []} | Debugging targets arguments |

@@ -713,7 +713,7 @@
         },
         "xmake.autoGenerateCompileCommands": {
           "type": "string",
-          "default": "always",
+          "default": "onFileChange",
           "description": "Automatic generation mode for compile_commands.json",
           "enum": [
             "always",
