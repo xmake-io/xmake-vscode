@@ -765,6 +765,12 @@ export class XMakeExplorer implements vscode.Disposable {
             }
         });
 
+        vscode.commands.registerCommand('xmakeExplorer.updateIntellisense', (item: XMakeExplorerItem) => {
+            if (item && item.info.type == XMakeExplorerItemType.TARGET) {
+                vscode.commands.executeCommand("xmake.onUpdateIntellisense", item.info.target);
+            }
+        });
+
         vscode.commands.registerCommand('xmakeExplorer.configure', (item: XMakeExplorerItem) => {
                 vscode.commands.executeCommand("xmake.onForceConfigure");
         });
@@ -804,7 +810,7 @@ export class XMakeExplorer implements vscode.Disposable {
             const getExplorerTargetsScript = utils.getAssetsScriptPath("explorer.lua");
             if (fs.existsSync(getExplorerTargetsScript)) {
                 const infoJson = (await process.iorunv(config.executable, ["l", getExplorerTargetsScript], { "COLORTERM": "nocolor" }, config.workingDirectory)).stdout.trim();
-                const info = JSON.parse(infoJson);
+                const info = process.getAnnotatedJSON(infoJson)[0];
                 return info;
             }
         } catch (e: unknown) {

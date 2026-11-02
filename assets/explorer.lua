@@ -70,5 +70,11 @@ function main ()
     end
     local explorer_data = {targets = explorer_targets, options = explorer_options}
     local jsondata = json.encode(explorer_data)
+
+    -- denote the start of vscode information to ignore anything logging to stdout before this point
+    print("__begin__")
     print(jsondata)
+
+    -- print end tag to ignore other deprecated/warnings infos
+    print("__end__")
 end
